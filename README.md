@@ -18,8 +18,12 @@ Architecture ：
 
 Roles:
 
-Project Manager: Oversees project progress, ensures deadlines are met, and coordinates team activities.
-Lead Developer: Responsible for the core implementation of the distributed queue system.
-Quality Assurance Engineer: Ensures the system meets all quality standards through rigorous testing.
-DevOps Engineer: Manages the cloud environment setup and deployment processes.
-Documentation Specialist: Prepares detailed documentation for the system, including user guides and technical specifications
+  ·Project Manager: Oversees project progress, ensures deadlines are met, and coordinates team activities.
+  
+  ·Lead Developer: Responsible for the core implementation of the distributed queue system.
+  
+  ·Quality Assurance Engineer: Ensures the system meets all quality standards through rigorous testing.
+  
+  ·DevOps Engineer: Manages the cloud environment setup and deployment processes.
+  
+  ·Documentation Specialist: Prepares detailed documentation for the system, including user guides and technical specifications.
