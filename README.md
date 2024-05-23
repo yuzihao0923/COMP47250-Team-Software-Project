@@ -28,9 +28,9 @@ Roles:
   
   ·Documentation Specialist: Prepares detailed documentation for the system, including user guides and technical specifications.
 
-
-
 Building a Distributed Queue System Based on Redis
+
+
 
 
 **********************************************************************************************
@@ -41,19 +41,29 @@ Redis : redis-server 6.0.16    link: https://download.redis.io/releases/redis-6.
 
 
 
+
+
+
+
 **********************************************************************************************
-After installing Go and Redis, build the project named "MQ". 
+After installing Go and Redis, build the project named "COMP47250-Team-Software-Project". 
 
-~$cd MQ
+~$cd COMP47250-Team-Software-Project
 
-~/MQ$go mod init MQ         // This command will create "go.mod" file and 
+~/MQ$go mod init COMP47250-Team-Software-Project         // This command will create "go.mod" file and 
                             //this file is used to manage the libraries used in this project
 **********************************************************************************************
 
 
 
-**********************************************************************************************
-Structure of MQ:
+
+
+
+
+
+**********************************************************************************************\
+```
+/distributed-queue-system
 |-- cmd
 |   |-- producer
 |   |   `-- main.go
@@ -79,13 +89,24 @@ Structure of MQ:
 |   |-- development.json
 |   `-- production.json
 |-- tests
+|   |-- integration
+|   |   `-- broker_test.go
+|   `-- unit
+|       `-- queue_test.go
 |-- go.mod
 `-- go.sum
+```
 
 The cmd directory contains the code that starts the main application, usually the main.go file.
+
 The pkg directory is used to store code that can be imported by other projects.
+
 The internal directory is used to store code that can only be imported by this project.
+
 The configs directory is used to store configuration files for various environments.
+
 The scripts directory contains scripts, such as deployment or database migration scripts.
+
 The tests directory contains all the test code, which may include unit tests and integration tests.
+
 **********************************************************************************************
