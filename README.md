@@ -30,6 +30,10 @@ Roles:
 
 
 
+
+
+
+
 Building a Distributed Queue System Based on Redis
 
 
@@ -46,7 +50,6 @@ Redis : redis-server 6.0.16    link: https://download.redis.io/releases/redis-6.
 
 
 
-
 **********************************************************************************************
 After installing Go and Redis, build the project named "COMP47250-Team-Software-Project". 
 
@@ -55,8 +58,6 @@ After installing Go and Redis, build the project named "COMP47250-Team-Software-
 ~/MQ$go mod init COMP47250-Team-Software-Project         // This command will create "go.mod" file and 
                             //this file is used to manage the libraries used in this project
 **********************************************************************************************
-
-
 
 
 
