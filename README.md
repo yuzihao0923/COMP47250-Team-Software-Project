@@ -38,15 +38,13 @@ Building a Distributed Queue System Based on Redis
 
 
 
+
 **********************************************************************************************
 Golang : 1.22.3linux/amd64      link: https://go.dev/dl/go1.22.3.linux-amd64.tar.gz
         
 Redis : redis-server 6.0.16    link: https://download.redis.io/releases/redis-6.0.16.tar.gz
 **********************************************************************************************
 
-
-
- 
 
 
 
@@ -60,7 +58,6 @@ After installing Go and Redis, build the project named "COMP47250-Team-Software-
 ~/MQ$go mod init COMP47250-Team-Software-Project         // This command will create "go.mod" file and 
                             //this file is used to manage the libraries used in this project
 **********************************************************************************************
-
 
 
 
@@ -95,6 +92,10 @@ After installing Go and Redis, build the project named "COMP47250-Team-Software-
 |   |-- development.json
 |   `-- production.json
 |-- tests
+|   |-- integration
+|   |   `-- broker_test.go
+|   `-- unit
+|       `-- queue_test.go
 |-- go.mod
 `-- go.sum
 ```
@@ -112,4 +113,3 @@ The scripts directory contains scripts, such as deployment or database migration
 The tests directory contains all the test code, which may include unit tests and integration tests.
 
 **********************************************************************************************
-
