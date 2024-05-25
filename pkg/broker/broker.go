@@ -5,6 +5,7 @@ import (
 	"context"
 	"github.com/go-redis/redis/v8"
 	"log"
+	"time"
 )
 
 type Broker struct {
@@ -47,4 +48,34 @@ func (b *Broker) Get(key string) (string, error) {
 		return "", err
 	}
 	return val, nil
+}
+
+// Delete 删除一个键的值
+func (b *Broker) Del(key string) error {
+	err := b.client.Del(b.ctx, key).Err()
+	if err != nil {
+		log.Printf("Failed to delete key %s: %v", key, err)
+		return err
+	}
+	return nil
+}
+
+// Exists 检查一个键是否存在
+func (b *Broker) Exists(key string) (bool, error) {
+	exists, err := b.client.Exists(b.ctx, key).Result()
+	if err != nil {
+		log.Printf("Failed to check existence of key %s: %v", key, err)
+		return false, err
+	}
+	return exists > 0, nil
+}
+
+// Expire 设置一个键的过期时间
+func (b *Broker) Expire(key string, seconds int64) error {
+	err := b.client.Expire(b.ctx, key, time.Duration(seconds)*time.Second).Err()
+	if err != nil {
+		log.Printf("Failed to set expiration for key %s: %v", key, err)
+		return err
+	}
+	return nil
 }

@@ -23,6 +23,35 @@ func main() {
 		fmt.Println("Error getting key:", err)
 		return
 	}
-
 	fmt.Println("mykey:", value)
+
+	// 检查键是否存在
+	exists, err := br.Exists("mykey")
+	if err != nil {
+		fmt.Println("Error checking existence:", err)
+		return
+	}
+	fmt.Printf("Does mykey exist? %v\n", exists)
+
+	// 设置键的过期时间
+	err = br.Expire("mykey", 60)
+	if err != nil {
+		fmt.Println("Error setting expiration:", err)
+		return
+	}
+
+	// 删除键
+	err = br.Del("mykey")
+	if err != nil {
+		fmt.Println("Error deleting key:", err)
+		return
+	}
+
+	// 再次获取键值对，应该返回空
+	value, err = br.Get("mykey")
+	if err != nil {
+		fmt.Println("Error getting key:", err)
+	} else {
+		fmt.Println("mykey:", value)
+	}
 }
