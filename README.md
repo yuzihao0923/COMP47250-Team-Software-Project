@@ -112,4 +112,3 @@ The scripts directory contains scripts, such as deployment or database migration
 
 The tests directory contains all the test code, which may include unit tests and integration tests.
 
-**********************************************************************************************
