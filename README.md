@@ -234,6 +234,3 @@ The configs directory is used to store configuration files for various environme
 The scripts directory contains scripts, such as deployment or database migration scripts.
 
 The tests directory contains all the test code, which may include unit tests and integration tests.
-
-**********************************************************************************************
-**********************************************************************************************

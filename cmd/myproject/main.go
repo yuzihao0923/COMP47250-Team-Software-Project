@@ -2,8 +2,8 @@
 package main
 
 import (
+	"COMP47250-Team-Software-Project/pkg/broker"
 	"fmt"
-	"myproject/pkg/broker"
 )
 
 func main() {

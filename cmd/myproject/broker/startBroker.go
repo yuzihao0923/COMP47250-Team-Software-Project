@@ -1,8 +1,8 @@
 package broker
 
 import (
+	"COMP47250-Team-Software-Project/internal/redis"
 	"fmt"
-	"myproject/internal/message/redis"
 	"net"
 )
 
