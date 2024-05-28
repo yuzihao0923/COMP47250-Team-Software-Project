@@ -34,3 +34,13 @@ func main() {
 		fmt.Println("Received message:", string(mes.Payload))
 	}
 }
+
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	fmt.Println("Hi, I am consumer!!!")
+}

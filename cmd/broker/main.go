@@ -55,3 +55,48 @@ func main() {
 		go goprocess(conn)
 	}
 }
+
+package main
+
+import (
+	"COMP47250-Team-Software-Project/internal/redis"
+	"fmt"
+	"net"
+)
+
+func goprocess(conn net.Conn) {
+	defer conn.Close()
+
+	processor := Processor{
+		Conn: conn,
+	}
+
+	processor.brokerProcessMes()
+
+}
+
+func main() {
+	//	Init redis client(Rdb)
+	redis.Initialize("localhost:6379", "", 0)
+
+	// Listen port 8889
+	fmt.Println("Broker listen to port 8889")
+	listen, err := net.Listen("tcp", "0.0.0.0:8889")
+	if err != nil {
+		fmt.Println("Broker listen err= ", err)
+		return
+	}
+	defer listen.Close()
+
+	for {
+		fmt.Println("Wait connection from clients")
+		conn, err := listen.Accept()
+		if err != nil {
+			fmt.Println("Broker listen.Accept() err=", err)
+			return
+		}
+
+		//Start a goroutin to keep the communication between broker and the client
+		go goprocess(conn)
+	}
+}
