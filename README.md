@@ -1,6 +1,6 @@
 # COMP47250-Team-Software-Project
 
-Project Title: Building a Distributed Queue System
+### Project Title: Building a Distributed Queue System
 
 Team Member:
 
@@ -18,15 +18,11 @@ Architecture ：
 
 Roles:
 
-  ·Project Manager: Oversees project progress, ensures deadlines are met, and coordinates team activities.
-  
-  ·Lead Developer: Responsible for the core implementation of the distributed queue system.
-  
-  ·Quality Assurance Engineer: Ensures the system meets all quality standards through rigorous testing.
-  
-  ·DevOps Engineer: Manages the cloud environment setup and deployment processes.
-  
-  ·Documentation Specialist: Prepares detailed documentation for the system, including user guides and technical specifications.
+  - Project Manager: Oversees project progress, ensures deadlines are met, and coordinates team activities.
+  - Lead Developer: Responsible for the core implementation of the distributed queue system.
+  - Quality Assurance Engineer: Ensures the system meets all quality standards through rigorous testing.
+  - DevOps Engineer: Manages the cloud environment setup and deployment processes.
+  - Documentation Specialist: Prepares detailed documentation for the system, including user guides and technical specifications.
 
 
 
@@ -34,7 +30,7 @@ Roles:
 
 
 
-Building a Distributed Queue System Based on Redis
+### Building a Distributed Queue System Based on Redis
 
 
 
@@ -45,26 +41,13 @@ Golang : 1.22.3linux/amd64      link: https://go.dev/dl/go1.22.3.linux-amd64.tar
 Redis : redis-server 6.0.16    link: https://download.redis.io/releases/redis-6.0.16.tar.gz
 **********************************************************************************************
 
-
-
-
-
-
-**********************************************************************************************
 After installing Go and Redis, build the project named "COMP47250-Team-Software-Project". 
 
 ~$cd COMP47250-Team-Software-Project
 
 ~/MQ$go mod init COMP47250-Team-Software-Project         // This command will create "go.mod" file and 
                             //this file is used to manage the libraries used in this project
-**********************************************************************************************
 
-
-
-
-
-
-**********************************************************************************************\
 ```
 /distributed-queue-system
 |-- cmd
