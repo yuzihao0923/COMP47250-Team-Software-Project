@@ -7,14 +7,16 @@ import (
 )
 
 func StartConsumer() {
+	fmt.Println("Hi, I am consumer!!!")
+
 	conn, err := net.Dial("tcp", "localhost:8889")
 	if err != nil {
-		fmt.Println("Error connecting to broker:", err)
+		fmt.Println("Consumer has error connecting to broker:", err)
 		return
 	}
 	defer conn.Close()
 
-	fmt.Println("Connected to broker")
+	fmt.Println("Consumer has connected to the broker")
 
 	tr := &network.Transport{
 		Conn: conn,
@@ -27,21 +29,10 @@ func StartConsumer() {
 				fmt.Println("Broker closed the connection")
 				return
 			}
-			fmt.Println("Error receiving message:", err)
+			fmt.Println("Consumer has error receiving message:", err)
 			return
 		}
 
-		fmt.Println("Received message:", string(mes.Payload))
+		fmt.Println("Consumer received message:", string(mes.Payload))
 	}
-}
-
-package main
-package comsumer
-
-import (
-	"fmt"
-)
-
-func StartComsumer() {
-	fmt.Println("Hi, I am consumer!!!")
 }
