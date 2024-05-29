@@ -47,4 +47,3 @@ func StartProducer() {
 	tr.SendMessage(conn, mes)
 
 }
-

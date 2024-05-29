@@ -1,4 +1,3 @@
-
 package broker
 
 import (
@@ -60,17 +59,4 @@ func (p *Processor) removeConsumer(conn net.Conn) {
 			break
 		}
 	}
-	mes, err := tr.ReceiveMessage(tr.Conn)
-	if err != nil {
-		fmt.Println("Broker can not receive message successfully!!")
-		return
-	}
-
-	fmt.Println("Broker received a message: ", mes.Payload)
-	// fmt.Println("The message detail:")
-	// fmt.Println("ID: ", mes.ID)
-	// fmt.Println("Timestamp: ", mes.Timestamp)
-	// fmt.Println("Type: ", mes.Type)
-
-	return
 }
