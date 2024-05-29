@@ -1,4 +1,4 @@
-package main
+package broker
 
 import (
 	"COMP47250-Team-Software-Project/internal/network"

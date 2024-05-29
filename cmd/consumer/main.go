@@ -1,9 +1,9 @@
-package main
+package comsumer
 
 import (
 	"fmt"
 )
 
-func main() {
+func StartComsumer() {
 	fmt.Println("Hi, I am consumer!!!")
 }

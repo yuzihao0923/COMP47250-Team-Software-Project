@@ -1,4 +1,4 @@
-package main
+package broker
 
 import (
 	"COMP47250-Team-Software-Project/internal/redis"
@@ -17,13 +17,13 @@ func goprocess(conn net.Conn) {
 
 }
 
-func main() {
+func StartBroker() {
 	//	Init redis client(Rdb)
 	redis.Initialize("localhost:6379", "", 0)
 
 	// Listen port 8889
 	fmt.Println("Broker listen to port 8889")
-	listen, err := net.Listen("tcp", "0.0.0.0:8889")
+	listen, err := net.Listen("tcp", "localhost:8889")
 	if err != nil {
 		fmt.Println("Broker listen err= ", err)
 		return

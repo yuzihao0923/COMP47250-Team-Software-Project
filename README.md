@@ -64,7 +64,7 @@ After installing Go and Redis, build the project named "COMP47250-Team-Software-
 
 
 
-**********************************************************************************************\
+**********************************************************************************************
 ```
 /distributed-queue-system
 |-- cmd
@@ -112,3 +112,8 @@ The scripts directory contains scripts, such as deployment or database migration
 
 The tests directory contains all the test code, which may include unit tests and integration tests.
 
+## How to Run
+```bash
+go run main.go   
+```
+Run command above on ternimal in the root folder.
