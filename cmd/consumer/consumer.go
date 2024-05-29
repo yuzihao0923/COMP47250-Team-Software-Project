@@ -1,22 +1,24 @@
 package consumer
 
 import (
+	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/network"
 	"fmt"
 	"net"
 )
 
 func StartConsumer() {
-	fmt.Println("Hi, I am consumer!!!")
+
+	log.LogMessage("INFO", "Starting conumer...")
 
 	conn, err := net.Dial("tcp", "localhost:8889")
 	if err != nil {
-		fmt.Println("Consumer has error connecting to broker:", err)
+		log.LogMessage("ERROR", fmt.Sprintf("Consumer has error connecting to broker: %v", err))
 		return
 	}
 	defer conn.Close()
 
-	fmt.Println("Consumer has connected to the broker")
+	log.LogMessage("INFO", "Consumer has connected to the broker")
 
 	tr := &network.Transport{
 		Conn: conn,
@@ -26,13 +28,13 @@ func StartConsumer() {
 		mes, err := tr.ReceiveMessage(conn)
 		if err != nil {
 			if err.Error() == "EOF" {
-				fmt.Println("Broker closed the connection")
+				log.LogMessage("INFO", "Broker closed the connection")
 				return
 			}
-			fmt.Println("Consumer has error receiving message:", err)
+			log.LogMessage("ERROR", fmt.Sprintf("Consumer has error receiving message: %v", err))
 			return
 		}
 
-		fmt.Println("Consumer received message:", string(mes.Payload))
+		log.LogMessage("INFO", "Consumer received message: "+string(mes.Payload))
 	}
 }
