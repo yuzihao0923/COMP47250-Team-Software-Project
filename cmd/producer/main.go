@@ -49,6 +49,7 @@ func main() {
 }
 
 package main
+package producer
 
 import (
 	"COMP47250-Team-Software-Project/internal/message"
