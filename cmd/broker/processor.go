@@ -1,4 +1,3 @@
-
 package broker
 
 import (
@@ -9,15 +8,16 @@ import (
 
 type Processor struct {
 	Conn net.Conn
+	Tr   *network.Transport
 }
 
 func (p *Processor) brokerProcessMes() (err error) {
-	tr := &network.Transport{
+	p.Tr = &network.Transport{
 		Conn: p.Conn,
 	}
 
 	for {
-		mes, err := tr.ReceiveMessage(tr.Conn)
+		mes, err := p.Tr.ReceiveMessage(p.Tr.Conn)
 		if err != nil {
 			if err.Error() == "EOF" {
 				fmt.Println("Client closed the connection")
@@ -60,7 +60,7 @@ func (p *Processor) removeConsumer(conn net.Conn) {
 			break
 		}
 	}
-	mes, err := tr.ReceiveMessage(tr.Conn)
+	mes, err := p.Tr.ReceiveMessage(p.Tr.Conn)
 	if err != nil {
 		fmt.Println("Broker can not receive message successfully!!")
 		return
@@ -71,6 +71,4 @@ func (p *Processor) removeConsumer(conn net.Conn) {
 	// fmt.Println("ID: ", mes.ID)
 	// fmt.Println("Timestamp: ", mes.Timestamp)
 	// fmt.Println("Type: ", mes.Type)
-
-	return
 }
