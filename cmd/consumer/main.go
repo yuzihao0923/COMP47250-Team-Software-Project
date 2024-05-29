@@ -1,4 +1,4 @@
-package main
+package consumer
 
 import (
 	"COMP47250-Team-Software-Project/internal/network"
@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-func main() {
+func StartConsumer() {
 	conn, err := net.Dial("tcp", "localhost:8889")
 	if err != nil {
 		fmt.Println("Error connecting to broker:", err)
