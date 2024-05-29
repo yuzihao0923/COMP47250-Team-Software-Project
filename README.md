@@ -45,6 +45,12 @@ Golang : 1.22.3linux/amd64      link: https://go.dev/dl/go1.22.3.linux-amd64.tar
 Redis : redis-server 6.0.16    link: https://download.redis.io/releases/redis-6.0.16.tar.gz
 **********************************************************************************************
 
+
+
+
+
+
+**********************************************************************************************
 After installing Go and Redis, build the project named "COMP47250-Team-Software-Project". 
 
 ~$cd COMP47250-Team-Software-Project
@@ -52,6 +58,11 @@ After installing Go and Redis, build the project named "COMP47250-Team-Software-
 ~/MQ$go mod init COMP47250-Team-Software-Project         // This command will create "go.mod" file and 
                             //this file is used to manage the libraries used in this project
 **********************************************************************************************
+
+
+
+**********************************************************************************************
+
 ```
 /distributed-queue-system
 |-- cmd
@@ -98,3 +109,11 @@ The configs directory is used to store configuration files for various environme
 The scripts directory contains scripts, such as deployment or database migration scripts.
 
 The tests directory contains all the test code, which may include unit tests and integration tests.
+
+
+## How to Run
+```bash
+go run main.go   
+```
+Run command above on ternimal in the root folder.
+

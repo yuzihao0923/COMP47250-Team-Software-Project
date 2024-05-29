@@ -1,4 +1,4 @@
-package main
+package producer
 
 import (
 	"COMP47250-Team-Software-Project/internal/message"
@@ -16,7 +16,7 @@ import (
 *
 */
 
-func main() {
+func StartProducer() {
 
 	fmt.Println("Hi, I am producer!!!")
 
@@ -47,3 +47,4 @@ func main() {
 	tr.SendMessage(conn, mes)
 
 }
+
