@@ -15,8 +15,6 @@ func main() {
 	// Start broker
 	wg.Add(1)
 	go func() {
-		fmt.Print("**************************************\n")
-		fmt.Print("Starting broker...")
 		defer wg.Done()
 		broker.StartBroker()
 	}()
@@ -27,8 +25,6 @@ func main() {
 	// start consumer
 	wg.Add(1)
 	go func() {
-		fmt.Print("**************************************\n")
-		fmt.Print("Starting consumer...")
 		defer wg.Done()
 		consumer.StartConsumer()
 	}()
@@ -39,11 +35,8 @@ func main() {
 	// Start producer
 	wg.Add(1)
 	go func() {
-		fmt.Print("**************************************\n")
-		fmt.Print("Starting producer...")
 		defer wg.Done()
 		producer.StartProducer()
-		fmt.Print("**************************************\n")
 	}()
 
 	// Waiting for all goroutines to finish
