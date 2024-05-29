@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/redis"
 	"fmt"
 	"net"
@@ -19,32 +20,31 @@ func goprocess(conn net.Conn) {
 
 	err := processor.brokerProcessMes()
 	if err != nil {
-		fmt.Println("Processor error:", err)
+		log.LogMessage("ERROR", fmt.Sprintf("Processor error: %v", err))
 	}
 }
 
 func StartBroker() {
-	//	Init redis client(Rdb)
+	log.LogMessage("INFO", "Starting broker...")
+
+	// Init redis client (Rdb)
 	redis.Initialize("localhost:6379", "", 0)
 
-	// Listen port 8889
-	fmt.Println("Broker listen to port 8889")
-	listen, err := net.Listen("tcp", "localhost:8889")
+	// Listen on port 8889
+	log.LogMessage("INFO", "Broker listen on port 8889")
+	listen, err := net.Listen("tcp", "0.0.0.0:8889")
 	if err != nil {
-		fmt.Println("Broker listen err= ", err)
+		log.LogMessage("ERROR", fmt.Sprintf("Broker listen error: %v", err))
 		return
 	}
 	defer listen.Close()
 
 	for {
-		// fmt.Println("Waiting for connections from clients")
 		conn, err := listen.Accept()
 		if err != nil {
-			fmt.Println("Broker listen.Accept() error:", err)
+			log.LogMessage("ERROR", fmt.Sprintf("Broker listen.Accept() error: %v", err))
 			continue
 		}
-
-		fmt.Println("Successfully accepted connection from client")
 
 		// Register the new consumer
 		consumersMutex.Lock()

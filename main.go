@@ -1,27 +1,46 @@
 package main
 
 import (
-	"fmt"
-	"time"
-
 	"COMP47250-Team-Software-Project/cmd/broker"
+	"COMP47250-Team-Software-Project/cmd/consumer"
 	"COMP47250-Team-Software-Project/cmd/producer"
+	"fmt"
+	"sync"
+	"time"
 )
 
 func main() {
-	// Start the broker in a goroutine
+	var wg sync.WaitGroup
+
+	// Start broker
+	wg.Add(1)
 	go func() {
-		fmt.Println("Starting broker...")
+		defer wg.Done()
 		broker.StartBroker()
 	}()
 
-	// Wait a bit to ensure the broker is up and running
+	// Waiting for broker to connect
 	time.Sleep(2 * time.Second)
 
-	// Start the producer
-	fmt.Println("Starting producer...")
-	producer.StartProducer()
+	// start consumer
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		consumer.StartConsumer()
+	}()
 
-	// Keep the main function running to allow broker and producer to communicate
-	select {}
+	// Waiting for consumer to connect
+	time.Sleep(2 * time.Second)
+
+	// Start producer
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		producer.StartProducer()
+	}()
+
+	// Waiting for all goroutines to finish
+	wg.Wait()
+
+	fmt.Println("All services have been started and executed.")
 }

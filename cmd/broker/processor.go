@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/network"
 	"fmt"
 	"net"
@@ -8,19 +9,18 @@ import (
 
 type Processor struct {
 	Conn net.Conn
-	Tr   *network.Transport
 }
 
 func (p *Processor) brokerProcessMes() (err error) {
-	p.Tr = &network.Transport{
+	tr := &network.Transport{
 		Conn: p.Conn,
 	}
 
 	for {
-		mes, err := p.Tr.ReceiveMessage(p.Tr.Conn)
+		mes, err := tr.ReceiveMessage(tr.Conn)
 		if err != nil {
 			if err.Error() == "EOF" {
-				fmt.Println("Client closed the connection")
+				log.LogMessage("INFO", "Client closed the connection")
 				p.removeConsumer(p.Conn)
 				return nil
 			}
@@ -28,7 +28,7 @@ func (p *Processor) brokerProcessMes() (err error) {
 			return err
 		}
 
-		fmt.Println("Broker received a message: ", mes.Payload)
+		log.LogMessage("INFO", "Broker received a message: "+string(mes.Payload))
 
 		// Broadcast the message to all consumers
 		consumersMutex.Lock()
@@ -39,7 +39,8 @@ func (p *Processor) brokerProcessMes() (err error) {
 			}
 			err := tr.SendMessage(consumer, mes)
 			if err != nil {
-				fmt.Printf("Failed to send message to consumer: %v\n", err)
+				// fmt.Printf("Failed to send message to consumer: %v\n", err)
+				log.LogMessage("ERROR", fmt.Sprintf("Failed to send message to consumer: %v", err))
 				consumer.Close() // Close the connection if sending fails
 			} else {
 				activeConsumers = append(activeConsumers, consumer)
@@ -60,15 +61,4 @@ func (p *Processor) removeConsumer(conn net.Conn) {
 			break
 		}
 	}
-	mes, err := p.Tr.ReceiveMessage(p.Tr.Conn)
-	if err != nil {
-		fmt.Println("Broker can not receive message successfully!!")
-		return
-	}
-
-	fmt.Println("Broker received a message: ", mes.Payload)
-	// fmt.Println("The message detail:")
-	// fmt.Println("ID: ", mes.ID)
-	// fmt.Println("Timestamp: ", mes.Timestamp)
-	// fmt.Println("Type: ", mes.Type)
 }

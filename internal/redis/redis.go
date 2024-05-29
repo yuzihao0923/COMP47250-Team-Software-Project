@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"COMP47250-Team-Software-Project/internal/log"
 	"context"
 	"fmt"
 
@@ -23,10 +24,10 @@ func Initialize(addr string, password string, db int) {
 
 	pong, err := Rdb.Ping(ctx).Result()
 	if err != nil {
-		fmt.Println("Failed to connect to Redis:", err)
+		log.LogMessage("ERROR", fmt.Sprintf("Failed to connect to Redis: %v", err))
 		return
 	}
-	fmt.Println("Redis connected:", pong)
+	log.LogMessage("INFO", "Redis connected: "+pong)
 
 	// err := rdb.Set(ctx, "key", "value", 0).Err()
 	// if err != nil {
