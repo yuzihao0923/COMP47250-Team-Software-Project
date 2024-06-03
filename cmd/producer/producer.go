@@ -6,6 +6,7 @@ import (
 	"COMP47250-Team-Software-Project/internal/network"
 	"fmt"
 	"net"
+	"time"
 )
 
 /*
@@ -19,13 +20,18 @@ import (
 func StartProducer() {
 
 	log.LogMessage("INFO", "Starting producer...")
+	var conn net.Conn
+	var err error
 
 	// Connect to the Q
-	conn, err := net.Dial("tcp", "localhost:8889")
-
-	if err != nil {
-		fmt.Println(err)
-		return
+	// Try connection, 3 times and each time waits 2 sec
+	for i := 0; i < 3; i++ {
+		conn, err = net.Dial("tcp", "localhost:8889")
+		if err == nil {
+			break
+		}
+		fmt.Println("Failed to connect, retrying...", err)
+		time.Sleep(time.Second * 2) // 等待两秒再重试
 	}
 
 	// Close conn
@@ -44,7 +50,7 @@ func StartProducer() {
 		mes := message.Message{
 			Payload: []byte(fmt.Sprintf("Hello %d", i)),
 		}
-		err := tr.SendMessage(conn, mes)
+		err := tr.SendMessage(mes)
 		if err != nil {
 			log.LogMessage("ERROR", fmt.Sprintf("Producer has error sending message %d: %v", i, err))
 			return
