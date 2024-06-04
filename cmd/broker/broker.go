@@ -18,10 +18,13 @@ func goprocess(conn net.Conn) {
 		Conn: conn,
 	}
 
+	// processor.handleConnection()
+
 	err := processor.brokerProcessMes()
 	if err != nil {
 		log.LogMessage("ERROR", fmt.Sprintf("Processor error: %v", err))
 	}
+
 }
 
 func StartBroker() {
@@ -53,5 +56,6 @@ func StartBroker() {
 
 		// Start a goroutine to keep the communication between broker and the client
 		go goprocess(conn)
+
 	}
 }

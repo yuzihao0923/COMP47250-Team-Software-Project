@@ -22,7 +22,7 @@ type Transport struct {
 */
 
 // SendMessage serializes the message and writes it to the connection
-func (tr *Transport) SendMessage(conn net.Conn, mes message.Message) error {
+func (tr *Transport) SendMessage(mes message.Message) error {
 	serializer := &serializer.JSONSerializer{}
 	data, err := serializer.Serialize(mes)
 	if err != nil {
@@ -30,7 +30,9 @@ func (tr *Transport) SendMessage(conn net.Conn, mes message.Message) error {
 		return err
 	}
 
-	_, err = conn.Write(append(data, '\n'))
+
+	_, err = tr.Conn.Write(append(data, '\n'))
+
 	if err != nil {
 		fmt.Println("Error sending message:", err)
 		return err
@@ -51,8 +53,8 @@ func (tr *Transport) SendMessage(conn net.Conn, mes message.Message) error {
 
 // ReceiveMessage reads from the connection and deserializes the message
 
-func (tr *Transport) ReceiveMessage(conn net.Conn) (message.Message, error) {
-	reader := bufio.NewReader(conn)
+func (tr *Transport) ReceiveMessage() (message.Message, error) {
+	reader := bufio.NewReader(tr.Conn)
 	Data, err := reader.ReadBytes('\n')
 	if err != nil {
 
