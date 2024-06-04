@@ -93,13 +93,13 @@ func handleConnection(mes message.Message) {
 			log.LogMessage("ERROR", fmt.Sprintf("Failed to create or check consumer group: %v", err))
 			return
 		}
-	}
-
-	// if the message type is not 'registration', the message is from producer
-	err := rsi.WriteToStream(mes)
-	if err != nil {
-		log.LogMessage("ERROR", fmt.Sprintf("Failed to write message to stream: %v", err))
-		return
+	} else {
+		// if the message type is not 'registration', the message is from producer
+		err := rsi.WriteToStream(mes)
+		if err != nil {
+			log.LogMessage("ERROR", fmt.Sprintf("Failed to write message to stream: %v", err))
+			return
+		}
 	}
 
 }
