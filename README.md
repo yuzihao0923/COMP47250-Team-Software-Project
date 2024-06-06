@@ -103,6 +103,7 @@ This cmd directory contains the code that starts the main application, usually t
 - **scripts:** contains scripts, such as deployment or database migration scripts.
 
 - **tests:** contains all the test code, which may include unit tests and integration tests.
+- **test_data:** contains fake data generation files and generation scripts
 
 
 ## How to Run
