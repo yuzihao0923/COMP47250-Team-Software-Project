@@ -85,6 +85,8 @@ go mod init COMP47250-Team-Software-Project
 |   `-- deploy.sh
 |-- tests
 |   `-- test.go
+|-- test_data
+|   `-- main.go
 |-- go.mod
 |-- go.sum
 |-- main.go
