@@ -48,7 +48,6 @@ go mod init COMP47250-Team-Software-Project
 |-- cmd
 |   |-- broker
 |   |   `-- broker.go
-|   |   `-- processor.go
 |   |-- producer
 |   |   `-- producer.go
 |   `-- consumer
@@ -63,12 +62,8 @@ go mod init COMP47250-Team-Software-Project
 |   |   `-- log.go
 |   |-- message
 |   |   `-- message.go
-|   |-- network
-|   |   `-- network.go
 |   |-- redis
 |   |   `-- redis.go
-|   |-- model
-|   |   `-- model.go
 |   `-- utils
 |       `-- ip.go
 |-- pkg
