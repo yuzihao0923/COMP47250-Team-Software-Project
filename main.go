@@ -4,6 +4,7 @@ import (
 	"COMP47250-Team-Software-Project/cmd/broker"
 	"COMP47250-Team-Software-Project/cmd/consumer"
 	"COMP47250-Team-Software-Project/cmd/producer"
+	"COMP47250-Team-Software-Project/internal/redis"
 	"fmt"
 	"sync"
 	"time"
@@ -11,6 +12,15 @@ import (
 
 func main() {
 	var wg sync.WaitGroup
+
+	// Initialize Redis and flush all data
+	redis.Initialize("localhost:6379", "", 0)
+	err := redis.FlushAll()
+	if err != nil {
+		fmt.Printf("Failed to flush Redis: %v\n", err)
+		return
+	}
+	fmt.Println("Redis database has been flushed")
 
 	// Start broker
 	wg.Add(1)
@@ -22,7 +32,7 @@ func main() {
 	// Waiting for broker to connect
 	time.Sleep(2 * time.Second)
 
-	// start consumer
+	// Start consumer
 	wg.Add(1)
 	go func() {
 		defer wg.Done()

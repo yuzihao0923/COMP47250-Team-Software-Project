@@ -4,8 +4,23 @@ import (
 	"log"
 )
 
+type logMessage struct {
+	level   string
+	message string
+}
+
+var logChannel = make(chan logMessage, 100)
+
+func init() {
+	go processLogMessages()
+}
+
+func processLogMessages() {
+	for logMsg := range logChannel {
+		log.Printf("[%s] %s\n", logMsg.level, logMsg.message)
+	}
+}
+
 func LogMessage(level string, message string) {
-	// currentTime := time.Now().Format("2006/01/02 15:04:05")
-	// timestamp := time.Now().Format(time.RFC3339)
-	log.Printf("[%s] %s\n", level, message)
+	logChannel <- logMessage{level: level, message: message}
 }
