@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	rsi          redis.RedisServiceInfo
+	rsi redis.RedisServiceInfo
 	initRedisOnce sync.Once
 )
 
