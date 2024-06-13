@@ -17,8 +17,8 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var mes message.Message
-	err := json.NewDecoder(r.Body).Decode(&mes)
+	var msg message.Message
+	err := json.NewDecoder(r.Body).Decode(&msg)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -27,7 +27,7 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 	rsi := redis.RedisServiceInfo{
 		StreamName: streamName,
 	}
-	err = rsi.WriteToStream(mes)
+	err = rsi.WriteToStream(msg)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -43,8 +43,8 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var mes message.Message
-	err := json.NewDecoder(r.Body).Decode(&mes)
+	var msg message.Message
+	err := json.NewDecoder(r.Body).Decode(&msg)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -52,7 +52,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 	rsi := redis.RedisServiceInfo{
 		StreamName: streamName,
-		GroupName:  string(mes.Payload),
+		GroupName:  string(msg.Payload),
 	}
 	err = rsi.CreateConsumerGroup()
 	if err != nil {
@@ -114,13 +114,9 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 // Producer API client functions
 
-func SendMessage(streamName, payload string) error {
-	mes := message.Message{
-		Type:    "produce",
-		Payload: []byte(payload),
-	}
+func SendMessage(streamName string, msg message.Message) error {
 
-	data, err := json.Marshal(mes)
+	data, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("error marshaling message: %v", err)
 	}
@@ -141,12 +137,12 @@ func SendMessage(streamName, payload string) error {
 // Consumer API client functions
 
 func RegisterConsumer(streamName, group string) error {
-	mes := message.Message{
+	msg := message.Message{
 		Type:    "registration",
 		Payload: []byte(group),
 	}
 
-	data, err := json.Marshal(mes)
+	data, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("error marshaling registration message: %v", err)
 	}
