@@ -6,6 +6,7 @@ import (
 	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
 	"os"
+	"time"
 )
 
 // SendMessage: send a new message to a stream (with streamName)
@@ -44,6 +45,8 @@ func StartProducer() {
 	for _, payload := range payloads {
 		SendMessage(brokerPort, "mystream", payload)
 	}
+
+	time.Sleep(time.Millisecond)
 }
 
 func main() {
