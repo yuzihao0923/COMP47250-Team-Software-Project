@@ -1,4 +1,4 @@
-package consumer
+package main
 
 import (
 	"COMP47250-Team-Software-Project/internal/api"
@@ -15,6 +15,8 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName string) {
 		log.LogMessage("ERROR", fmt.Sprintf("Consumer has error registering: %v", err))
 		return
 	}
+	log.LogMessage("INFO", "Consumer register to Broker...")
+
 }
 
 // ConsumeMessages: consumer (with consumerID) gets messages from a group (with groupName) of a stream (with streamName)
@@ -23,7 +25,8 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
 		messages, err := api.ConsumeMessages(brokerPort, streamName, groupName, consumerID)
 		if err != nil {
 			log.LogMessage("ERROR", fmt.Sprintf("Consumer has error receiving message: %v", err))
-			return
+			time.Sleep(time.Second * 1)
+			continue
 		}
 
 		for _, msg := range messages {
@@ -46,6 +49,9 @@ func StartConsumer() {
 	// register consumer group
 	RegisterConsumerGroup(brokerPort, "mystream", "mygroup")
 
-	// get messages
 	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer")
+}
+
+func main() {
+	StartConsumer()
 }

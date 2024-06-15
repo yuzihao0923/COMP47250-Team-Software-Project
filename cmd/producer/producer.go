@@ -1,4 +1,4 @@
-package producer
+package main
 
 import (
 	"COMP47250-Team-Software-Project/internal/api"
@@ -44,4 +44,8 @@ func StartProducer() {
 	for _, payload := range payloads {
 		SendMessage(brokerPort, "mystream", payload)
 	}
+}
+
+func main() {
+	StartProducer()
 }
