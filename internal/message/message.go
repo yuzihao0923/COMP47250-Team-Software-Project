@@ -5,48 +5,60 @@ import (
 )
 
 type Message struct {
-	ID        string `json:"id"`
-	Type      string `json:"type"`
-	Payload   []byte `json:"payload"`
-	Timestamp string `json:"timestamp"`
+	Type         string        `json:"type"` // Used to determine producer or consumer
+	ConsumerInfo *ConsumerInfo `json:"consumer_info,omitempty"`
+	Payload      []byte        `json:"payload,omitempty"`
+	// Timestamp string `json:"timestamp"`
+}
+
+type ConsumerInfo struct {
+	ConsumerID string `json:"consumer_id"` // It can be used for identifing different consumers in the same group
+	StreamName string `json:"stream_name"`
+	GroupName  string `json:"group_name"`
 }
 
 func (m Message) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"ID":        m.ID,
-		"Type":      m.Type,
-		"Content":   m.Payload,
-		"Timestamp": m.Timestamp, // Redis prefers strings or numbers
+	result := map[string]interface{}{
+		"Type": m.Type,
 	}
+
+	if m.ConsumerInfo != nil {
+		if m.ConsumerInfo.ConsumerID != "" {
+			result["ConsumerID"] = m.ConsumerInfo.ConsumerID
+		}
+		if m.ConsumerInfo.StreamName != "" {
+			result["StreamName"] = m.ConsumerInfo.StreamName
+		}
+		if m.ConsumerInfo.GroupName != "" {
+			result["GroupName"] = m.ConsumerInfo.GroupName
+		}
+	}
+
+	if m.Payload != nil {
+		result["Content"] = string(m.Payload)
+	}
+
+	return result
+	// return map[string]interface{}{
+	// 	"ID":        m.ID,
+	// 	"Type":      m.Type,
+	// 	"Content":   m.Payload,
+	// 	"Timestamp": m.Timestamp, // Redis prefers strings or numbers
+	// }
 }
 
 // NewMessageFromMap creates a Message struct from a map
 func NewMessageFromMap(data map[string]interface{}) (*Message, error) {
 	msg := &Message{}
 
-	// Perform security checks before using type assertions
-	if id, ok := data["ID"].(string); ok {
-		msg.ID = id
-	} else {
-		return nil, fmt.Errorf("ID missing or not a string")
-	}
-
 	if typ, ok := data["Type"].(string); ok {
 		msg.Type = typ
 	} else {
-		return nil, fmt.Errorf("type missing or not a string")
+		return nil, fmt.Errorf("Type missing or not a string")
 	}
 
-	if timestamp, ok := data["Timestamp"].(string); ok {
-		msg.Timestamp = timestamp
-	} else {
-		msg.Timestamp = ""
-	}
-
-	if payload, ok := data["Content"].(string); ok {
-		msg.Payload = []byte(payload)
-	} else {
-		return nil, fmt.Errorf("content missing or not a string")
+	if content, ok := data["Content"].(string); ok {
+		msg.Payload = []byte(content)
 	}
 
 	return msg, nil
