@@ -52,7 +52,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 
 	rsi := redis.RedisServiceInfo{
 		StreamName: streamName,
-		GroupName:  string(mes.Payload),
+		GroupName:  mes.ConsumerInfo.GroupName,
 	}
 	err = rsi.CreateConsumerGroup()
 	if err != nil {
@@ -114,18 +114,20 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 // Producer API client functions
 
-func SendMessage(streamName, payload string) error {
-	mes := message.Message{
-		Type:    "produce",
-		Payload: []byte(payload),
-	}
+func SendMessage(mes message.Message) error {
+	// mes := message.Message{
+	// 	Type:    "produce",
+	// 	Payload: []byte(payload),
+	// }
+	// mes, _ = message.NewMessageFromMap()
 
 	data, err := json.Marshal(mes)
 	if err != nil {
 		return fmt.Errorf("error marshaling message: %v", err)
 	}
+	// fmt.Printf("JSON data to be sent: %s", string(data))
 
-	resp, err := http.Post(fmt.Sprintf("http://localhost:8889/produce?stream=%s", streamName), "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post(fmt.Sprintf("http://localhost:8889/produce?stream=%s", mes.ConsumerInfo.StreamName), "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("error sending message: %v", err)
 	}
@@ -140,18 +142,18 @@ func SendMessage(streamName, payload string) error {
 
 // Consumer API client functions
 
-func RegisterConsumer(streamName, group string) error {
-	mes := message.Message{
-		Type:    "registration",
-		Payload: []byte(group),
-	}
+func RegisterConsumer(mes message.Message) error {
+	// mes := message.Message{
+	// 	Type:    "registration",
+	// 	Payload: []byte(group),
+	// }
 
 	data, err := json.Marshal(mes)
 	if err != nil {
 		return fmt.Errorf("error marshaling registration message: %v", err)
 	}
 
-	resp, err := http.Post(fmt.Sprintf("http://localhost:8889/register?stream=%s", streamName), "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post(fmt.Sprintf("http://localhost:8889/register?stream=%s", mes.ConsumerInfo.StreamName), "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("error sending registration message: %v", err)
 	}
