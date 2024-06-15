@@ -1,6 +1,7 @@
 package api
 
 import (
+	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"COMP47250-Team-Software-Project/internal/redis"
 	"bytes"
@@ -46,14 +47,23 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 // HandleRegister: Handle the register request of consumer group
 func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	streamName := r.URL.Query().Get("stream")
+	fmt.Println(streamName)
 	if streamName == "" {
 		http.Error(w, "Stream name is required", http.StatusBadRequest)
 		return
 	}
 
+	ctx := r.Context()
+	if ctx.Err() != nil {
+		http.Error(w, "Request canceled or the client closed the connection.", http.StatusBadRequest)
+		return
+	}
+
 	var msg message.Message
+
 	err := json.NewDecoder(r.Body).Decode(&msg)
 	if err != nil {
+		fmt.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -74,7 +84,41 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	// If you want to send a response body, you should do it here
+	fmt.Fprintln(w, "Consumer group created successfully")
 }
+
+// func HandleRegister(w http.ResponseWriter, r *http.Request) {
+// 	streamName := r.URL.Query().Get("stream")
+// 	if streamName == "" {
+// 		http.Error(w, "Stream name is required", http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	var msg message.Message
+// 	err := json.NewDecoder(r.Body).Decode(&msg)
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	if msg.ConsumerInfo == nil {
+// 		http.Error(w, "Consumer info is required", http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	rsi := redis.RedisServiceInfo{
+// 		StreamName: streamName,
+// 		GroupName:  msg.ConsumerInfo.GroupName,
+// 	}
+// 	err = rsi.CreateConsumerGroup()
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	w.WriteHeader(http.StatusOK)
+// }
 
 // HandleConsume: Handle comsuners' request to consume message
 func HandleConsume(w http.ResponseWriter, r *http.Request) {
@@ -103,10 +147,19 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	streams, err := rsi.ReadFromStream(ctx, consumerName)
-	if err != nil {
+
+	// If no new msg
+	if streams == nil {
+		w.WriteHeader(http.StatusNoContent)
+	} else if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 
 	var messages []message.Message
 	for _, stream := range streams {
@@ -133,7 +186,7 @@ func SendMessage(brokerPort string, msg message.Message) error {
 	if err != nil {
 		return fmt.Errorf("error marshaling message: %v", err)
 	}
-
+	// log.LogMessage("INFO", fmt.Sprintf("JSON Marshal Producer's message: %s", msg.Payload))
 	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/produce?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("error sending message: %v", err)
@@ -171,6 +224,8 @@ func RegisterConsumer(brokerPort, streamName, group string) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to register consumer, status code: %d", resp.StatusCode)
 	}
+
+	log.LogMessage("INFO", "Consumer successfully send register info to Broker: ")
 
 	return nil
 }

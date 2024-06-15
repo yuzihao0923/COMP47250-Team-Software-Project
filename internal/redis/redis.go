@@ -5,6 +5,7 @@ import (
 	"COMP47250-Team-Software-Project/internal/message"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -83,11 +84,15 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName st
 		Consumer: consumerName,
 		Streams:  []string{rsi.StreamName, ">"},
 		Count:    10,
-		Block:    0,
+		Block:    30 * time.Second,
 	}).Result()
 	if err != nil {
-		log.LogMessage("ERROR", fmt.Sprintf("Failed to read from stream '%s': %v", rsi.StreamName, err))
-		return nil, err
+		if err == redis.Nil {
+			return nil, nil
+		} else {
+			log.LogMessage("ERROR", fmt.Sprintf("Failed to read from stream  '%s' : %v", rsi.StreamName, err))
+			return nil, err
+		}
 	}
 	return streams, nil
 }
