@@ -5,40 +5,43 @@ import (
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
+	"os"
 )
+
+// SendMessage: send a new message to a stream (with streamName)
+func SendMessage(brokerPort, streamName string, payload []byte) {
+	msg := message.Message{
+		Type: "produce",
+		ConsumerInfo: &message.ConsumerInfo{
+			StreamName: streamName,
+		},
+		Payload: payload,
+	}
+	err := api.SendMessage(brokerPort, msg)
+	if err != nil {
+		log.LogMessage("ERROR", fmt.Sprintf("Producer has error sending message: %v", err))
+		return
+	}
+	log.LogMessage("INFO", fmt.Sprintf("Producer sent message: %s", msg.Payload))
+}
 
 func StartProducer() {
 	log.LogMessage("INFO", "Starting producer...")
 
-	// test self-defined stream name and multiple messages
-	// streamName := "mystream"
-	// messages := []string{"Hello 0", "Hello 1", "Hello 2"}
-
-	// 暂时先发3次
-	for i := 0; i < 3; i++ {
-		mes := message.Message{
-			Type: "producer",
-			ConsumerInfo: &message.ConsumerInfo{
-				ConsumerID: "",
-				StreamName: "mystream",
-				GroupName:  "",
-			},
-			Payload: []byte(fmt.Sprintf("Hello %d", i)),
-		}
-		err := api.SendMessage(mes)
-		if err != nil {
-			log.LogMessage("ERROR", fmt.Sprintf("Producer has error sending message: %v", err))
-			return
-		}
-		log.LogMessage("INFO", fmt.Sprintf("Producer sent message: %s", mes.Payload))
+	brokerPort := os.Getenv("BROKER_PORT")
+	if brokerPort == "" {
+		brokerPort = "8080" // default port
 	}
 
-	// for _, msg := range messages {
-	// 	err := api.SendMessage(streamName, msg)
-	// 	if err != nil {
-	// 		log.LogMessage("ERROR", fmt.Sprintf("Producer has error sending message: %v", err))
-	// 		return
-	// 	}
-	// 	log.LogMessage("INFO", fmt.Sprintf("Producer sent message: %s", msg))
-	// }
+	// payloads for test
+	payloads := [][]byte{
+		[]byte("Hello 0"),
+		[]byte("Hello 1"),
+		[]byte("Hello 2"),
+	}
+
+	// send all payload to the stream (with streamName)
+	for _, payload := range payloads {
+		SendMessage(brokerPort, "mystream", payload)
+	}
 }
