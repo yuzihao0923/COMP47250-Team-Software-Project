@@ -7,28 +7,34 @@ import (
 	"fmt"
 )
 
-func SetMessage(payload string) message.Message {
+// SetMessage: set new message's stream name and payload
+func SendMessage(streamName string, payload []byte){
 	msg := message.Message{
-		Type:    "produce",
-		Payload: []byte(payload),
+		Type: "produce",
+		ConsumerInfo: &message.ConsumerInfo{
+			StreamName: streamName,
+		},
+		Payload: payload,
 	}
-	return msg
+	err := api.SendMessage(msg)
+	if err != nil {
+		log.LogMessage("ERROR", fmt.Sprintf("Producer has error sending message: %v", err))
+		return
+	}
+	log.LogMessage("INFO", fmt.Sprintf("Producer sent message: %s", msg.Payload))
 }
 
 func StartProducer() {
 	log.LogMessage("INFO", "Starting producer...")
 
-	// test self-defined stream name and multiple messages
-	streamName := "mystream"
-	payloads := []string{"Hello 0", "Hello 1", "Hello 2"}
+	// test
+	payloads := [][]byte{
+		[]byte("Hello 0"),
+		[]byte("Hello 1"),
+		[]byte("Hello 2"),
+	}
 
 	for _, payload := range payloads {
-		msg := SetMessage(payload)
-		err := api.SendMessage(streamName, msg)
-		if err != nil {
-			log.LogMessage("ERROR", fmt.Sprintf("Producer has error sending message: %v", err))
-			return
-		}
-		log.LogMessage("INFO", fmt.Sprintf("Producer sent message: %s", msg))
+		SendMessage("mystream", payload)
 	}
 }

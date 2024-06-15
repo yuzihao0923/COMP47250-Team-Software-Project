@@ -10,6 +10,7 @@ import (
 	"net/http"
 )
 
+// HandleProduce: Handle the request of produecer sending message
 func HandleProduce(w http.ResponseWriter, r *http.Request) {
 	streamName := r.URL.Query().Get("stream")
 	if streamName == "" {
@@ -24,6 +25,13 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 确保流名称一致
+	if msg.ConsumerInfo == nil || msg.ConsumerInfo.StreamName == "" {
+		msg.ConsumerInfo = &message.ConsumerInfo{
+			StreamName: streamName,
+		}
+	}
+
 	rsi := redis.RedisServiceInfo{
 		StreamName: streamName,
 	}
@@ -36,6 +44,7 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// HandleRegister: Handle the register request of consumer group
 func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	streamName := r.URL.Query().Get("stream")
 	if streamName == "" {
@@ -50,9 +59,14 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if msg.ConsumerInfo == nil {
+		http.Error(w, "Consumer info is required", http.StatusBadRequest)
+		return
+	}
+
 	rsi := redis.RedisServiceInfo{
 		StreamName: streamName,
-		GroupName:  string(msg.Payload),
+		GroupName:  msg.ConsumerInfo.GroupName,
 	}
 	err = rsi.CreateConsumerGroup()
 	if err != nil {
@@ -63,6 +77,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// HandleConsume: Handle comsuners' request to consume message
 func HandleConsume(w http.ResponseWriter, r *http.Request) {
 	streamName := r.URL.Query().Get("stream")
 	if streamName == "" {
@@ -112,10 +127,9 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Producer API client functions
-
-func SendMessage(streamName string, msg message.Message) error {
-
+// SendMessage: Send message to broker
+func SendMessage(msg message.Message) error {
+	streamName := msg.ConsumerInfo.StreamName
 	data, err := json.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("error marshaling message: %v", err)
@@ -134,12 +148,14 @@ func SendMessage(streamName string, msg message.Message) error {
 	return nil
 }
 
-// Consumer API client functions
-
+// RegisterConsumer: Send request of registering consumer to API
 func RegisterConsumer(streamName, group string) error {
 	msg := message.Message{
-		Type:    "registration",
-		Payload: []byte(group),
+		Type: "registration",
+		ConsumerInfo: &message.ConsumerInfo{
+			StreamName: streamName,
+			GroupName:  group,
+		},
 	}
 
 	data, err := json.Marshal(msg)
@@ -160,6 +176,7 @@ func RegisterConsumer(streamName, group string) error {
 	return nil
 }
 
+// ConsumeMessages: Send message request to API
 func ConsumeMessages(streamName, groupName, consumerName string) ([]message.Message, error) {
 	resp, err := http.Get(fmt.Sprintf("http://localhost:8889/consume?stream=%s&group=%s&consumer=%s", streamName, groupName, consumerName))
 	if err != nil {
