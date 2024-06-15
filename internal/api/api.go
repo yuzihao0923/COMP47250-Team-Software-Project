@@ -25,7 +25,6 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 确保流名称一致
 	if msg.ConsumerInfo == nil || msg.ConsumerInfo.StreamName == "" {
 		msg.ConsumerInfo = &message.ConsumerInfo{
 			StreamName: streamName,

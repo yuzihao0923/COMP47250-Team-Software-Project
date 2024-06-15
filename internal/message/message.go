@@ -54,7 +54,7 @@ func NewMessageFromMap(data map[string]interface{}) (*Message, error) {
 	if typ, ok := data["Type"].(string); ok {
 		msg.Type = typ
 	} else {
-		return nil, fmt.Errorf("Type missing or not a string")
+		return nil, fmt.Errorf("type missing or not a string")
 	}
 
 	if content, ok := data["Content"].(string); ok {
