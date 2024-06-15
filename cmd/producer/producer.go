@@ -5,10 +5,11 @@ import (
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
+	"os"
 )
 
-// SetMessage: set new message's stream name and payload
-func SendMessage(streamName string, payload []byte){
+// SendMessage: send a new message to a stream (with streamName)
+func SendMessage(brokerPort, streamName string, payload []byte) {
 	msg := message.Message{
 		Type: "produce",
 		ConsumerInfo: &message.ConsumerInfo{
@@ -16,7 +17,7 @@ func SendMessage(streamName string, payload []byte){
 		},
 		Payload: payload,
 	}
-	err := api.SendMessage(msg)
+	err := api.SendMessage(brokerPort, msg)
 	if err != nil {
 		log.LogMessage("ERROR", fmt.Sprintf("Producer has error sending message: %v", err))
 		return
@@ -27,14 +28,20 @@ func SendMessage(streamName string, payload []byte){
 func StartProducer() {
 	log.LogMessage("INFO", "Starting producer...")
 
-	// test
+	brokerPort := os.Getenv("BROKER_PORT")
+	if brokerPort == "" {
+		brokerPort = "8080" // default port
+	}
+
+	// payloads for test
 	payloads := [][]byte{
 		[]byte("Hello 0"),
 		[]byte("Hello 1"),
 		[]byte("Hello 2"),
 	}
 
+	// send all payload to the stream (with streamName)
 	for _, payload := range payloads {
-		SendMessage("mystream", payload)
+		SendMessage(brokerPort, "mystream", payload)
 	}
 }

@@ -3,41 +3,32 @@ package consumer
 import (
 	"COMP47250-Team-Software-Project/internal/api"
 	"COMP47250-Team-Software-Project/internal/log"
-	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
+	"os"
 	"time"
 )
 
-// use api to register a consumer group
-func RegisterConsumerGroup(streamName, groupName string) {
-	err := api.RegisterConsumer(streamName, groupName)
+// RegisterConsumerGroup: use api to register a consumer group (with groupName) in stream (with streamName)
+func RegisterConsumerGroup(brokerPort, streamName, groupName string) {
+	err := api.RegisterConsumer(brokerPort, streamName, groupName)
 	if err != nil {
 		log.LogMessage("ERROR", fmt.Sprintf("Consumer has error registering: %v", err))
 		return
 	}
 }
 
-// consumer(consumerID) gets messages from a group of a stream
-func ConsumeMessages(consumerID, streamName, groupName string) {
-	msg := message.Message{
-		Type: "consumer",
-		ConsumerInfo: &message.ConsumerInfo{
-			ConsumerID: "myconsumer",
-			StreamName: "mystream",
-			GroupName:  "mygroup",
-		},
-		Payload: []byte(""),
-	}
+// ConsumeMessages: consumer (with consumerID) gets messages from a group (with groupName) of a stream (with streamName)
+func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
 	for {
-		messages, err := api.ConsumeMessages(msg.ConsumerInfo.StreamName, msg.ConsumerInfo.GroupName, msg.ConsumerInfo.ConsumerID)
+		messages, err := api.ConsumeMessages(brokerPort, streamName, groupName, consumerID)
 		if err != nil {
 			log.LogMessage("ERROR", fmt.Sprintf("Consumer has error receiving message: %v", err))
 			return
 		}
 
-		for _, mes := range messages {
+		for _, msg := range messages {
 			time.Sleep(time.Millisecond) // insure the order of log between "producer send" & "consumer receive"
-			log.LogMessage("INFO", "Consumer received message: "+string(mes.Payload))
+			log.LogMessage("INFO", "Consumer received message: "+string(msg.Payload))
 		}
 
 		time.Sleep(time.Second * 1)
@@ -47,9 +38,14 @@ func ConsumeMessages(consumerID, streamName, groupName string) {
 func StartConsumer() {
 	log.LogMessage("INFO", "Starting consumer...")
 
+	brokerPort := os.Getenv("BROKER_PORT")
+	if brokerPort == "" {
+		brokerPort = "8080" // default port
+	}
+
 	// register consumer group
-	RegisterConsumerGroup("mystream", "mygroup")
+	RegisterConsumerGroup(brokerPort, "mystream", "mygroup")
 
 	// get messages
-	ConsumeMessages("myconsumer", "mystream", "mygroup")
+	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer")
 }
