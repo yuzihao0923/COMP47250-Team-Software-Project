@@ -20,3 +20,8 @@ func (s *JSONSerializer) SerializeToWriter(data interface{}, w io.Writer) error 
 	encoder := json.NewEncoder(w)
 	return encoder.Encode(data)
 }
+
+func (s *JSONSerializer) DeserializeFromReader(r io.Reader, v interface{}) error {
+	decoder := json.NewDecoder(r)
+	return decoder.Decode(v)
+}

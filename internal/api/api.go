@@ -6,7 +6,6 @@ import (
 	"COMP47250-Team-Software-Project/internal/redis"
 	"COMP47250-Team-Software-Project/pkg/serializer"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,7 +27,7 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var msg message.Message
-	err := json.NewDecoder(r.Body).Decode(&msg)
+	err := jsonSerializer.DeserializeFromReader(r.Body, &msg)
 	if err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, err)
 		return
@@ -68,8 +67,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var msg message.Message
-
-	err := json.NewDecoder(r.Body).Decode(&msg)
+	err := jsonSerializer.DeserializeFromReader(r.Body, &msg)
 	if err != nil {
 		fmt.Println(err.Error())
 		writeErrorResponse(w, http.StatusBadRequest, err)
