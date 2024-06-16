@@ -50,14 +50,28 @@ func GetClient() *redis.Client {
 // Create Consumer Group
 func (rsi *RedisServiceInfo) CreateConsumerGroup() error {
 	ctx := context.Background()
-	// Try to create consumer groups directly, creating streams automatically (if needed)
-	_, err := Rdb.XGroupCreateMkStream(ctx, rsi.StreamName, rsi.GroupName, "$").Result()
+	// Check if the consumer group already exists
+	groups, err := Rdb.XInfoGroups(ctx, rsi.StreamName).Result()
 	if err != nil {
-		log.LogMessage("ERROR", fmt.Sprintf("Failed to create consumer group '%s' on stream '%s': %v", rsi.GroupName, rsi.StreamName, err))
-		return err
+		// Try to create consumer groups directly, creating streams automatically (if needed)
+		_, err = Rdb.XGroupCreateMkStream(ctx, rsi.StreamName, rsi.GroupName, "$").Result()
+		if err != nil {
+			log.LogMessage("ERROR", fmt.Sprintf("Failed to create consumer group '%s' on stream '%s': %v", rsi.GroupName, rsi.StreamName, err))
+			return err
+		}
+
+		log.LogMessage("INFO", fmt.Sprintf("Consumer group '%s' created successfully on stream '%s'", rsi.GroupName, rsi.StreamName))
+		return nil
 	}
 
-	log.LogMessage("INFO", fmt.Sprintf("Consumer group '%s' created successfully on stream '%s'", rsi.GroupName, rsi.StreamName))
+	// Check if the group already exists
+	for _, group := range groups {
+		if group.Name == rsi.GroupName {
+			log.LogMessage("INFO", fmt.Sprintf("Consumer group '%s' already exists on stream '%s'", rsi.GroupName, rsi.StreamName))
+			return nil
+		}
+	}
+
 	return nil
 }
 
