@@ -14,6 +14,7 @@ import (
 func StartBroker() {
 
 	redis.Initialize("localhost:6379", "", 0)
+	// redis.Initialize("redis1:6379", "", 0)
 
 	port := os.Getenv("BROKER_PORT")
 	if port == "" {

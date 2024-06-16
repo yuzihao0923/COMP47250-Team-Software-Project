@@ -103,7 +103,18 @@ This cmd directory contains the code that starts the main application, usually t
 
 ## How to Run
 ```bash
-go run main.go   
+docker-compose up --build 
 ```
 Run command above on ternimal in the root folder.
+
+
+docker network create redis --subnet 172.38.0.0/16
+cluster nodes
+- a7a44b8161dadf23871254bfabeb9bfc5b3870e1 172.38.0.12:6379@16379 master - 0 1718564344000 2 connected 5461-10922
+- 4ab16e0ee8bfd4f0e7cafdfbbbee86a4846dca16 172.38.0.13:6379@16379 master - 0 1718564344537 3 connected 10923-16383
+- 49502ad45e6b877a04ef77d72545504045c3684a 172.38.0.15:6379@16379 slave - 20b1e40d5f234b5d41012acc21ff896a9761f04b 0 1718564344436 5 connected
+- 238f7ae0da1362e6b7d8d38e02fafbee0de62389 172.38.0.14:6379@16379 slave 4ab16e0ee8bfd4f0e7cafdfbbbee86a4846dca16 0 1718564343433 4 connected
+- 20b1e40d5f234b5d41012acc21ff896a9761f04b 172.38.0.11:6379@16379 myself,master - 0 1718564342000 1 connected 0-5460
+- e381dd355e98a297661a4d31cc9db8baf20cbca1 172.38.0.16:6379@16379 slave a7a44b8161dadf23871254bfabeb9bfc5b3870e1 0 1718564342429 6 connected
+
 

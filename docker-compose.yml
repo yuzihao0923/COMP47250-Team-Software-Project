@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  redis1:
+    image: redis:5.0.9-alpine3.11
+    command: redis-server --port 6379
+    networks:
+      - redis
+
+  redis2:
+    image: redis:5.0.9-alpine3.11
+    command: redis-server --port 6379
+    networks:
+      - redis
+
+  redis3:
+    image: redis:5.0.9-alpine3.11
+    command: redis-server --port 6379
+    networks:
+      - redis
+
+  redis4:
+    image: redis:5.0.9-alpine3.11
+    command: redis-server --port 6379
+    networks:
+      - redis
+
+  redis5:
+    image: redis:5.0.9-alpine3.11
+    command: redis-server --port 6379
+    networks:
+      - redis
+
+  redis6:
+    image: redis:5.0.9-alpine3.11
+    command: redis-server --port 6379
+    networks:
+      - redis
+
+  broker:
+    build: .
+    command: ./broker
+    depends_on:
+      - redis1
+      - redis2
+      - redis3
+      - redis4
+      - redis5
+      - redis6
+    networks:
+      - redis
+
+  consumer:
+    build: .
+    command: ./consumer
+    depends_on:
+      - broker
+    networks:
+      - redis
+
+  producer:
+    build: .
+    command: ./producer
+    depends_on:
+      - broker
+    networks:
+      - redis
+
+networks:
+  redis:
+    external: true
+

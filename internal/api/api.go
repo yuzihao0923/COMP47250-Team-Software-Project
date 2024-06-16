@@ -166,6 +166,8 @@ func SendMessage(brokerPort string, msg message.Message) error {
 	}
 
 	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/produce?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
+	// resp, err := http.Post(fmt.Sprintf("http://broker:%s/produce?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
+
 	if err != nil {
 		return fmt.Errorf("error sending message: %v", err)
 	}
@@ -194,6 +196,8 @@ func RegisterConsumer(brokerPort, streamName, group string) error {
 	}
 
 	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/register?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
+	// resp, err := http.Post(fmt.Sprintf("http://broker:%s/register?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
+
 	if err != nil {
 		return fmt.Errorf("error sending registration message: %v", err)
 	}
@@ -209,6 +213,7 @@ func RegisterConsumer(brokerPort, streamName, group string) error {
 
 // ConsumeMessages: Send message request to API
 func ConsumeMessages(brokerPort, streamName, groupName, consumerName string) ([]message.Message, error) {
+	// resp, err := http.Get(fmt.Sprintf("http://broker:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName))
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName))
 	if err != nil {
 		return nil, fmt.Errorf("error receiving messages: %v", err)
