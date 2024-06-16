@@ -16,7 +16,6 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName string) {
 		return
 	}
 	log.LogMessage("INFO", "Consumer register to Broker...")
-
 }
 
 // ConsumeMessages: consumer (with consumerID) gets messages from a group (with groupName) of a stream (with streamName)
@@ -24,9 +23,15 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
 	for {
 		messages, err := api.ConsumeMessages(brokerPort, streamName, groupName, consumerID)
 		if err != nil {
-			log.LogMessage("ERROR", fmt.Sprintf("Consumer has error receiving message: %v", err))
-			time.Sleep(time.Second * 1)
-			continue
+			if err.Error() == "no new messages" {
+				log.LogMessage("INFO", "No new messages, retrying...")
+				time.Sleep(time.Second * 1)
+				continue
+			} else {
+				log.LogMessage("ERROR", fmt.Sprintf("Consumer has error receiving message: %v", err))
+				time.Sleep(time.Second * 1)
+				continue
+			}
 		}
 
 		for _, msg := range messages {
