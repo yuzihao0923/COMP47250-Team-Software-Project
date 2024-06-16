@@ -6,6 +6,8 @@ import (
 	"COMP47250-Team-Software-Project/internal/redis"
 	"COMP47250-Team-Software-Project/pkg/serializer"
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -120,9 +122,15 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	streams, err := rsi.ReadFromStream(ctx, consumerName)
+
 	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, err)
-		return
+		if errors.Is(err, context.Canceled) {
+			log.LogMessage("WARNNING", fmt.Sprintf("Consumer existed from  '%s' : %v", rsi.StreamName, err))
+			return
+		} else {
+			writeErrorResponse(w, http.StatusInternalServerError, err)
+			return
+		}
 	}
 
 	if len(streams) == 0 {
