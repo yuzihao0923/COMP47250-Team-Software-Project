@@ -92,7 +92,6 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	log.LogInfo(fmt.Sprintf("Consumer group '%s' registered for stream: %s", msg.ConsumerInfo.GroupName, streamName))
 }
 
 // HandleConsume: Handle consumers' request to consume message
