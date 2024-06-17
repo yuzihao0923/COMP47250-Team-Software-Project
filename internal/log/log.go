@@ -24,3 +24,15 @@ func processLogMessages() {
 func LogMessage(level string, message string) {
 	logChannel <- logMessage{level: level, message: message}
 }
+
+func LogError(err error) {
+	LogMessage("ERROR", err.Error())
+}
+
+func LogInfo(message string) {
+	LogMessage("INFO", message)
+}
+
+func LogWarning(message string) {
+	LogMessage("WARNING", message)
+}

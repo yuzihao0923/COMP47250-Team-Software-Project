@@ -16,7 +16,7 @@ import (
 var jsonSerializer = &serializer.JSONSerializer{}
 
 func writeErrorResponse(w http.ResponseWriter, statusCode int, err error) {
-	log.LogMessage("ERROR", err.Error())
+	log.LogError(err)
 	http.Error(w, err.Error(), statusCode)
 }
 
@@ -92,7 +92,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "Consumer group created successfully")
+	log.LogInfo(fmt.Sprintf("Consumer group '%s' registered for stream: %s", msg.ConsumerInfo.GroupName, streamName))
 }
 
 // HandleConsume: Handle consumers' request to consume message
@@ -125,7 +125,7 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			log.LogMessage("WARNNING", fmt.Sprintf("Consumer existed from  '%s' : %v", rsi.StreamName, err))
+			log.LogWarning(fmt.Sprintf("Consumer exited from stream '%s': %v", rsi.StreamName, err))
 			return
 		} else {
 			writeErrorResponse(w, http.StatusInternalServerError, err)
@@ -207,7 +207,7 @@ func RegisterConsumer(brokerPort, streamName, group string) error {
 		return fmt.Errorf("failed to register consumer, status code: %d", resp.StatusCode)
 	}
 
-	log.LogMessage("INFO", fmt.Sprintf("Consumer group '%s' registered for stream: %s", group, streamName))
+	log.LogInfo(fmt.Sprintf("Consumer group '%s' registered for stream: %s", group, streamName))
 	return nil
 }
 
@@ -237,5 +237,6 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerName string) ([]
 		return nil, fmt.Errorf("error deserializing response body: %v", err)
 	}
 
+	log.LogInfo(fmt.Sprintf("Messages consumed from broker: %d messages", len(messages)))
 	return messages, nil
 }
