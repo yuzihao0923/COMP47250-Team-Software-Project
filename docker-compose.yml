@@ -1,4 +1,93 @@
-version: '3.8'
+# services:
+#   redis1:
+#     image: redis:latest
+#     command: redis-server --port 6379
+#     networks:
+#       - redis-network
+#     ports:
+#       - "6379:6379"
+
+#   redis2:
+#     image: redis:latest
+#     command: redis-server --port 6379
+#     networks:
+#       - redis-network
+#     ports:
+#       - "6380:6379"
+
+#   redis3:
+#     image: redis:latest
+#     command: redis-server --port 6379
+#     networks:
+#       - redis-network
+#     ports:
+#       - "6381:6379"
+
+#   redis4:
+#     image: redis:latest
+#     command: redis-server --port 6379
+#     networks:
+#       - redis-network
+#     ports:
+#       - "6382:6379"
+
+#   redis5:
+#     image: redis:latest
+#     command: redis-server --port 6379
+#     networks:
+#       - redis-network
+#     ports:
+#       - "6383:6379"
+
+#   redis6:
+#     image: redis:latest
+#     command: redis-server --port 6379
+#     networks:
+#       - redis-network
+#     ports:
+#       - "6384:6379"
+
+#   broker:
+#     build: .
+#     command: ./broker
+#     depends_on:
+#       - redis1
+#       - redis2
+#       - redis3
+#       - redis4
+#       - redis5
+#       - redis6
+#     networks:
+#       - broker-network
+#     ports:
+#       - "8080:8080"
+
+#   consumer:
+#     build: .
+#     command: ./consumer
+#     depends_on:
+#       - broker
+#     networks:
+#       - consumer-network
+#     ports:
+#       - "8081:8080"
+
+#   producer:
+#     build: .
+#     command: ./producer
+#     depends_on:
+#       - broker
+#     networks:
+#       - producer-network
+#     ports:
+#       - "8082:8080"
+
+# networks:
+#   redis-network:
+#   broker-network:
+#   consumer-network:
+#   producer-network:
+
 
 services:
   redis1:
@@ -69,4 +158,3 @@ services:
 networks:
   redis:
     external: true
-
