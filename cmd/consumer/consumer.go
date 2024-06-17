@@ -12,10 +12,10 @@ import (
 func RegisterConsumerGroup(brokerPort, streamName, groupName string) {
 	err := api.RegisterConsumer(brokerPort, streamName, groupName)
 	if err != nil {
-		log.LogMessage("ERROR", fmt.Sprintf("Consumer has error registering: %v", err))
+		log.LogError(fmt.Errorf("consumer has error registering: %v", err))
 		return
 	}
-	log.LogMessage("INFO", "Consumer register to Broker...")
+	log.LogInfo("Consumer registered to Broker...")
 }
 
 // ConsumeMessages: consumer (with consumerID) gets messages from a group (with groupName) of a stream (with streamName)
@@ -24,19 +24,19 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
 		messages, err := api.ConsumeMessages(brokerPort, streamName, groupName, consumerID)
 		if err != nil {
 			if err.Error() == "no new messages" {
-				log.LogMessage("INFO", "No new messages, retrying...")
+				log.LogWarning("No new messages, retrying...")
 				time.Sleep(time.Second * 1)
 				continue
 			} else {
-				log.LogMessage("ERROR", fmt.Sprintf("Consumer has error receiving message: %v", err))
+				log.LogError(fmt.Errorf("consumer has error receiving message: %v", err))
 				time.Sleep(time.Second * 1)
 				continue
 			}
 		}
 
 		for _, msg := range messages {
-			time.Sleep(time.Millisecond) // insure the order of log between "producer send" & "consumer receive"
-			log.LogMessage("INFO", "Consumer received message: "+string(msg.Payload))
+			time.Sleep(time.Millisecond) // ensure the order of log between "producer send" & "consumer receive"
+			log.LogInfo("Consumer received message: " + string(msg.Payload))
 		}
 
 		time.Sleep(time.Second * 1)
@@ -44,7 +44,7 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
 }
 
 func StartConsumer() {
-	log.LogMessage("INFO", "Starting consumer...")
+	log.LogInfo("Starting consumer...")
 
 	brokerPort := os.Getenv("BROKER_PORT")
 	if brokerPort == "" {
