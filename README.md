@@ -12,7 +12,7 @@
 
 ## Architecture ：
 
-<img width="100%" alt="Screen Shot 2024-05-21 at 14 21 28" src="https://github.com/yuzihao0923/COMP47250-Team-Software-Project/assets/141666207/757fa824-9865-4ff9-9a43-f9e9e99cf09d">
+<img width="640" alt="image" src="https://github.com/yuzihao0923/COMP47250-Team-Software-Project/assets/141666207/72510f33-cae5-4c24-a43d-105975da4988">
 
 ## Roles:
 - **Project Manager:** Oversees project progress, ensures deadlines are met, and coordinates team activities.
