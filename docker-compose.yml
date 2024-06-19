@@ -63,6 +63,7 @@ services:
     command: ./producer
     depends_on:
       - broker
+      - consumer
     networks:
       - redis
 

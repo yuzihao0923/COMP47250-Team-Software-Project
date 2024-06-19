@@ -5,6 +5,7 @@ import (
 	"COMP47250-Team-Software-Project/internal/message"
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -56,6 +57,10 @@ func (rsi *RedisServiceInfo) CreateConsumerGroup() error {
 		// Try to create consumer groups directly, creating streams automatically (if needed)
 		_, err = Rdb.XGroupCreateMkStream(ctx, rsi.StreamName, rsi.GroupName, "$").Result()
 		if err != nil {
+			if strings.Contains(err.Error(), "Consumer Group name already exists") {
+				log.LogMessage("WARNING", fmt.Sprintf("Consumer group '%s' already exists on stream '%s'", rsi.GroupName, rsi.StreamName))
+				return nil
+			}
 			log.LogMessage("ERROR", fmt.Sprintf("Failed to create consumer group '%s' on stream '%s': %v", rsi.GroupName, rsi.StreamName, err))
 			return err
 		}

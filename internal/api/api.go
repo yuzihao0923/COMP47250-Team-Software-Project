@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 var jsonSerializer = &serializer.JSONSerializer{}
@@ -85,10 +86,17 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 		StreamName: streamName,
 		GroupName:  msg.ConsumerInfo.GroupName,
 	}
+
 	err = rsi.CreateConsumerGroup()
 	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, err)
-		return
+		if strings.Contains(err.Error(), "Consumer Group name already exists") {
+			// log.LogWarning("Consumer Group name already exists")
+			w.WriteHeader(http.StatusOK) // Return OK status to not block the process
+			return
+		} else {
+			writeErrorResponse(w, http.StatusInternalServerError, err)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
