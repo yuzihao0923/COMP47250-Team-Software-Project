@@ -35,7 +35,9 @@ func Initialize(addr string, password string, db int) {
 		log.LogMessage("ERROR", fmt.Sprintf("Failed to connect to Redis: %v", err))
 		return
 	}
-	log.LogMessage("INFO", "Redis connected: "+pong)
+	log.LogInfo("Redis connected: " + pong)
+	FlushAll()
+	log.LogInfo("Flush all!")
 }
 
 // FlushAll flushes all data from the Redis database
@@ -114,4 +116,15 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName st
 		}
 	}
 	return streams, nil
+}
+
+// ACK calls xack to remove msg from peding list
+func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string) error {
+	_, err := Rdb.XAck(ctx, rsi.StreamName, rsi.GroupName, messageID).Result()
+	if err != nil {
+		log.LogMessage("ERROR", fmt.Sprintf("Failed to acknowledge message '%s' in stream '%s': %v", messageID, rsi.StreamName, err))
+		return err
+	}
+	log.LogMessage("INFO", fmt.Sprintf("Message '%s' acknowledged successfully in stream '%s'", messageID, rsi.StreamName))
+	return nil
 }
