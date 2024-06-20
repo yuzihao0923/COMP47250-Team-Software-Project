@@ -54,7 +54,7 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
 }
 
 func AcknowledgeMessage(brokerPort string, msg message.Message) {
-	log.LogInfo("Consumer sending ACK...")
+	// log.LogInfo("Consumer sending ACK...")
 	err := api.SendACK(brokerPort, msg)
 	if err != nil {
 		log.LogError(fmt.Errorf("consumer has error sending ACK: %v", err))
