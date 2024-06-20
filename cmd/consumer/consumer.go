@@ -3,6 +3,7 @@ package main
 import (
 	"COMP47250-Team-Software-Project/internal/api"
 	"COMP47250-Team-Software-Project/internal/log"
+	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
 	"os"
 	"time"
@@ -10,7 +11,14 @@ import (
 
 // RegisterConsumerGroup: use api to register a consumer group (with groupName) in stream (with streamName)
 func RegisterConsumerGroup(brokerPort, streamName, groupName string) {
-	err := api.RegisterConsumer(brokerPort, streamName, groupName)
+	msg := message.Message{
+		Type: "registration",
+		ConsumerInfo: &message.ConsumerInfo{
+			StreamName: streamName,
+			GroupName:  groupName,
+		},
+	}
+	err := api.RegisterConsumer(brokerPort, msg)
 	if err != nil {
 		log.LogError(fmt.Errorf("consumer has error registering: %v", err))
 		return
@@ -37,10 +45,23 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
 		for _, msg := range messages {
 			time.Sleep(time.Millisecond) // ensure the order of log between "producer send" & "consumer receive"
 			log.LogInfo("Consumer received message: " + string(msg.Payload))
+
+			AcknowledgeMessage(brokerPort, msg)
 		}
 
 		time.Sleep(time.Second * 1)
 	}
+}
+
+func AcknowledgeMessage(brokerPort string, msg message.Message) {
+	log.LogInfo("Consumer sending ACK...")
+	err := api.SendACK(brokerPort, msg)
+	if err != nil {
+		log.LogError(fmt.Errorf("consumer has error sending ACK: %v", err))
+		return
+	}
+	log.LogInfo("Consumer sending ACK successfully...")
+
 }
 
 func StartConsumer() {
@@ -55,6 +76,7 @@ func StartConsumer() {
 	RegisterConsumerGroup(brokerPort, "mystream", "mygroup")
 
 	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer")
+
 }
 
 func main() {

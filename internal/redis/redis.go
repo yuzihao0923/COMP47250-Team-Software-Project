@@ -110,3 +110,14 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName st
 	}
 	return streams, nil
 }
+
+// ACK calls xack to remove msg from peding list
+func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string) error {
+	_, err := Rdb.XAck(ctx, rsi.StreamName, rsi.GroupName, messageID).Result()
+	if err != nil {
+		log.LogMessage("ERROR", fmt.Sprintf("Failed to acknowledge message '%s' in stream '%s': %v", messageID, rsi.StreamName, err))
+		return err
+	}
+	log.LogMessage("INFO", fmt.Sprintf("Message '%s' acknowledged successfully in stream '%s'", messageID, rsi.StreamName))
+	return nil
+}
