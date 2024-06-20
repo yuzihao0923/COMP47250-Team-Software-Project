@@ -23,11 +23,6 @@ func writeErrorResponse(w http.ResponseWriter, statusCode int, err error) {
 
 // HandleProduce: Handle the request of producer sending message
 func HandleProduce(w http.ResponseWriter, r *http.Request) {
-	streamName := r.URL.Query().Get("stream")
-	if streamName == "" {
-		writeErrorResponse(w, http.StatusBadRequest, fmt.Errorf("stream name is required"))
-		return
-	}
 
 	var msg message.Message
 	err := jsonSerializer.DeserializeFromReader(r.Body, &msg)
@@ -36,14 +31,13 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if msg.ConsumerInfo == nil || msg.ConsumerInfo.StreamName == "" {
-		msg.ConsumerInfo = &message.ConsumerInfo{
-			StreamName: streamName,
-		}
+	if msg.ConsumerInfo.StreamName == "" {
+		writeErrorResponse(w, http.StatusBadRequest, fmt.Errorf("stream name is required"))
+		return
 	}
 
 	rsi := redis.RedisServiceInfo{
-		StreamName: streamName,
+		StreamName: msg.ConsumerInfo.StreamName,
 	}
 	err = rsi.WriteToStream(msg)
 	if err != nil {
@@ -56,12 +50,6 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 
 // HandleRegister: Handle the register request of consumer group
 func HandleRegister(w http.ResponseWriter, r *http.Request) {
-	streamName := r.URL.Query().Get("stream")
-	fmt.Println(streamName)
-	if streamName == "" {
-		writeErrorResponse(w, http.StatusBadRequest, fmt.Errorf("stream name is required"))
-		return
-	}
 
 	ctx := r.Context()
 	if ctx.Err() != nil {
@@ -83,7 +71,7 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rsi := redis.RedisServiceInfo{
-		StreamName: streamName,
+		StreamName: msg.ConsumerInfo.StreamName,
 		GroupName:  msg.ConsumerInfo.GroupName,
 	}
 
@@ -147,8 +135,9 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 	var messages []message.Message
 	for _, stream := range streams {
+
 		for _, mes := range stream.Messages {
-			m, err := message.NewMessageFromMap(mes.Values)
+			m, err := message.NewMessageFromMap(mes.Values, mes.ID)
 			if err != nil {
 				writeErrorResponse(w, http.StatusInternalServerError, err)
 				return
@@ -164,16 +153,60 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// HandleACK: Handle Consumers' ACK.
+func HandleACK(w http.ResponseWriter, r *http.Request) {
+
+	var msg message.Message
+	err := jsonSerializer.DeserializeFromReader(r.Body, &msg)
+	if err != nil {
+		writeErrorResponse(w, http.StatusBadRequest, err)
+		return
+	}
+
+	rsi := redis.RedisServiceInfo{
+		StreamName: msg.ConsumerInfo.StreamName,
+		GroupName:  msg.ConsumerInfo.GroupName,
+	}
+
+	msgID := msg.ID
+
+	ctx := r.Context()
+
+	err = rsi.XACK(ctx, msgID)
+	if err != nil {
+		writeErrorResponse(w, http.StatusInternalServerError, err)
+	}
+
+}
+
+// SendACK: consumer send ack to broker
+func SendACK(brokerPort string, msg message.Message) error {
+	data, err := jsonSerializer.Serialize(msg)
+	if err != nil {
+		return fmt.Errorf("error serializing message: %v", err)
+	}
+	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/ack", brokerPort), "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		return fmt.Errorf("error sending ACK: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to send ACK, status code: %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
 // SendMessage: Send message to broker
 func SendMessage(brokerPort string, msg message.Message) error {
-	streamName := msg.ConsumerInfo.StreamName
+
 	data, err := jsonSerializer.Serialize(msg)
 	if err != nil {
 		return fmt.Errorf("error serializing message: %v", err)
 	}
 
-	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/produce?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
-	// resp, err := http.Post(fmt.Sprintf("http://broker:%s/produce?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/produce", brokerPort), "application/json", bytes.NewBuffer(data))
+	//resp, err := http.Post(fmt.Sprintf("http://broker:%s/produce?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
 
 	if err != nil {
 		return fmt.Errorf("error sending message: %v", err)
@@ -188,22 +221,15 @@ func SendMessage(brokerPort string, msg message.Message) error {
 }
 
 // RegisterConsumer: Send request of registering consumer to API
-func RegisterConsumer(brokerPort, streamName, group string) error {
-	msg := message.Message{
-		Type: "registration",
-		ConsumerInfo: &message.ConsumerInfo{
-			StreamName: streamName,
-			GroupName:  group,
-		},
-	}
+func RegisterConsumer(brokerPort string, msg message.Message) error {
 
 	data, err := jsonSerializer.Serialize(msg)
 	if err != nil {
 		return fmt.Errorf("error serializing registration message: %v", err)
 	}
 
-	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/register?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
-	// resp, err := http.Post(fmt.Sprintf("http://broker:%s/register?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
+	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/register", brokerPort), "application/json", bytes.NewBuffer(data))
+	//resp, err := http.Post(fmt.Sprintf("http://broker:%s/register?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
 
 	if err != nil {
 		return fmt.Errorf("error sending registration message: %v", err)
@@ -214,13 +240,13 @@ func RegisterConsumer(brokerPort, streamName, group string) error {
 		return fmt.Errorf("failed to register consumer, status code: %d", resp.StatusCode)
 	}
 
-	log.LogInfo(fmt.Sprintf("Consumer group '%s' registered for stream: %s", group, streamName))
+	log.LogInfo(fmt.Sprintf("Consumer group '%s' registered for stream: %s", msg.ConsumerInfo.GroupName, msg.ConsumerInfo.StreamName))
 	return nil
 }
 
 // ConsumeMessages: Send message request to API
 func ConsumeMessages(brokerPort, streamName, groupName, consumerName string) ([]message.Message, error) {
-	// resp, err := http.Get(fmt.Sprintf("http://broker:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName))
+	//resp, err := http.Get(fmt.Sprintf("http://broker:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName))
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName))
 	if err != nil {
 		return nil, fmt.Errorf("error receiving messages: %v", err)

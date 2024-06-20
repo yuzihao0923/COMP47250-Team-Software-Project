@@ -5,7 +5,8 @@ import (
 )
 
 type Message struct {
-	Type         string        `json:"type"` // Used to determine producer or consumer
+	ID           string        `json:"id,omitempty"` // message id
+	Type         string        `json:"type"`         // Used to determine producer or consumer
 	ConsumerInfo *ConsumerInfo `json:"consumer_info,omitempty"`
 	Payload      []byte        `json:"payload,omitempty"`
 	// Timestamp string `json:"timestamp"`
@@ -48,17 +49,42 @@ func (m Message) ToMap() map[string]interface{} {
 }
 
 // NewMessageFromMap creates a Message struct from a map
-func NewMessageFromMap(data map[string]interface{}) (*Message, error) {
+func NewMessageFromMap(data map[string]interface{}, mesID string) (*Message, error) {
 	msg := &Message{}
+	msg.ID = mesID
 
-	if typ, ok := data["Type"].(string); ok {
-		msg.Type = typ
-	} else {
+	// Required: Type
+	typ, ok := data["Type"].(string)
+	if !ok {
 		return nil, fmt.Errorf("type missing or not a string")
 	}
+	msg.Type = typ
 
+	// Optional: Payload (Content)
 	if content, ok := data["Content"].(string); ok {
 		msg.Payload = []byte(content)
+	}
+
+	// Optional: ConsumerInfo
+	consumerInfo := ConsumerInfo{}
+	anyConsumerInfo := false // Flag to check if any consumer info is provided
+
+	if consumerID, ok := data["ConsumerID"].(string); ok && consumerID != "" {
+		consumerInfo.ConsumerID = consumerID
+		anyConsumerInfo = true
+	}
+	if streamName, ok := data["StreamName"].(string); ok && streamName != "" {
+		consumerInfo.StreamName = streamName
+		anyConsumerInfo = true
+	}
+	if groupName, ok := data["GroupName"].(string); ok && groupName != "" {
+		consumerInfo.GroupName = groupName
+		anyConsumerInfo = true
+	}
+
+	// Attach consumerInfo to msg if any consumerInfo field was provided
+	if anyConsumerInfo {
+		msg.ConsumerInfo = &consumerInfo
 	}
 
 	return msg, nil

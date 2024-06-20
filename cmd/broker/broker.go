@@ -24,7 +24,7 @@ func StartBroker() {
 	log.LogInfo("Starting broker on port " + port + "...")
 
 	// Create a goroutine pool
-	pool, _ := ants.NewPool(10)
+	pool, _ := ants.NewPool(16)
 	// go http.HandleFunc("/produce", api.HandleProduce)
 
 	registerTask := func() {
@@ -39,9 +39,14 @@ func StartBroker() {
 		http.HandleFunc("/consume", api.HandleConsume)
 	}
 
+	ackTask := func() {
+		http.HandleFunc("/ack", api.HandleACK)
+	}
+
 	pool.Submit(registerTask)
 	pool.Submit(producerTask)
 	pool.Submit(consumerTask)
+	pool.Submit(ackTask)
 
 	// go http.HandleFunc("/consume", api.HandleConsume)
 
