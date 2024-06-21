@@ -31,11 +31,8 @@ func StartProducer() {
 
 	brokerPort := os.Getenv("BROKER_PORT")
 	if brokerPort == "" {
-		brokerPort = "8080" // default port
+		brokerPort = "8080" // Default port
 	}
-
-	// Initialize BroadcastFunc for logging
-	log.BroadcastFunc = api.BroadcastMessage
 
 	token, err := api.GetJWTToken("producer", "123")
 	if err != nil {
@@ -46,7 +43,7 @@ func StartProducer() {
 	for i := 0; i < 10; i++ {
 		payload := []byte(fmt.Sprintf("Hello %d", i))
 		SendMessage(brokerPort, "mystream", payload, token)
-		time.Sleep(time.Millisecond) // slight delay to prevent overwhelming the broker
+		time.Sleep(time.Millisecond) // Slight delay to prevent overwhelming the broker
 	}
 }
 

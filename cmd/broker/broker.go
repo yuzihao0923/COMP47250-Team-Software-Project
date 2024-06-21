@@ -11,7 +11,7 @@ import (
 )
 
 func StartBroker() {
-	redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage) // init broadcast here with redis
+	redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage) // Init broadcast here with redis
 
 	port := os.Getenv("BROKER_PORT")
 	if port == "" {
@@ -20,16 +20,13 @@ func StartBroker() {
 
 	log.LogInfo("Broker", "Starting broker on port "+port+"...")
 
-	// Initialize BroadcastFunc for logging
-	log.BroadcastFunc = api.BroadcastMessage
-
 	mux := http.NewServeMux()
 	api.RegisterHandlers(mux)
 
-	// register WebSocket handler
+	// Register WebSocket handler
 	mux.HandleFunc("/ws", api.HandleConnections)
 
-	// set CORS
+	// Set CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowCredentials: true,

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// RegisterConsumerGroup: use api to register a consumer group (with groupName) in stream (with streamName)
+// RegisterConsumerGroup: use API to register a consumer group (with groupName) in a stream (with streamName)
 func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
 	msg := message.Message{
 		Type: "registration",
@@ -42,7 +42,7 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID, token string
 		}
 
 		for _, msg := range messages {
-			time.Sleep(time.Millisecond) // ensure the order of log between "producer send" & "consumer receive"
+			time.Sleep(time.Millisecond) // Ensure the order of log between "producer send" & "consumer receive"
 			log.LogInfo("Consumer", "Consumer received message: "+string(msg.Payload))
 
 			AcknowledgeMessage(brokerPort, msg, token)
@@ -66,11 +66,8 @@ func StartConsumer() {
 
 	brokerPort := os.Getenv("BROKER_PORT")
 	if brokerPort == "" {
-		brokerPort = "8080" // default port
+		brokerPort = "8080" // Default port
 	}
-
-	// Initialize BroadcastFunc for logging
-	log.BroadcastFunc = api.BroadcastMessage
 
 	token, err := api.GetJWTToken("consumer", "123")
 	if err != nil {
@@ -78,7 +75,7 @@ func StartConsumer() {
 		return
 	}
 
-	// register consumer group
+	// Register consumer group
 	RegisterConsumerGroup(brokerPort, "mystream", "mygroup", token)
 
 	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer", token)
