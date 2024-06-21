@@ -4,12 +4,13 @@ import (
 	"COMP47250-Team-Software-Project/internal/api"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
+	"fmt"
 	"os"
 	"time"
 )
 
 // RegisterConsumerGroup: use api to register a consumer group (with groupName) in stream (with streamName)
-func RegisterConsumerGroup(brokerPort, streamName, groupName string) {
+func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
 	msg := message.Message{
 		Type: "registration",
 		ConsumerInfo: &message.ConsumerInfo{
@@ -17,7 +18,7 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName string) {
 			GroupName:  groupName,
 		},
 	}
-	err := api.RegisterConsumer(brokerPort, msg)
+	err := api.RegisterConsumer(brokerPort, msg, token)
 	if err != nil {
 		log.LogError("Consumer", "consumer has error registering: "+err.Error())
 		return
@@ -25,10 +26,9 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName string) {
 	log.LogInfo("Consumer", "Consumer registered to Broker...")
 }
 
-// ConsumeMessages: consumer (with consumerID) gets messages from a group (with groupName) of a stream (with streamName)
-func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
+func ConsumeMessages(brokerPort, streamName, groupName, consumerID, token string) {
 	for {
-		messages, err := api.ConsumeMessages(brokerPort, streamName, groupName, consumerID)
+		messages, err := api.ConsumeMessages(brokerPort, streamName, groupName, consumerID, token)
 		if err != nil {
 			if err.Error() == "no new messages" {
 				log.LogWarning("Consumer", "No new messages, retrying...")
@@ -45,16 +45,15 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID string) {
 			time.Sleep(time.Millisecond) // ensure the order of log between "producer send" & "consumer receive"
 			log.LogInfo("Consumer", "Consumer received message: "+string(msg.Payload))
 
-			AcknowledgeMessage(brokerPort, msg)
+			AcknowledgeMessage(brokerPort, msg, token)
 		}
 
 		time.Sleep(time.Second * 1)
 	}
 }
 
-func AcknowledgeMessage(brokerPort string, msg message.Message) {
-	// log.LogInfo("Consumer", "Consumer sending ACK...")
-	err := api.SendACK(brokerPort, msg)
+func AcknowledgeMessage(brokerPort string, msg message.Message, token string) {
+	err := api.SendACK(brokerPort, msg, token)
 	if err != nil {
 		log.LogError("Consumer", "consumer has error sending ACK: "+err.Error())
 		return
@@ -68,13 +67,21 @@ func StartConsumer() {
 	brokerPort := os.Getenv("BROKER_PORT")
 	if brokerPort == "" {
 		brokerPort = "8080" // default port
-	}	
+	}
+
+	// Initialize BroadcastFunc for logging
+	log.BroadcastFunc = api.BroadcastMessage
+
+	token, err := api.GetJWTToken("consumer", "123")
+	if err != nil {
+		log.LogError("Consumer", fmt.Sprintf("Failed to get JWT token: %v", err))
+		return
+	}
 
 	// register consumer group
-	RegisterConsumerGroup(brokerPort, "mystream", "mygroup")
+	RegisterConsumerGroup(brokerPort, "mystream", "mygroup", token)
 
-	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer")
-
+	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer", token)
 }
 
 func main() {

@@ -11,7 +11,7 @@ import (
 )
 
 func StartBroker() {
-	redis.Initialize("localhost:6379", "", 0)
+	redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage) // init broadcast here with redis
 
 	port := os.Getenv("BROKER_PORT")
 	if port == "" {
@@ -39,12 +39,16 @@ func StartBroker() {
 
 	handler := c.Handler(mux)
 
-	log.LogInfo("Broker", "Broker listening on port "+port)
-	log.LogInfo("Broker", "Broker waiting for connections...")
-	err := http.ListenAndServe(":"+port, handler)
-	if err != nil {
-		log.LogError("Broker", "broker listen error: "+err.Error())
-	}
+	go func() {
+		log.LogInfo("Broker", "Broker listening on port "+port)
+		log.LogInfo("Broker", "Broker waiting for connections...")
+		err := http.ListenAndServe(":"+port, handler)
+		if err != nil {
+			log.LogError("Broker", "broker listen error: "+err.Error())
+		}
+	}()
+
+	select {} // Block forever
 }
 
 func main() {

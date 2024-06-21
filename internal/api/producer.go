@@ -37,8 +37,8 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 }
 
 // SendMessage: Send message to broker
-func SendMessage(brokerPort string, msg message.Message) error {
-	client := getClientWithToken() // use client with JWT token
+func SendMessage(brokerPort string, msg message.Message, token string) error {
+	client := getClientWithToken(token)
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
 	if err != nil {
