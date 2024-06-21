@@ -38,8 +38,8 @@ func HandleACK(w http.ResponseWriter, r *http.Request) {
 }
 
 // SendACK: consumer send ack to broker
-func SendACK(brokerPort string, msg message.Message) error {
-	client := getClientWithToken() // use client with JWT token
+func SendACK(brokerPort string, msg message.Message, token string) error {
+	client := getClientWithToken(token)
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
 	if err != nil {

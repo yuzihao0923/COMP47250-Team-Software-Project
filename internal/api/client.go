@@ -2,36 +2,43 @@ package api
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
+
+	"COMP47250-Team-Software-Project/pkg/serializer"
 )
 
-func getJWTToken() (string, error) {
+func GetJWTToken(username, password string) (string, error) {
 	loginURL := "http://localhost:8080/login"
 	creds := map[string]string{
-		"username": "user",
-		"password": "password",
+		"username": username,
+		"password": password,
 	}
-	jsonData, err := json.Marshal(creds)
+
+	jsonData, err := serializer.JSONSerializerInstance.Serialize(creds)
 	if err != nil {
+		fmt.Println("Error marshalling credentials:", err)
 		return "", fmt.Errorf("error marshalling credentials: %v", err)
 	}
 
+	fmt.Println("Sending login request to", loginURL)
 	resp, err := http.Post(loginURL, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
+		fmt.Println("Error sending login request:", err)
 		return "", fmt.Errorf("error sending login request: %v", err)
 	}
 	defer resp.Body.Close()
+
+	fmt.Println("Login request sent, status code:", resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("failed to login, status code: %d", resp.StatusCode)
 	}
 
 	var result map[string]string
-	err = json.NewDecoder(resp.Body).Decode(&result)
+	err = serializer.JSONSerializerInstance.DeserializeFromReader(resp.Body, &result)
 	if err != nil {
+		fmt.Println("Error decoding response:", err)
 		return "", fmt.Errorf("error decoding response: %v", err)
 	}
 
@@ -40,22 +47,11 @@ func getJWTToken() (string, error) {
 		return "", fmt.Errorf("token not found in response")
 	}
 
+	fmt.Println("Received JWT token:", token)
 	return token, nil
 }
 
-func getClientWithToken() *http.Client {
-	token := os.Getenv("JWT_TOKEN")
-	if token == "" {
-		var err error
-		token, err = getJWTToken()
-		if err != nil {
-			panic(fmt.Sprintf("Failed to get JWT token: %v", err))
-		}
-		// set env token for test
-		// should change later
-		os.Setenv("JWT_TOKEN", token)
-	}
-
+func getClientWithToken(token string) *http.Client {
 	client := &http.Client{}
 	client.Transport = &transportWithToken{token, http.DefaultTransport}
 	return client
