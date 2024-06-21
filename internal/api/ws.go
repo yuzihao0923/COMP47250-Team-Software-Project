@@ -11,7 +11,7 @@ var clients = make(map[*websocket.Conn]bool) // connected clients
 var broadcast = make(chan string)            // broadcast channel
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true // 允许所有来源的连接
+		return true // allow all imcoming source
 	},
 }
 
