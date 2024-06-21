@@ -10,7 +10,7 @@ import (
 )
 
 // SendMessage: send a new message to a stream (with streamName)
-func SendMessage(brokerPort, streamName string, payload []byte) {
+func SendMessage(brokerPort, streamName string, payload []byte, token string) {
 	msg := message.Message{
 		Type: "produce",
 		ConsumerInfo: &message.ConsumerInfo{
@@ -18,7 +18,7 @@ func SendMessage(brokerPort, streamName string, payload []byte) {
 		},
 		Payload: payload,
 	}
-	err := api.SendMessage(brokerPort, msg)
+	err := api.SendMessage(brokerPort, msg, token)
 	if err != nil {
 		log.LogError("Producer", "producer has error sending message: "+err.Error())
 		return
@@ -34,23 +34,18 @@ func StartProducer() {
 		brokerPort = "8080" // default port
 	}
 
-	// // payloads for test
-	// payloads := [][]byte{
-	// 	[]byte("Hello 0"),
-	// 	[]byte("Hello 1"),
-	// 	[]byte("Hello 2"),
-	// }
+	// Initialize BroadcastFunc for logging
+	log.BroadcastFunc = api.BroadcastMessage
 
-	// // send all payload to the stream (with streamName)
-	// for _, payload := range payloads {
-	// 	SendMessage(brokerPort, "mystream", payload)
-	// }
-	// time.Sleep(time.Millisecond)
+	token, err := api.GetJWTToken("producer", "123")
+	if err != nil {
+		log.LogError("Producer", fmt.Sprintf("Failed to get JWT token: %v", err))
+		return
+	}
 
-	// send 1000 payloads to the stream (with streamName)
 	for i := 0; i < 10; i++ {
 		payload := []byte(fmt.Sprintf("Hello %d", i))
-		SendMessage(brokerPort, "mystream", payload)
+		SendMessage(brokerPort, "mystream", payload, token)
 		time.Sleep(time.Millisecond) // slight delay to prevent overwhelming the broker
 	}
 }

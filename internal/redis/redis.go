@@ -20,7 +20,7 @@ type RedisServiceInfo struct {
 }
 
 // Init redis client
-func Initialize(addr string, password string, db int) {
+func Initialize(addr string, password string, db int, broadcastFunc func(string)) {
 	Rdb = redis.NewClient(&redis.Options{
 		Addr:         addr,     // Address and port of Redis server
 		Password:     password, // The password required to connect to the Redis server, or an empty string if no password has been set.
@@ -38,6 +38,8 @@ func Initialize(addr string, password string, db int) {
 	log.LogInfo("Redis", "Redis connected: "+pong)
 	FlushAll()
 	log.LogInfo("Redis", "Flush all!")
+
+	log.BroadcastFunc = broadcastFunc
 }
 
 // FlushAll flushes all data from the Redis database
@@ -95,6 +97,7 @@ func (rsi *RedisServiceInfo) WriteToStream(mes message.Message) error {
 		return err
 	}
 	log.LogInfo("Redis", fmt.Sprintf("Data written to stream '%s' successfully", rsi.StreamName))
+	log.LogInfo("Producer", fmt.Sprintf("Send '%s' successfully", mes.Payload))
 	return nil
 }
 
@@ -115,10 +118,17 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName st
 			return nil, err
 		}
 	}
+
+	for _, stream := range streams {
+		for _, mes := range stream.Messages {
+			log.LogInfo("Consumer", fmt.Sprintf("received: %s", mes.ID))
+		}
+	}
+
 	return streams, nil
 }
 
-// ACK calls xack to remove msg from peding list
+// ACK calls xack to remove msg from pending list
 func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string) error {
 	_, err := Rdb.XAck(ctx, rsi.StreamName, rsi.GroupName, messageID).Result()
 	if err != nil {
@@ -126,5 +136,6 @@ func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string) error {
 		return err
 	}
 	log.LogInfo("Redis", fmt.Sprintf("Message '%s' acknowledged successfully in stream '%s'", messageID, rsi.StreamName))
+	log.LogInfo("Consumer", fmt.Sprintf("acknowledged: %s", messageID))
 	return nil
 }

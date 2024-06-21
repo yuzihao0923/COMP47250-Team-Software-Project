@@ -116,8 +116,8 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 }
 
 // RegisterConsumer: Send request of registering consumer to API
-func RegisterConsumer(brokerPort string, msg message.Message) error {
-	client := getClientWithToken() // use client with JWT token
+func RegisterConsumer(brokerPort string, msg message.Message, token string) error {
+	client := getClientWithToken(token)
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
 	if err != nil {
@@ -143,8 +143,8 @@ func RegisterConsumer(brokerPort string, msg message.Message) error {
 	return nil
 }
 
-func ConsumeMessages(brokerPort, streamName, groupName, consumerName string) ([]message.Message, error) {
-	client := getClientWithToken() // use client with JWT token
+func ConsumeMessages(brokerPort, streamName, groupName, consumerName, token string) ([]message.Message, error) {
+	client := getClientWithToken(token)
 
 	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName), nil)
 	if err != nil {

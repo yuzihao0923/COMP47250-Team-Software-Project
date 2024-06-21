@@ -11,7 +11,7 @@ var clients = make(map[*websocket.Conn]bool) // connected clients
 var broadcast = make(chan string)            // broadcast channel
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true // allow all imcoming source
+		return true // allow all incoming sources
 	},
 }
 
@@ -45,6 +45,7 @@ func HandleConnections(w http.ResponseWriter, r *http.Request) {
 func handleMessages() {
 	for {
 		msg := <-broadcast
+		// log.Printf("Broadcasting message: %s", msg)
 		for client := range clients {
 			err := client.WriteJSON(msg)
 			if err != nil {
@@ -58,5 +59,6 @@ func handleMessages() {
 
 // BroadcastMessage sends a message to the broadcast channel
 func BroadcastMessage(message string) {
+	// log.Printf("Received message to broadcast: %s", message)
 	broadcast <- message
 }

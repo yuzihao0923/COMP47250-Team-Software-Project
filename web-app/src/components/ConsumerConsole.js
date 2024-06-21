@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { connectWebSocket } from '../services/socket';
-import '../css/Console.css'
+import '../css/Console.css';
 
 const ConsumerConsole = () => {
   const [logs, setLogs] = useState([]);
+  const role = 'consumer';
 
   useEffect(() => {
-    const socket = connectWebSocket((message) => {
+    const socket = connectWebSocket(role, (message) => {
+      // console.log('Received message:', message);
       if (message.includes('[Consumer]')) {
         setLogs((prevLogs) => [...prevLogs, message]);
       }
@@ -17,7 +19,7 @@ const ConsumerConsole = () => {
         socket.close();
       }
     };
-  }, []);
+  }, [role]);
 
   return (
     <div className="console-container">

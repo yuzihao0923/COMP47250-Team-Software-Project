@@ -6,9 +6,11 @@ import '../css/Console.css'
 const ProducerConsole = () => {
   const [message, setMessage] = useState('');
   const [logs, setLogs] = useState([]);
+  const role = 'producer';
 
   useEffect(() => {
-    const socket = connectWebSocket((message) => {
+    const socket = connectWebSocket(role, (message) => {
+      // console.log('Received message:', message);
       if (message.includes('[Producer]')) {
         setLogs((prevLogs) => [...prevLogs, message]);
       }
@@ -19,7 +21,7 @@ const ProducerConsole = () => {
         socket.close();
       }
     };
-  }, []);
+  }, [role]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
