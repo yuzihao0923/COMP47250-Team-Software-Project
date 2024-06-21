@@ -2,6 +2,7 @@ package main
 
 import (
 	"COMP47250-Team-Software-Project/internal/api"
+	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/redis"
 	"net/http"
@@ -10,7 +11,14 @@ import (
 	"github.com/rs/cors"
 )
 
-func StartBroker() {
+func main() {
+	err := database.InitializeMongoDB()
+	if err != nil {
+		log.LogError("Broker", "Failed to initialize database: "+err.Error())
+		return
+	}
+	log.LogInfo("Broker", "Database initialized successfully")
+
 	redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage) // Init broadcast here with redis
 
 	port := os.Getenv("BROKER_PORT")
@@ -46,8 +54,4 @@ func StartBroker() {
 	}()
 
 	select {} // Block forever
-}
-
-func main() {
-	StartBroker()
 }
