@@ -1,12 +1,13 @@
 package auth
 
 import (
-    "context"
-    "net/http"
-    "strings"
-    "time"
+	"context"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
 
-    "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 )
 
 var jwtKey = []byte("my_secret_key")
@@ -62,4 +63,19 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
         ctx := context.WithValue(r.Context(), UsernameKey, claims.Username)
         next.ServeHTTP(w, r.WithContext(ctx))
     })
+}
+
+
+func ValidateJWT(tokenStr string) (string, error) {
+    claims := &Claims{}
+    token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
+        return jwtKey, nil
+    })
+    if err != nil {
+        return "", err
+    }
+    if !token.Valid {
+        return "", fmt.Errorf("invalid token")
+    }
+    return claims.Username, nil
 }

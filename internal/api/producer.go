@@ -12,7 +12,6 @@ import (
 
 // HandleProduce: Handle the request of producer sending message
 func HandleProduce(w http.ResponseWriter, r *http.Request) {
-
 	var msg message.Message
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &msg)
 	if err != nil {
@@ -39,15 +38,20 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 
 // SendMessage: Send message to broker
 func SendMessage(brokerPort string, msg message.Message) error {
+	client := getClientWithToken() // 使用带有 JWT token 的客户端
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
 	if err != nil {
 		return fmt.Errorf("error serializing message: %v", err)
 	}
 
-	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/produce", brokerPort), "application/json", bytes.NewBuffer(data))
-	//resp, err := http.Post(fmt.Sprintf("http://broker:%s/produce?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%s/produce", brokerPort), bytes.NewBuffer(data))
+	if err != nil {
+		return fmt.Errorf("error creating produce request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
 
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("error sending message: %v", err)
 	}

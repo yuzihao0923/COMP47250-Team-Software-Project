@@ -16,7 +16,6 @@ import (
 
 // HandleRegister: Handle the register request of consumer group
 func HandleRegister(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 	if ctx.Err() != nil {
 		log.WriteErrorResponse(w, http.StatusBadRequest, fmt.Errorf("request canceled or the client closed the connection"))
@@ -26,7 +25,6 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	var msg message.Message
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &msg)
 	if err != nil {
-		fmt.Println(err.Error())
 		log.WriteErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
@@ -44,7 +42,6 @@ func HandleRegister(w http.ResponseWriter, r *http.Request) {
 	err = rsi.CreateConsumerGroup()
 	if err != nil {
 		if strings.Contains(err.Error(), "Consumer Group name already exists") {
-			// log.LogWarning("Consumer Group name already exists")
 			w.WriteHeader(http.StatusOK) // Return OK status to not block the process
 			return
 		} else {
@@ -86,7 +83,7 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			log.LogWarning(fmt.Sprintf("Consumer exited from stream '%s': %v", rsi.StreamName, err))
+			log.LogWarning("Consumer", fmt.Sprintf("Consumer exited from stream '%s': %v", rsi.StreamName, err))
 			return
 		} else {
 			log.WriteErrorResponse(w, http.StatusInternalServerError, err)
@@ -101,7 +98,6 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 	var messages []message.Message
 	for _, stream := range streams {
-
 		for _, mes := range stream.Messages {
 			m, err := message.NewMessageFromMap(mes.Values, mes.ID)
 			if err != nil {
@@ -121,15 +117,20 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 
 // RegisterConsumer: Send request of registering consumer to API
 func RegisterConsumer(brokerPort string, msg message.Message) error {
+	client := getClientWithToken() // 使用带有 JWT token 的客户端
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
 	if err != nil {
 		return fmt.Errorf("error serializing registration message: %v", err)
 	}
 
-	resp, err := http.Post(fmt.Sprintf("http://localhost:%s/register", brokerPort), "application/json", bytes.NewBuffer(data))
-	//resp, err := http.Post(fmt.Sprintf("http://broker:%s/register?stream=%s", brokerPort, streamName), "application/json", bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%s/register", brokerPort), bytes.NewBuffer(data))
+	if err != nil {
+		return fmt.Errorf("error creating registration request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
 
+	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("error sending registration message: %v", err)
 	}
@@ -143,9 +144,14 @@ func RegisterConsumer(brokerPort string, msg message.Message) error {
 }
 
 func ConsumeMessages(brokerPort, streamName, groupName, consumerName string) ([]message.Message, error) {
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName))
-	// resp, err := http.Get(fmt.Sprintf("http://broker:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName))
+	client := getClientWithToken() // 使用带有 JWT token 的客户端
 
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName), nil)
+	if err != nil {
+		return nil, fmt.Errorf("error creating consume request: %v", err)
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error receiving messages: %v", err)
 	}
@@ -168,6 +174,6 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerName string) ([]
 		return nil, fmt.Errorf("error deserializing response body: %v", err)
 	}
 
-	log.LogInfo(fmt.Sprintf("Messages consumed from broker: %d messages", len(messages)))
+	log.LogInfo("Consumer", fmt.Sprintf("Messages consumed from broker: %d messages", len(messages)))
 	return messages, nil
 }

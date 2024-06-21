@@ -20,33 +20,39 @@ func SendMessage(brokerPort, streamName string, payload []byte) {
 	}
 	err := api.SendMessage(brokerPort, msg)
 	if err != nil {
-		log.LogError(fmt.Errorf("producer has error sending message: %v", err))
+		log.LogError("Producer", "producer has error sending message: "+err.Error())
 		return
 	}
-	log.LogInfo(fmt.Sprintf("Producer sent message: %s", msg.Payload))
+	log.LogInfo("Producer", fmt.Sprintf("Producer sent message: %s", msg.Payload))
 }
 
 func StartProducer() {
-	log.LogInfo("Starting producer...")
+	log.LogInfo("Producer", "Starting producer...")
 
 	brokerPort := os.Getenv("BROKER_PORT")
 	if brokerPort == "" {
 		brokerPort = "8080" // default port
 	}
 
-	// payloads for test
-	payloads := [][]byte{
-		[]byte("Hello 0"),
-		[]byte("Hello 1"),
-		[]byte("Hello 2"),
-	}
+	// // payloads for test
+	// payloads := [][]byte{
+	// 	[]byte("Hello 0"),
+	// 	[]byte("Hello 1"),
+	// 	[]byte("Hello 2"),
+	// }
 
-	// send all payload to the stream (with streamName)
-	for _, payload := range payloads {
+	// // send all payload to the stream (with streamName)
+	// for _, payload := range payloads {
+	// 	SendMessage(brokerPort, "mystream", payload)
+	// }
+	// time.Sleep(time.Millisecond)
+
+	// send 1000 payloads to the stream (with streamName)
+	for i := 0; i < 10; i++ {
+		payload := []byte(fmt.Sprintf("Hello %d", i))
 		SendMessage(brokerPort, "mystream", payload)
+		time.Sleep(time.Millisecond) // slight delay to prevent overwhelming the broker
 	}
-
-	time.Sleep(time.Millisecond)
 }
 
 func main() {
