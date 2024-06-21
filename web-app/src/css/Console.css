@@ -28,7 +28,7 @@
   
   .console-log {
     font-family: monospace;
-    white-space: pre-wrap; /* 保持换行 */
+    white-space: pre-wrap;
     margin: 0;
     padding: 5px 0;
     border-bottom: 1px solid #eee;

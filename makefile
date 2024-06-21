@@ -1,4 +1,4 @@
-# Makefile
+# Makefile for front-end test
 
 .PHONY: start stop broker web
 
