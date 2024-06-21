@@ -74,6 +74,7 @@ func StartConsumer() {
 	RegisterConsumerGroup(brokerPort, "mystream", "mygroup")
 
 	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer")
+
 }
 
 func main() {

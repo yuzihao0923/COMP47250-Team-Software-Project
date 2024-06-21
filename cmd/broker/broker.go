@@ -26,10 +26,10 @@ func StartBroker() {
 	mux := http.NewServeMux()
 	api.RegisterHandlers(mux)
 
-	// 注册 WebSocket 处理程序
+	// register WebSocket handler
 	mux.HandleFunc("/ws", api.HandleConnections)
 
-	// 设置 CORS 选项
+	// set CORS
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowCredentials: true,
