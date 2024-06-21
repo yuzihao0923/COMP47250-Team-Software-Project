@@ -27,15 +27,17 @@
 - Redis
 - Node.js 
 
-After installing above, build the project named "COMP47250-Team-Software-Project". 
+After installing above, build the project named "COMP47250-Team-Software-Project".
+```bash
+git clone https://github.com/yuzihao0923/COMP47250-Team-Software-Project.git
+```
+
 ```bash
 cd COMP47250-Team-Software-Project
 ```
 
 ```bash
-go mod init COMP47250-Team-Software-Project         
-// This command will create "go.mod" file and 
-// this file is used to manage the libraries used in this project
+go mod tidy
 ```
 
 ```bash
