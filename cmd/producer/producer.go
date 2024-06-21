@@ -20,14 +20,14 @@ func SendMessage(brokerPort, streamName string, payload []byte) {
 	}
 	err := api.SendMessage(brokerPort, msg)
 	if err != nil {
-		log.LogError(fmt.Errorf("producer has error sending message: %v", err))
+		log.LogError("Producer", "producer has error sending message: "+err.Error())
 		return
 	}
-	log.LogInfo(fmt.Sprintf("Producer sent message: %s", msg.Payload))
+	log.LogInfo("Producer", fmt.Sprintf("Producer sent message: %s", msg.Payload))
 }
 
 func StartProducer() {
-	log.LogInfo("Starting producer...")
+	log.LogInfo("Producer", "Starting producer...")
 
 	brokerPort := os.Getenv("BROKER_PORT")
 	if brokerPort == "" {

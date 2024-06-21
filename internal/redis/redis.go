@@ -32,10 +32,12 @@ func Initialize(addr string, password string, db int) {
 
 	pong, err := Rdb.Ping(ctx).Result()
 	if err != nil {
-		log.LogMessage("ERROR", fmt.Sprintf("Failed to connect to Redis: %v", err))
+		log.LogError("Redis", fmt.Sprintf("Failed to connect to Redis: %v", err))
 		return
 	}
-	log.LogMessage("INFO", "Redis connected: "+pong)
+	log.LogInfo("Redis", "Redis connected: "+pong)
+	FlushAll()
+	log.LogInfo("Redis", "Flush all!")
 }
 
 // FlushAll flushes all data from the Redis database
@@ -58,21 +60,21 @@ func (rsi *RedisServiceInfo) CreateConsumerGroup() error {
 		_, err = Rdb.XGroupCreateMkStream(ctx, rsi.StreamName, rsi.GroupName, "$").Result()
 		if err != nil {
 			if strings.Contains(err.Error(), "Consumer Group name already exists") {
-				log.LogMessage("WARNING", fmt.Sprintf("Consumer group '%s' already exists on stream '%s'", rsi.GroupName, rsi.StreamName))
+				log.LogWarning("Redis", fmt.Sprintf("Consumer group '%s' already exists on stream '%s'", rsi.GroupName, rsi.StreamName))
 				return nil
 			}
-			log.LogMessage("ERROR", fmt.Sprintf("Failed to create consumer group '%s' on stream '%s': %v", rsi.GroupName, rsi.StreamName, err))
+			log.LogError("Redis", fmt.Sprintf("Failed to create consumer group '%s' on stream '%s': %v", rsi.GroupName, rsi.StreamName, err))
 			return err
 		}
 
-		log.LogMessage("INFO", fmt.Sprintf("Consumer group '%s' created successfully on stream '%s'", rsi.GroupName, rsi.StreamName))
+		log.LogInfo("Redis", fmt.Sprintf("Consumer group '%s' created successfully on stream '%s'", rsi.GroupName, rsi.StreamName))
 		return nil
 	}
 
 	// Check if the group already exists
 	for _, group := range groups {
 		if group.Name == rsi.GroupName {
-			log.LogMessage("INFO", fmt.Sprintf("Consumer group '%s' already exists on stream '%s'", rsi.GroupName, rsi.StreamName))
+			log.LogInfo("Redis", fmt.Sprintf("Consumer group '%s' already exists on stream '%s'", rsi.GroupName, rsi.StreamName))
 			return nil
 		}
 	}
@@ -89,10 +91,10 @@ func (rsi *RedisServiceInfo) WriteToStream(mes message.Message) error {
 		Values: mes.ToMap(),
 	}).Result()
 	if err != nil {
-		log.LogMessage("ERROR", fmt.Sprintf("Failed to write to stream '%s': %v", rsi.StreamName, err))
+		log.LogError("Redis", fmt.Sprintf("Failed to write to stream '%s': %v", rsi.StreamName, err))
 		return err
 	}
-	log.LogMessage("INFO", fmt.Sprintf("Data written to stream '%s' successfully", rsi.StreamName))
+	log.LogInfo("Redis", fmt.Sprintf("Data written to stream '%s' successfully", rsi.StreamName))
 	return nil
 }
 
@@ -109,7 +111,7 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName st
 		if err == redis.Nil {
 			return nil, nil
 		} else {
-			log.LogMessage("ERROR", fmt.Sprintf("Failed to read from stream  '%s' : %v", rsi.StreamName, err))
+			log.LogError("Redis", fmt.Sprintf("Failed to read from stream  '%s' : %v", rsi.StreamName, err))
 			return nil, err
 		}
 	}
@@ -120,9 +122,9 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName st
 func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string) error {
 	_, err := Rdb.XAck(ctx, rsi.StreamName, rsi.GroupName, messageID).Result()
 	if err != nil {
-		log.LogMessage("ERROR", fmt.Sprintf("Failed to acknowledge message '%s' in stream '%s': %v", messageID, rsi.StreamName, err))
+		log.LogError("Redis", fmt.Sprintf("Failed to acknowledge message '%s' in stream '%s': %v", messageID, rsi.StreamName, err))
 		return err
 	}
-	log.LogMessage("INFO", fmt.Sprintf("Message '%s' acknowledged successfully in stream '%s'", messageID, rsi.StreamName))
+	log.LogInfo("Redis", fmt.Sprintf("Message '%s' acknowledged successfully in stream '%s'", messageID, rsi.StreamName))
 	return nil
 }
