@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './components/Login';
-import ConsumerConsole from './components/ConsumerConsole';
-import BrokerConsole from './components/BrokerConsole';
-import ProducerConsole from './components/ProducerConsole';
+import Login from './pages/Login';
+import ConsumerConsole from './pages/ConsumerConsole';
+import BrokerConsole from './pages/BrokerConsole';
+import ProducerConsole from './pages/ProducerConsole';
 
 function App() {
   return (
