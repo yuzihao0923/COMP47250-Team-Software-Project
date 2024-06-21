@@ -2,17 +2,20 @@ package api
 
 import (
 	"COMP47250-Team-Software-Project/internal/auth"
+	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/pkg/serializer"
-	"fmt"
+	"context"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	var creds struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
-		Role     string `json:"role"`
 	}
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &creds)
 	if err != nil {
@@ -20,27 +23,35 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// User credentials for different roles
-	users := map[string]string{
-		"broker":   "123",
-		"consumer": "123",
-		"producer": "123",
+	var user struct {
+		Username string `bson:"username"`
+		Password string `bson:"password"`
+		Role     string `bson:"role"`
+	}
+	err = database.UsersCollection.FindOne(context.TODO(), bson.M{"username": creds.Username}).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			http.Error(w, "this username is not valid, please try again", http.StatusUnauthorized)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
 	}
 
-	expectedPassword, ok := users[creds.Username]
-	if !ok || creds.Password != expectedPassword {
-		log.WriteErrorResponse(w, http.StatusUnauthorized, fmt.Errorf("invalid username or password"))
+	if user.Password != creds.Password {
+		http.Error(w, "this password is incorrect, please try again", http.StatusUnauthorized)
 		return
 	}
 
 	token, err := auth.GenerateJWT(creds.Username)
 	if err != nil {
-		log.WriteErrorResponse(w, http.StatusInternalServerError, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	serializer.JSONSerializerInstance.SerializeToWriter(map[string]string{
 		"token": token,
+		"role":  user.Role,
 	}, w)
 }

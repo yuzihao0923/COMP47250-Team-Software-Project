@@ -2,6 +2,8 @@ package main
 
 import (
 	"COMP47250-Team-Software-Project/internal/api"
+	"COMP47250-Team-Software-Project/internal/auth"
+	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
@@ -61,26 +63,39 @@ func AcknowledgeMessage(brokerPort string, msg message.Message, token string) {
 	log.LogInfo("Consumer", "Consumer sending ACK successfully...")
 }
 
-func StartConsumer() {
-	log.LogInfo("Consumer", "Starting consumer...")
+func main() {
+	// Ensure logs are printed before prompting user input
+	fmt.Println("[INFO] [Consumer] Starting consumer...")
 
 	brokerPort := os.Getenv("BROKER_PORT")
 	if brokerPort == "" {
 		brokerPort = "8080" // Default port
 	}
 
-	token, err := api.GetJWTToken("consumer", "123")
+	err := database.ConnectMongoDB()
 	if err != nil {
-		log.LogError("Consumer", fmt.Sprintf("Failed to get JWT token: %v", err))
+		fmt.Println("[ERROR] [Consumer] Failed to connect to database:", err)
 		return
+	}
+	fmt.Println("[INFO] [Consumer] Database connected successfully")
+
+	var token, role string
+	for {
+		username := auth.GetUserInput("\nEnter username: ")
+		password := auth.GetPasswordInput("Enter password: ")
+
+		token, role, err = auth.AuthenticateUser(username, password)
+		if err != nil {
+			fmt.Println(err)
+		} else if role != "consumer" {
+			fmt.Println("this user is not a consumer, please try again")
+		} else {
+			break
+		}
 	}
 
 	// Register consumer group
 	RegisterConsumerGroup(brokerPort, "mystream", "mygroup", token)
 
 	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer", token)
-}
-
-func main() {
-	StartConsumer()
 }
