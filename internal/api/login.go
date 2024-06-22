@@ -51,7 +51,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	serializer.JSONSerializerInstance.SerializeToWriter(map[string]string{
-		"token": token,
-		"role":  user.Role,
+		"token":    token,
+		"username": creds.Username,
+		"role":     user.Role,
 	}, w)
 }
