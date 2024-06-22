@@ -73,6 +73,8 @@
 - MongoDB
 
 After installing above, build the project named "COMP47250-Team-Software-Project".
+But don't forget to start MongoDB server first.
+
 ```bash
 git clone https://github.com/yuzihao0923/COMP47250-Team-Software-Project.git
 ```

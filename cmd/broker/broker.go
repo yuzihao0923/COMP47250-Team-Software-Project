@@ -19,7 +19,8 @@ func main() {
 	}
 	log.LogInfo("Broker", "Database initialized successfully")
 
-	redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage) // Init broadcast here with redis
+	// Init broadcast here with redis
+	redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage)
 
 	port := os.Getenv("BROKER_PORT")
 	if port == "" {

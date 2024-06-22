@@ -67,7 +67,6 @@ func AcknowledgeMessage(brokerPort string, msg message.Message, token string) {
 }
 
 func main() {
-	// Ensure logs are printed before prompting user input
 	fmt.Println("[INFO] [Consumer] Starting consumer...")
 
 	brokerPort := os.Getenv("BROKER_PORT")
@@ -93,6 +92,7 @@ func main() {
 		} else if role != "consumer" {
 			fmt.Println("this user is not a consumer, please try again")
 		} else {
+			// successfully login
 			break
 		}
 	}

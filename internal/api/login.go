@@ -29,6 +29,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		Role     string `bson:"role"`
 	}
 	err = database.UsersCollection.FindOne(context.TODO(), bson.M{"username": creds.Username}).Decode(&user)
+
+	// username doesn't exist
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			http.Error(w, "this username is not valid, please try again", http.StatusUnauthorized)
@@ -38,11 +40,13 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// username exsits, password is incorrect
 	if user.Password != creds.Password {
 		http.Error(w, "this password is incorrect, please try again", http.StatusUnauthorized)
 		return
 	}
 
+	// successfully login, generate JWT for that user
 	token, err := auth.GenerateJWT(creds.Username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
