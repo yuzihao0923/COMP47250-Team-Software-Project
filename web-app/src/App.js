@@ -1,8 +1,8 @@
 // src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './components/Login';
-import BrokerConsole from './components/BrokerConsole';
+import Login from './pages/Login.jsx';
+import BrokerConsole from './pages/BrokerConsole.jsx';
 import './css/App.css';
 
 function App() {
