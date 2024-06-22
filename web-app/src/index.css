@@ -12,3 +12,11 @@ html, body {
   margin: 0;
   /* overflow: hidden; */
 }
+
+html::-webkit-scrollbar{
+    display: none;
+}
+
+html{
+    scrollbar-width: none;
+}

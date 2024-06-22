@@ -4,40 +4,21 @@ import axios from 'axios';
 import '../css/Login.css';
 // import { Button, Checkbox, Form, Input } from 'antd';
 import {
-  AlipayOutlined,
   LockOutlined,
-  MobileOutlined,
-  TaobaoOutlined,
   UserOutlined,
-  WeiboOutlined,
 } from '@ant-design/icons';
 import {
   LoginFormPage,
-  ProConfigProvider,
-  ProFormCaptcha,
-  ProFormCheckbox,
   ProFormText,
 } from '@ant-design/pro-components';
-import { Button, Divider, Space, Tabs, message, theme } from 'antd';
+import { Button, Divider, theme, message } from 'antd';
 import {login} from '../store/userSlice'
 import { useDispatch } from 'react-redux';
 
-/**
- * @type {React.CSSProperties}
- */
-const mytyles = {
-  // background: url('https://mdn.alipayobjects.com/huamei_gcee1x/afts/img/A*y0ZTS6WLwvgAAAAAAAAAAAAADml6AQ/fmt.webp') no-repeat center center fixed,
-  // backgroundSize: 'cover',
-  // height: '100%',
-  // display: 'flex',
-  // justifyContent: 'center',
-  // alignItems: 'center'
-};
-
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  // const [username, setUsername] = useState('');
+  // const [password, setPassword] = useState('');
+  // const [error, setError] = useState('');
   const navigate = useNavigate();
   const dispatch = useDispatch()
 
@@ -68,23 +49,25 @@ const Login = () => {
         dispatch(login({user,token}))
         navigate('/broker');
       } else {
-        setError('this user is not a broker, please try again');
-        setUsername('');
-        setPassword('');
+        message.warning('This account is not a broker, please try again');
+        // setError('this user is not a broker, please try again');
+        // setUsername('');
+        // setPassword('');
       }
     } catch (err) {
-      if (err.response && err.response.status === 401) {
-        const errorMessage = err.response.data;
-        setError(errorMessage);
-        if (errorMessage.includes('username')) {
-          setUsername('');
-        }
-        setPassword('');
-      } else {
-        setError('Login failed. Please try again.');
-        setUsername('');
-        setPassword('');
-      }
+      message.error('Login failed. Please try again.')
+      // if (err.response && err.response.status === 401) {
+      //   const errorMessage = err.response.data;
+      //   setError(errorMessage);
+      //   if (errorMessage.includes('username')) {
+      //     setUsername('');
+      //   }
+      //   setPassword('');
+      // } else {
+      //   setError('Login failed. Please try again.');
+      //   setUsername('');
+      //   setPassword('');
+      // }
     }
   };
 
