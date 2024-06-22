@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
 
-const BrokerConsole = () => {
+const BrokerConsole = ({ username }) => { 
   const [brokerLogs, setBrokerLogs] = useState([]);
   const [producerLogs, setProducerLogs] = useState([]);
   const [consumerLogs, setConsumerLogs] = useState([]);
@@ -12,7 +12,7 @@ const BrokerConsole = () => {
   const consumerLogsEndRef = useRef(null);
 
   useEffect(() => {
-    const socket = connectWebSocket((message) => {
+    const socket = connectWebSocket(username, (message) => {
       const cleanedMessage = message.replace(/"/g, '');
       
       if (cleanedMessage.includes('[Broker') || cleanedMessage.includes('[Redis')) {
@@ -29,7 +29,7 @@ const BrokerConsole = () => {
         socket.close();
       }
     };
-  }, []);
+  }, [username]);
 
   useEffect(() => {
     brokerLogsEndRef.current?.scrollIntoView({ behavior: 'smooth' });

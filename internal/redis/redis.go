@@ -97,7 +97,7 @@ func (rsi *RedisServiceInfo) WriteToStream(mes message.Message, producerUsername
 		return err
 	}
 	log.LogInfo("Redis", fmt.Sprintf("Message from '%s' to stream '%s' successfully", producerUsername, rsi.StreamName))
-	log.LogInfo(fmt.Sprintf("Producer: %s", producerUsername), fmt.Sprintf("Send %s: '%s' successfully", messageID, mes.Payload))
+	log.LogInfo(fmt.Sprintf("Producer: %s", producerUsername), fmt.Sprintf("sent %s: '%s' successfully", messageID, mes.Payload))
 	return nil
 }
 
@@ -141,6 +141,6 @@ func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string, consume
 		return err
 	}
 	log.LogInfo("Redis", fmt.Sprintf("Message '%s' to '%s' acknowledged successfully in stream '%s'", messageID, consumerUsername, rsi.StreamName))
-	log.LogInfo(fmt.Sprintf("Consumer: %s", consumerUsername), fmt.Sprintf("Acknowledged: %s", messageID))
+	log.LogInfo(fmt.Sprintf("Consumer: %s", consumerUsername), fmt.Sprintf("acknowledged: %s", messageID))
 	return nil
 }
