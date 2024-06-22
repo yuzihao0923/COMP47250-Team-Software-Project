@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -65,19 +64,4 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), UsernameKey, claims.Username)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-}
-
-// ValidateJWT validates a given JWT token and returns the username
-func ValidateJWT(tokenStr string) (string, error) {
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
-	if err != nil {
-		return "", err
-	}
-	if !token.Valid {
-		return "", fmt.Errorf("invalid token")
-	}
-	return claims.Username, nil
 }
