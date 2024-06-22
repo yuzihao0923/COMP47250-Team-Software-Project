@@ -38,10 +38,10 @@ func RegisterConsumer(brokerPort string, msg message.Message, token string) erro
 	return nil
 }
 
-func ConsumeMessages(brokerPort, streamName, groupName, consumerName, token string) ([]message.Message, error) {
+func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token string) ([]message.Message, error) {
 	client := GetClientWithToken(token)
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerUsername), nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating consume request: %v", err)
 	}

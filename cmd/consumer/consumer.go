@@ -31,9 +31,9 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
 	log.LogInfo("Consumer", "Consumer registered to Broker...")
 }
 
-func ConsumeMessages(brokerPort, streamName, groupName, consumerID, token string) {
+func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token string) {
 	for {
-		messages, err := client.ConsumeMessages(brokerPort, streamName, groupName, consumerID, token)
+		messages, err := client.ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token)
 		if err != nil {
 			if err.Error() == "no new messages" {
 				log.LogWarning("Consumer", "No new messages, retrying...")

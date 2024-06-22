@@ -65,9 +65,9 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	consumerName := r.URL.Query().Get("consumer")
-	if consumerName == "" {
-		log.WriteErrorResponse(w, http.StatusBadRequest, fmt.Errorf("consumer name is required"))
+	consumerUsername := r.URL.Query().Get("consumer")
+	if consumerUsername == "" {
+		log.WriteErrorResponse(w, http.StatusBadRequest, fmt.Errorf("consumer username is required"))
 		return
 	}
 
@@ -77,7 +77,7 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	streams, err := rsi.ReadFromStream(ctx, consumerName)
+	streams, err := rsi.ReadFromStream(ctx, consumerUsername)
 
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
