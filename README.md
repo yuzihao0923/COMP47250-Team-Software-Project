@@ -35,6 +35,7 @@
 ├── internal
 │   ├── api
 │   ├── auth
+│   ├── client
 │   ├── database
 │   ├── log
 │   ├── message
@@ -99,7 +100,7 @@ make start
 ```
 
 2. Login broker and its username-password pairs for now are:
-    - broker: "broker", "123"
+    - broker: "b1", "123"
 
 3. Run consumer
 ```bash
@@ -110,7 +111,7 @@ cd cmd/consumer
 go run consumer.go
 ```
 
-Enter consumer's username-password pairs: "consumer", "123"
+Enter consumer's username-password pairs: "c1", "123"
 
 4. Run producer
 ```bash
@@ -120,6 +121,6 @@ cd cmd/producer
 ```bash
 go run producer.go
 ```
-Enter producer's username-password pairs: "producer", "123"
+Enter producer's username-password pairs: "p1", "123"
 
 5. See the results on webpage, or check on the terminal

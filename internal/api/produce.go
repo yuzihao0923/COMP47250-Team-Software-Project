@@ -6,12 +6,13 @@ import (
 	"COMP47250-Team-Software-Project/internal/message"
 	"COMP47250-Team-Software-Project/internal/redis"
 	"COMP47250-Team-Software-Project/pkg/serializer"
+	"fmt"
 	"net/http"
 )
 
-// HandleACK: Handle Consumers' ACK.
-func HandleACK(w http.ResponseWriter, r *http.Request) {
-	consumerUsername := r.Context().Value(auth.UsernameKey).(string)
+// HandleProduce: Handle the request of producer sending message
+func HandleProduce(w http.ResponseWriter, r *http.Request) {
+	producerUsername := r.Context().Value(auth.UsernameKey).(string)
 	var msg message.Message
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &msg)
 	if err != nil {
@@ -19,16 +20,15 @@ func HandleACK(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rsi := redis.RedisServiceInfo{
-		StreamName: msg.ConsumerInfo.StreamName,
-		GroupName:  msg.ConsumerInfo.GroupName,
+	if msg.ConsumerInfo.StreamName == "" {
+		log.WriteErrorResponse(w, http.StatusBadRequest, fmt.Errorf("stream name is required"))
+		return
 	}
 
-	msgID := msg.ID
-
-	ctx := r.Context()
-
-	err = rsi.XACK(ctx, msgID, consumerUsername)
+	rsi := redis.RedisServiceInfo{
+		StreamName: msg.ConsumerInfo.StreamName,
+	}
+	err = rsi.WriteToStream(msg, producerUsername)
 	if err != nil {
 		log.WriteErrorResponse(w, http.StatusInternalServerError, err)
 		return
