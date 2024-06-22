@@ -1,52 +1,67 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/api';
+import axios from 'axios';
 import '../css/Login.css';
 
 const Login = () => {
-  const [credentials, setCredentials] = useState({ username: '', password: '', role: 'consumer' });
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
-    try {
-      const response = await login(credentials);
-      console.log('Login successful:', response.data);
 
-      if (credentials.role === 'consumer') {
-        navigate('/consumer');
-      } else if (credentials.role === 'broker') {
+    try {
+      const response = await axios.post('http://localhost:8080/login', {
+        username,
+        password
+      });
+
+      const { token, role } = response.data;
+
+      if (role === 'broker') {
+        localStorage.setItem(`${username}_token`, token); // Storing the JWT with username
         navigate('/broker');
-      } else if (credentials.role === 'producer') {
-        navigate('/producer');
+      } else {
+        setError('this user is not a broker, please try again');
+        setUsername('');
+        setPassword('');
       }
-    } catch (error) {
-      console.error('Login failed:', error);
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        const errorMessage = err.response.data;
+        setError(errorMessage);
+        if (errorMessage.includes('username')) {
+          setUsername('');
+        }
+        setPassword('');
+      } else {
+        setError('Login failed. Please try again.');
+        setUsername('');
+        setPassword('');
+      }
     }
   };
 
   return (
     <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <select
-          value={credentials.role}
-          onChange={(e) => setCredentials({ ...credentials, role: e.target.value })}
-        >
-          <option value="consumer">Consumer</option>
-          <option value="broker">Broker</option>
-          <option value="producer">Producer</option>
-        </select>
+      <form onSubmit={handleLogin} className="login-form">
+        <h2>Broker Login</h2>
+        {error && <p className="error">{error}</p>}
         <input
           type="text"
-          value={credentials.username}
-          onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
           placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
         />
         <input
           type="password"
-          value={credentials.password}
-          onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
           placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <button type="submit">Login</button>
       </form>

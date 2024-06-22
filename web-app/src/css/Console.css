@@ -1,40 +1,38 @@
-/* BrokerConsole.css */
-.onsole-container {
-    padding: 20px;
-    background-color: #f7f7f7;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-    margin: 20px auto;
-  }
-  
-  .console-container h1 {
-    text-align: center;
-    color: #333;
-  }
-  
-  .console-logs {
-    width: 70%;
-    min-height: 310px;
-    max-height: 310px;
-    overflow-y: auto;
-    background-color: #fff;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
-    margin: 0 auto;
-  }
-  
-  .console-log {
-    font-family: monospace;
-    white-space: pre-wrap;
-    margin: 0;
-    padding: 5px 0;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .console-log:last-child {
-    border-bottom: none;
-  }
-  
+.console-container {
+  padding: 20px;
+  background-color: #f7f7f7;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+.console-container h1 {
+  text-align: center;
+  color: #333;
+}
+
+.console-logs {
+  width: 100%;
+  min-height: 400px;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+  margin: 0 auto;
+}
+
+.console-log {
+  font-family: monospace;
+  white-space: pre-wrap;
+  margin: 0;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.console-log:last-child {
+  border-bottom: none;
+}
