@@ -7,17 +7,17 @@ const getToken = (username) => {
 };
 
 // Login function
-export const login = async (credentials) => {
-  try {
-    const response = await axios.post(`${API_URL}/login`, credentials);
-    const { token, username } = response.data;
-    localStorage.setItem(`${username}_token`, token); // store token with username
-    return response;
-  } catch (error) {
-    console.error('Login error:', error);
-    throw error;
-  }
-};
+// export const login = async (credentials) => {
+//   try {
+//     const response = await axios.post(`${API_URL}/login`, credentials);
+//     const { token, username } = response.data;
+//     localStorage.setItem(`${username}_token`, token); // store token with username
+//     return response;
+//   } catch (error) {
+//     console.error('Login error:', error);
+//     throw error;
+//   }
+// };
 
 // Function to get logs
 export const getLogs = async (username) => {
