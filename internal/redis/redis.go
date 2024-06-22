@@ -87,7 +87,7 @@ func (rsi *RedisServiceInfo) CreateConsumerGroup() error {
 // WriteToStream writes data to the specified Redis Stream.
 func (rsi *RedisServiceInfo) WriteToStream(mes message.Message, producerUsername string) error {
 	ctx := context.Background()
-	_, err := Rdb.XAdd(ctx, &redis.XAddArgs{
+	messageID, err := Rdb.XAdd(ctx, &redis.XAddArgs{
 		Stream: rsi.StreamName,
 		ID:     "*", // Auto-generate ID
 		Values: mes.ToMap(),
@@ -96,8 +96,8 @@ func (rsi *RedisServiceInfo) WriteToStream(mes message.Message, producerUsername
 		log.LogError("Redis", fmt.Sprintf("Failed to write to stream '%s': %v", rsi.StreamName, err))
 		return err
 	}
-	log.LogInfo("Redis", fmt.Sprintf("Data written to stream '%s' successfully", rsi.StreamName))
-	log.LogInfo(fmt.Sprintf("Producer: %s", producerUsername), fmt.Sprintf("Send '%s' successfully", mes.Payload))
+	log.LogInfo("Redis", fmt.Sprintf("Message from '%s' to stream '%s' successfully", producerUsername, rsi.StreamName))
+	log.LogInfo(fmt.Sprintf("Producer: %s", producerUsername), fmt.Sprintf("Send %s: '%s' successfully", messageID, mes.Payload))
 	return nil
 }
 
@@ -121,7 +121,12 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerUsernam
 
 	for _, stream := range streams {
 		for _, mes := range stream.Messages {
-			log.LogInfo(fmt.Sprintf("Consumer: %s", consumerUsername), fmt.Sprintf("received: %s", mes.ID))
+			message, err := message.NewMessageFromMap(mes.Values, mes.ID)
+			if err != nil {
+				log.LogError("Message", fmt.Sprintf("Failed to convert message from map: %v", err))
+				continue
+			}
+			log.LogInfo(fmt.Sprintf("Consumer: %s", consumerUsername), fmt.Sprintf("received: %s: '%s'", mes.ID, message.Payload))
 		}
 	}
 
@@ -135,7 +140,7 @@ func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string, consume
 		log.LogError("Redis", fmt.Sprintf("Failed to acknowledge message '%s' in stream '%s': %v", messageID, rsi.StreamName, err))
 		return err
 	}
-	log.LogInfo("Redis", fmt.Sprintf("Message '%s' acknowledged successfully in stream '%s'", messageID, rsi.StreamName))
+	log.LogInfo("Redis", fmt.Sprintf("Message '%s' to '%s' acknowledged successfully in stream '%s'", messageID, consumerUsername, rsi.StreamName))
 	log.LogInfo(fmt.Sprintf("Consumer: %s", consumerUsername), fmt.Sprintf("Acknowledged: %s", messageID))
 	return nil
 }
