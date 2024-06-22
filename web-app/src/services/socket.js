@@ -2,8 +2,8 @@
 const API_URL = 'ws://localhost:8080/ws';
 let socket;
 
-export const connectWebSocket = (onMessageCallback) => {
-  const token = localStorage.getItem('token');
+export const connectWebSocket = (username, onMessageCallback) => {
+  const token = localStorage.getItem(`${username}_token`);
 
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
     return socket;
@@ -29,7 +29,7 @@ export const connectWebSocket = (onMessageCallback) => {
     if (event.code !== 1000) { // If the close event is not normal, retry the connection
       setTimeout(() => {
         console.log('Retrying WebSocket connection...');
-        connectWebSocket(onMessageCallback);
+        connectWebSocket(username, onMessageCallback);
       }, 3000);
     }
   };
