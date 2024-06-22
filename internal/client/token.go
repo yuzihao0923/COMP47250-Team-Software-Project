@@ -1,4 +1,4 @@
-package api
+package client
 
 import (
 	"bytes"
@@ -51,7 +51,7 @@ func GetJWTToken(username, password string) (string, error) {
 	return token, nil
 }
 
-func getClientWithToken(token string) *http.Client {
+func GetClientWithToken(token string) *http.Client {
 	client := &http.Client{}
 	client.Transport = &transportWithToken{token, http.DefaultTransport}
 	return client

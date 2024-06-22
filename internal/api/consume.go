@@ -5,11 +5,9 @@ import (
 	"COMP47250-Team-Software-Project/internal/message"
 	"COMP47250-Team-Software-Project/internal/redis"
 	"COMP47250-Team-Software-Project/pkg/serializer"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 )
@@ -113,67 +111,4 @@ func HandleConsume(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.WriteErrorResponse(w, http.StatusInternalServerError, err)
 	}
-}
-
-// RegisterConsumer: Send request of registering consumer to API
-func RegisterConsumer(brokerPort string, msg message.Message, token string) error {
-	client := getClientWithToken(token)
-
-	data, err := serializer.JSONSerializerInstance.Serialize(msg)
-	if err != nil {
-		return fmt.Errorf("error serializing registration message: %v", err)
-	}
-
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%s/register", brokerPort), bytes.NewBuffer(data))
-	if err != nil {
-		return fmt.Errorf("error creating registration request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("error sending registration message: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("failed to register consumer, status code: %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
-func ConsumeMessages(brokerPort, streamName, groupName, consumerName, token string) ([]message.Message, error) {
-	client := getClientWithToken(token)
-
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerName), nil)
-	if err != nil {
-		return nil, fmt.Errorf("error creating consume request: %v", err)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error receiving messages: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusNoContent {
-		return nil, fmt.Errorf("no new messages")
-	} else if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to receive messages, status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %v", err)
-	}
-
-	var messages []message.Message
-	err = serializer.JSONSerializerInstance.Deserialize(body, &messages)
-	if err != nil {
-		return nil, fmt.Errorf("error deserializing response body: %v", err)
-	}
-
-	log.LogInfo("Consumer", fmt.Sprintf("Messages consumed from broker: %d messages", len(messages)))
-	return messages, nil
 }

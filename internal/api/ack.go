@@ -4,6 +4,7 @@ import (
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"COMP47250-Team-Software-Project/internal/redis"
+	"COMP47250-Team-Software-Project/internal/client"
 	"COMP47250-Team-Software-Project/pkg/serializer"
 	"bytes"
 	"fmt"
@@ -39,7 +40,7 @@ func HandleACK(w http.ResponseWriter, r *http.Request) {
 
 // SendACK: consumer send ack to broker
 func SendACK(brokerPort string, msg message.Message, token string) error {
-	client := getClientWithToken(token)
+	client := client.GetClientWithToken(token)
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
 	if err != nil {

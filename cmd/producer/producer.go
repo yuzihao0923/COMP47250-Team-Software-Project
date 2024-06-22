@@ -1,8 +1,8 @@
 package main
 
 import (
-	"COMP47250-Team-Software-Project/internal/api"
 	"COMP47250-Team-Software-Project/internal/auth"
+	"COMP47250-Team-Software-Project/internal/client"
 	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
@@ -20,7 +20,7 @@ func SendMessage(brokerPort, streamName string, payload []byte, token string) {
 		},
 		Payload: payload,
 	}
-	err := api.SendMessage(brokerPort, msg, token)
+	err := client.SendMessage(brokerPort, msg, token)
 	if err != nil {
 		log.LogError("Producer", "producer has error sending message: "+err.Error())
 		return

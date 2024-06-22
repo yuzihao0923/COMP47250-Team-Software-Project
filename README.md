@@ -35,6 +35,7 @@
 ├── internal
 │   ├── api
 │   ├── auth
+│   ├── client
 │   ├── database
 │   ├── log
 │   ├── message

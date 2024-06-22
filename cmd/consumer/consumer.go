@@ -6,6 +6,7 @@ import (
 	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
+	"COMP47250-Team-Software-Project/internal/client"
 	"fmt"
 	"os"
 	"time"
@@ -20,7 +21,7 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
 			GroupName:  groupName,
 		},
 	}
-	err := api.RegisterConsumer(brokerPort, msg, token)
+	err := client.RegisterConsumer(brokerPort, msg, token)
 	if err != nil {
 		log.LogError("Consumer", "consumer has error registering: "+err.Error())
 		return
@@ -30,7 +31,7 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
 
 func ConsumeMessages(brokerPort, streamName, groupName, consumerID, token string) {
 	for {
-		messages, err := api.ConsumeMessages(brokerPort, streamName, groupName, consumerID, token)
+		messages, err := client.ConsumeMessages(brokerPort, streamName, groupName, consumerID, token)
 		if err != nil {
 			if err.Error() == "no new messages" {
 				log.LogWarning("Consumer", "No new messages, retrying...")
