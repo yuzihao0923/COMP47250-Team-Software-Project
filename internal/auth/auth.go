@@ -22,6 +22,7 @@ type contextKey string
 
 const UsernameKey contextKey = "username"
 
+// GenerateJWT generates a new JWT token for a given username
 func GenerateJWT(username string) (string, error) {
 	expirationTime := time.Now().Add(24 * time.Hour)
 	claims := &Claims{
@@ -35,6 +36,7 @@ func GenerateJWT(username string) (string, error) {
 	return token.SignedString(jwtKey)
 }
 
+// JWTAuthMiddleware validates the JWT token in the incoming request
 func JWTAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
@@ -65,6 +67,7 @@ func JWTAuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// ValidateJWT validates a given JWT token and returns the username
 func ValidateJWT(tokenStr string) (string, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
