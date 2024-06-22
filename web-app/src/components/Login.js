@@ -1,7 +1,6 @@
-// src/components/Login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/api';
+import axios from 'axios';
 import '../css/Login.css';
 
 const Login = () => {
@@ -14,11 +13,15 @@ const Login = () => {
     event.preventDefault();
 
     try {
-      const response = await login({ username, password });
+      const response = await axios.post('http://localhost:8080/login', {
+        username,
+        password
+      });
+
       const { token, role } = response.data;
 
       if (role === 'broker') {
-        localStorage.setItem('token', token);
+        localStorage.setItem(`${username}_token`, token); // Storing the JWT with username
         navigate('/broker');
       } else {
         setError('this user is not a broker, please try again');
@@ -27,7 +30,11 @@ const Login = () => {
       }
     } catch (err) {
       if (err.response && err.response.status === 401) {
-        setError(err.response.data.message);
+        const errorMessage = err.response.data;
+        setError(errorMessage);
+        if (errorMessage.includes('username')) {
+          setUsername('');
+        }
         setPassword('');
       } else {
         setError('Login failed. Please try again.');

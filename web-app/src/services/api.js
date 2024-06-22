@@ -1,22 +1,18 @@
-// src/services/api.js
 import axios from 'axios';
 
 const API_URL = 'http://localhost:8080';
 
 export const login = (credentials) => {
   return axios.post(`${API_URL}/login`, credentials).then(response => {
-    const { token, role } = response.data;
-    if (role === 'broker') {
-      localStorage.setItem('token', token); // store broker token
-    } else {
-      throw new Error('This user is not a broker, please try again');
-    }
+    const { token, username } = response.data;
+    localStorage.setItem(`${username}_token`, token); // store token with username
     return response;
   });
 };
 
-export const produce = (message) => {
-  const token = localStorage.getItem('token');
+// Other API calls using the token
+export const produce = (message, username) => {
+  const token = localStorage.getItem(`${username}_token`);
   return axios.post(`${API_URL}/produce`, message, {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -24,8 +20,8 @@ export const produce = (message) => {
   });
 };
 
-export const register = (data) => {
-  const token = localStorage.getItem('token');
+export const register = (data, username) => {
+  const token = localStorage.getItem(`${username}_token`);
   return axios.post(`${API_URL}/register`, data, {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -33,8 +29,8 @@ export const register = (data) => {
   });
 };
 
-export const consume = () => {
-  const token = localStorage.getItem('token');
+export const consume = (username) => {
+  const token = localStorage.getItem(`${username}_token`);
   return axios.get(`${API_URL}/consume`, {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -42,8 +38,8 @@ export const consume = () => {
   });
 };
 
-export const getLogs = () => {
-  const token = localStorage.getItem('token');
+export const getLogs = (username) => {
+  const token = localStorage.getItem(`${username}_token`);
   return axios.get(`${API_URL}/logs`, {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -51,8 +47,8 @@ export const getLogs = () => {
   });
 };
 
-export const ackMessage = (id) => {
-  const token = localStorage.getItem('token');
+export const ackMessage = (id, username) => {
+  const token = localStorage.getItem(`${username}_token`);
   return axios.post(`${API_URL}/ack`, { id }, {
     headers: {
       'Authorization': `Bearer ${token}`
@@ -60,8 +56,8 @@ export const ackMessage = (id) => {
   });
 };
 
-export const connectWebSocket = (role, onMessageCallback) => {
-  const token = localStorage.getItem('token');
+export const connectWebSocket = (username, onMessageCallback) => {
+  const token = localStorage.getItem(`${username}_token`);
   let socket = new WebSocket(`ws://localhost:8080/ws?token=${token}`);
 
   socket.onopen = () => {
@@ -82,7 +78,7 @@ export const connectWebSocket = (role, onMessageCallback) => {
     // Retry connection
     setTimeout(() => {
       console.log('Retrying WebSocket connection...');
-      socket = connectWebSocket(role, onMessageCallback);
+      socket = connectWebSocket(username, onMessageCallback);
     }, 3000);
   };
 
