@@ -15,11 +15,11 @@ const BrokerConsole = () => {
     const socket = connectWebSocket((message) => {
       const cleanedMessage = message.replace(/"/g, '');
       
-      if (cleanedMessage.includes('[Broker]') || cleanedMessage.includes('[Redis]')) {
+      if (cleanedMessage.includes('[Broker') || cleanedMessage.includes('[Redis')) {
         setBrokerLogs((prevLogs) => [...prevLogs, cleanedMessage]);
-      } else if (cleanedMessage.includes('[Producer]')) {
+      } else if (cleanedMessage.includes('[Producer')) {
         setProducerLogs((prevLogs) => [...prevLogs, cleanedMessage]);
-      } else if (cleanedMessage.includes('[Consumer]')) {
+      } else if (cleanedMessage.includes('[Consumer')) {
         setConsumerLogs((prevLogs) => [...prevLogs, cleanedMessage]);
       }
     });
