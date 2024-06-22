@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
+import Head from '../components/Header';
 
 const ConsumerConsole = () => {
   const [logs, setLogs] = useState([]);
@@ -22,6 +23,8 @@ const ConsumerConsole = () => {
   }, [role]);
 
   return (
+    <div>
+      <Head />
     <div className="console-container">
       <h1>Consumer Console</h1>
       <div className="console-logs">
@@ -30,6 +33,8 @@ const ConsumerConsole = () => {
         ))}
       </div>
     </div>
+    </div>
+
   );
 };
 
