@@ -2,8 +2,8 @@ package auth
 
 import (
 	"COMP47250-Team-Software-Project/internal/database"
+	"COMP47250-Team-Software-Project/pkg/serializer"
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -54,7 +54,7 @@ func loginUser(username, password string) (string, string, error) {
 		"password": password,
 	}
 
-	jsonData, err := json.Marshal(loginData)
+	jsonData, err := serializer.JSONSerializerInstance.Serialize(loginData)
 	if err != nil {
 		return "", "", err
 	}
@@ -79,7 +79,7 @@ func loginUser(username, password string) (string, string, error) {
 // parseLoginResponse parses the login response and returns the token and role
 func parseLoginResponse(body io.Reader) (string, string, error) {
 	var result map[string]string
-	err := json.NewDecoder(body).Decode(&result)
+	err := serializer.JSONSerializerInstance.DeserializeFromReader(body, &result)
 	if err != nil {
 		return "", "", err
 	}

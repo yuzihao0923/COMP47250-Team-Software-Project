@@ -13,12 +13,14 @@ const BrokerConsole = () => {
 
   useEffect(() => {
     const socket = connectWebSocket((message) => {
-      if (message.includes('[Broker]') || message.includes('[Redis]')) {
-        setBrokerLogs((prevLogs) => [...prevLogs, message]);
-      } else if (message.includes('[Producer]')) {
-        setProducerLogs((prevLogs) => [...prevLogs, message]);
-      } else if (message.includes('[Consumer]')) {
-        setConsumerLogs((prevLogs) => [...prevLogs, message]);
+      const cleanedMessage = message.replace(/"/g, '');
+      
+      if (cleanedMessage.includes('[Broker]') || cleanedMessage.includes('[Redis]')) {
+        setBrokerLogs((prevLogs) => [...prevLogs, cleanedMessage]);
+      } else if (cleanedMessage.includes('[Producer]')) {
+        setProducerLogs((prevLogs) => [...prevLogs, cleanedMessage]);
+      } else if (cleanedMessage.includes('[Consumer]')) {
+        setConsumerLogs((prevLogs) => [...prevLogs, cleanedMessage]);
       }
     });
 
