@@ -1,16 +1,18 @@
 package main
 
 import (
-	"COMP47250-Team-Software-Project/internal/api"
 	"COMP47250-Team-Software-Project/internal/auth"
+	"COMP47250-Team-Software-Project/internal/client"
 	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
-	"COMP47250-Team-Software-Project/internal/client"
 	"fmt"
 	"os"
 	"time"
 )
+
+var username string
+var password string
 
 // RegisterConsumerGroup: use API to register a consumer group (with groupName) in a stream (with streamName)
 func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
@@ -56,7 +58,7 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerID, token string
 }
 
 func AcknowledgeMessage(brokerPort string, msg message.Message, token string) {
-	err := api.SendACK(brokerPort, msg, token)
+	err := client.SendACK(brokerPort, msg, token)
 	if err != nil {
 		log.LogError("Consumer", "consumer has error sending ACK: "+err.Error())
 		return
@@ -82,8 +84,8 @@ func main() {
 
 	var token, role string
 	for {
-		username := auth.GetUserInput("\nEnter username: ")
-		password := auth.GetPasswordInput("Enter password: ")
+		username = auth.GetUserInput("\nEnter username: ")
+		password = auth.GetPasswordInput("Enter password: ")
 
 		token, role, err = auth.AuthenticateUser(username, password)
 		if err != nil {
@@ -98,5 +100,5 @@ func main() {
 	// Register consumer group
 	RegisterConsumerGroup(brokerPort, "mystream", "mygroup", token)
 
-	ConsumeMessages(brokerPort, "mystream", "mygroup", "myconsumer", token)
+	ConsumeMessages(brokerPort, "mystream", "mygroup", username, token)
 }

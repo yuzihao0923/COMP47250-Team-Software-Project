@@ -13,9 +13,9 @@ type Message struct {
 }
 
 type ConsumerInfo struct {
-	ConsumerID string `json:"consumer_id"` // It can be used for identifing different consumers in the same group
-	StreamName string `json:"stream_name"`
-	GroupName  string `json:"group_name"`
+	ConsumerUsername string `json:"consumer_username"` // It can be used for identifing different consumers in the same group
+	StreamName       string `json:"stream_name"`
+	GroupName        string `json:"group_name"`
 }
 
 func (m Message) ToMap() map[string]interface{} {
@@ -24,8 +24,8 @@ func (m Message) ToMap() map[string]interface{} {
 	}
 
 	if m.ConsumerInfo != nil {
-		if m.ConsumerInfo.ConsumerID != "" {
-			result["ConsumerID"] = m.ConsumerInfo.ConsumerID
+		if m.ConsumerInfo.ConsumerUsername != "" {
+			result["ConsumerUsername"] = m.ConsumerInfo.ConsumerUsername
 		}
 		if m.ConsumerInfo.StreamName != "" {
 			result["StreamName"] = m.ConsumerInfo.StreamName
@@ -69,8 +69,8 @@ func NewMessageFromMap(data map[string]interface{}, mesID string) (*Message, err
 	consumerInfo := ConsumerInfo{}
 	anyConsumerInfo := false // Flag to check if any consumer info is provided
 
-	if consumerID, ok := data["ConsumerID"].(string); ok && consumerID != "" {
-		consumerInfo.ConsumerID = consumerID
+	if ConsumerUsername, ok := data["ConsumerUsername"].(string); ok && ConsumerUsername != "" {
+		consumerInfo.ConsumerUsername = ConsumerUsername
 		anyConsumerInfo = true
 	}
 	if streamName, ok := data["StreamName"].(string); ok && streamName != "" {

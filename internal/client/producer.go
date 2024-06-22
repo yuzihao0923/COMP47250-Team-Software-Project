@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// // SendMessage: Send message to broker
+// SendMessage: Send message to broker
 func SendMessage(brokerPort string, msg message.Message, token string) error {
 	client := GetClientWithToken(token)
 

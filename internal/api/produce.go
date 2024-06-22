@@ -1,6 +1,7 @@
 package api
 
 import (
+	"COMP47250-Team-Software-Project/internal/auth"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"COMP47250-Team-Software-Project/internal/redis"
@@ -11,6 +12,7 @@ import (
 
 // HandleProduce: Handle the request of producer sending message
 func HandleProduce(w http.ResponseWriter, r *http.Request) {
+	producerUsername := r.Context().Value(auth.UsernameKey).(string)
 	var msg message.Message
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &msg)
 	if err != nil {
@@ -26,7 +28,7 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 	rsi := redis.RedisServiceInfo{
 		StreamName: msg.ConsumerInfo.StreamName,
 	}
-	err = rsi.WriteToStream(msg)
+	err = rsi.WriteToStream(msg, producerUsername)
 	if err != nil {
 		log.WriteErrorResponse(w, http.StatusInternalServerError, err)
 		return

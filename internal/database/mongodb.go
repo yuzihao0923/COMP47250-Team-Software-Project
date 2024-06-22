@@ -62,9 +62,13 @@ func GetUsersCollection() *mongo.Collection {
 
 func createInitialUsers() error {
 	users := []interface{}{
-		bson.M{"username": "broker", "password": "123", "role": "broker"},
-		bson.M{"username": "consumer", "password": "123", "role": "consumer"},
-		bson.M{"username": "producer", "password": "123", "role": "producer"},
+		bson.M{"username": "b1", "password": "123", "role": "broker"},
+		bson.M{"username": "c1", "password": "123", "role": "consumer"},
+		bson.M{"username": "c2", "password": "123", "role": "consumer"},
+		bson.M{"username": "c3", "password": "123", "role": "consumer"},
+		bson.M{"username": "p1", "password": "123", "role": "producer"},
+		bson.M{"username": "p2", "password": "123", "role": "producer"},
+		bson.M{"username": "p3", "password": "123", "role": "producer"},
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
