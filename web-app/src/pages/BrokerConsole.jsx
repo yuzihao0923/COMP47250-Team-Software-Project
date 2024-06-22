@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
-import Head from '../components/Header';
 
 const BrokerConsole = ({ username }) => { 
   const [brokerLogs, setBrokerLogs] = useState([]);
@@ -45,8 +44,6 @@ const BrokerConsole = ({ username }) => {
   }, [consumerLogs]);
 
   return (
-    <div>
-      <Head />
     <div className="console-container">
       <h1>Broker Console</h1>
       <div className="log-section broker-logs">
@@ -79,8 +76,6 @@ const BrokerConsole = ({ username }) => {
         </div>
       </div>
     </div>
-    </div>
-
   );
 };
 
