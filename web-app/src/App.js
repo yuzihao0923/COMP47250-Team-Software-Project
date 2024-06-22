@@ -1,19 +1,23 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './components/Login';
-import BrokerConsole from './components/BrokerConsole';
-import './css/App.css';
+import { Route, Routes, BrowserRouter } from 'react-router-dom';
+import Login from './pages/Login';
+import ConsumerConsole from './pages/ConsumerConsole';
+import BrokerConsole from './pages/BrokerConsole';
+import ProducerConsole from './pages/ProducerConsole';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/broker" element={<BrokerConsole />} />
-        <Route exact path="/" element={<Login />} />
-      </Routes>
-    </Router>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/consumer" element={<ConsumerConsole />} />
+          <Route path="/broker" element={<BrokerConsole />} />
+          <Route path="/producer" element={<ProducerConsole />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
