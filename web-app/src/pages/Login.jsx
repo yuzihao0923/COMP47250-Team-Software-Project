@@ -19,6 +19,8 @@ import {
   ProFormText,
 } from '@ant-design/pro-components';
 import { Button, Divider, Space, Tabs, message, theme } from 'antd';
+import {login} from '../store/userSlice'
+import { useDispatch } from 'react-redux';
 
 /**
  * @type {React.CSSProperties}
@@ -37,6 +39,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   const { token } = theme.useToken();
 
@@ -58,16 +61,17 @@ const Login = () => {
       });
       console.log(response);
 
-      const { token, role } = response.data;
+      const { token, role, username: user } = response.data;
 
-      // if (role === 'broker') {
-      //   localStorage.setItem(`${username}_token`, token); // Storing the JWT with username
-      //   navigate('/broker');
-      // } else {
-      //   setError('this user is not a broker, please try again');
-      //   setUsername('');
-      //   setPassword('');
-      // }
+      if (role === 'broker') {
+        // localStorage.setItem(`${username}_token`, token); // Storing the JWT with username
+        dispatch(login({user,token}))
+        navigate('/broker');
+      } else {
+        setError('this user is not a broker, please try again');
+        setUsername('');
+        setPassword('');
+      }
     } catch (err) {
       if (err.response && err.response.status === 401) {
         const errorMessage = err.response.data;
@@ -145,6 +149,7 @@ const Login = () => {
             },
           ]}
         />
+        {/* <Button type='primary'>123</Button> */}
       </LoginFormPage>
     </div>
   )

@@ -6,13 +6,21 @@ import reportWebVitals from './reportWebVitals';
 import { Provider } from 'react-redux'
 import { store, persistor } from './store';
 import { PersistGate } from 'redux-persist/integration/react';
+import { ConfigProvider } from 'antd';
+import enUS from 'antd/lib/locale/en_US';
+import { ProConfigProvider } from '@ant-design/pro-components';
+// import 'antd/dist/antd.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <App />
+        <ConfigProvider locale={enUS}>
+          <ProConfigProvider value={{ locale: enUS }}>
+            <App />
+          </ProConfigProvider>
+        </ConfigProvider>
       </PersistGate>
     </Provider>
   </React.StrictMode>

@@ -21,7 +21,7 @@ export default function Head() {
         <div className='bg-white border-b border-slate-200 shadow-md sticky top-0 z-50'>
             <header className='flex justify-between items-center max-w-6xl mx-auto h-20 max-h-20'>
                 <div className='flex-shrink-0'>
-                    <h1 className='text-black font-light text-2xl'>Hi, Jasmine</h1>
+                    <h1 className='text-black font-light text-2xl'>Hi, {username}</h1>
                 </div>
                 <div className='h-full flex items-center space-x-6 flex-nowrap '>
                     <Link className='contents lg:text-sm md:text-base sm:text-lg '>Change password</Link>
