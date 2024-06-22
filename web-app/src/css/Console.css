@@ -1,9 +1,10 @@
+/* src/css/Console.css */
 .console-container {
   padding: 20px;
   background-color: #f7f7f7;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
+  max-width: 80%;
   margin: 20px auto;
 }
 
@@ -12,17 +13,38 @@
   color: #333;
 }
 
+.log-section {
+  margin-bottom: 20px;
+}
+
+.broker-logs {
+  height: 40vh;
+}
+
+.producer-consumer-logs {
+  display: flex;
+  justify-content: space-between;
+  height: 40vh;
+}
+
+.log-subsection {
+  width: 49%;
+}
+
+.log-subsection h2,
+.broker-logs h2 {
+  margin: 10px 0 5px 0;
+  color: #555;
+}
+
 .console-logs {
-  width: 100%;
-  min-height: 400px;
-  max-height: 400px;
+  height: calc(100% - 30px);
   overflow-y: auto;
   background-color: #fff;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 8px;
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
-  margin: 0 auto;
 }
 
 .console-log {
