@@ -25,6 +25,7 @@ const Login = () => {
         message.warning('This account is not a broker, please try again');
       }
     } catch (err) {
+      console.log(err);
       message.error('Login failed. Please try again.');
     }
   };

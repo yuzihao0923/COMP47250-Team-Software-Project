@@ -2,18 +2,22 @@ import React, { useEffect, useState, useRef } from 'react';
 import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
 import Head from '../components/Header';
+import { useSelector } from 'react-redux';
 
-const BrokerConsole = ({ username }) => { 
+const BrokerConsole = () => { 
   const [brokerLogs, setBrokerLogs] = useState([]);
   const [producerLogs, setProducerLogs] = useState([]);
   const [consumerLogs, setConsumerLogs] = useState([]);
+
+  const user = useSelector(state => state.user)
 
   const brokerLogsEndRef = useRef(null);
   const producerLogsEndRef = useRef(null);
   const consumerLogsEndRef = useRef(null);
 
   useEffect(() => {
-    const socket = connectWebSocket(username, (message) => {
+    console.log(user);
+    const socket = connectWebSocket(user, (message) => {
       const cleanedMessage = message.replace(/"/g, '');
       
       if (cleanedMessage.includes('[Broker') || cleanedMessage.includes('[Redis')) {
@@ -30,7 +34,7 @@ const BrokerConsole = ({ username }) => {
         socket.close();
       }
     };
-  }, [username]);
+  }, [user]);
 
   useEffect(() => {
     brokerLogsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
