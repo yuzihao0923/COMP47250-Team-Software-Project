@@ -20,7 +20,7 @@ const Login = () => {
   
       if (role === 'broker') {
         dispatch(login({ user, token }));
-        navigate('/broker');
+        navigate('/home');
       } else {
         message.warning('This account is not a broker, please try again');
       }
