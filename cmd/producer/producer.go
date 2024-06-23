@@ -59,7 +59,7 @@ func main() {
 		}
 	}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 50; i++ {
 		payload := []byte(fmt.Sprintf("Hello %d", i))
 		SendMessage(brokerPort, "mystream", payload, token)
 		time.Sleep(time.Millisecond) // Slight delay to prevent overwhelming the broker
