@@ -4,6 +4,7 @@ import (
 	"COMP47250-Team-Software-Project/internal/api"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/redis"
+	"COMP47250-Team-Software-Project/pkg/pool"
 	"net/http"
 	"os"
 
@@ -20,8 +21,11 @@ func StartBroker() {
 
 	log.LogInfo("Broker", "Starting broker on port "+port+"...")
 
+	pool := pool.NewWorkerPool(10, 100) // 10 workers, JobQueueSize 100
+	pool.Start()
+
 	mux := http.NewServeMux()
-	api.RegisterHandlers(mux)
+	api.RegisterHandlers(mux, pool)
 
 	// Register WebSocket handler
 	mux.HandleFunc("/ws", api.HandleConnections)
