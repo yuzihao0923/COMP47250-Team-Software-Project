@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './pages/Login';
+import Login from './pages/Login.jsx';
 import BrokerConsole from './pages/BrokerConsole.jsx';
 import ProtectedRoute from './components/ProtectRoute.jsx';
 import './css/App.css';

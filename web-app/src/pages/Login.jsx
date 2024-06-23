@@ -16,8 +16,8 @@ const Login = () => {
   const handleLogin = async (loginForm) => {
     try {
       const response = await axios.post('http://localhost:8080/login', loginForm);
-      const { token, role, username: user} = response.data;
-
+      const { token, role, username: user } = response.data;
+  
       if (role === 'broker') {
         dispatch(login({ user, token }));
         navigate('/broker');
@@ -25,10 +25,19 @@ const Login = () => {
         message.warning('This account is not a broker, please try again');
       }
     } catch (err) {
-      console.error('Login error:', err.response);
-      message.error('Login failed. Please try again.');
+      if (err.response && err.response.data) {
+        const errorMessage = err.response.data;
+        if (errorMessage.includes('username')) {
+          message.error('This username is not valid, please try again');
+        } else if (errorMessage.includes('password')) {
+          message.error('This password is incorrect, please try again');
+        } else {
+          message.error('Login failed. Please try again.');
+        }
+      }
     }
   };
+  
 
   return (
     <div style={{ backgroundColor: 'white', height: '100vh' }}>
