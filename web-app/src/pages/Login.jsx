@@ -25,16 +25,8 @@ const Login = () => {
         message.warning('This account is not a broker, please try again');
       }
     } catch (err) {
-      if (err.response && err.response.data) {
-        const errorMessage = err.response.data;
-        if (errorMessage.includes('username')) {
-          message.error('This username is not valid, please try again');
-        } else if (errorMessage.includes('password')) {
-          message.error('This password is incorrect, please try again');
-        } else {
-          message.error('Login failed. Please try again.');
-        }
-      }
+      console.log(err);
+      message.error('Login failed. Please try again.');
     }
   };
   
