@@ -16,8 +16,8 @@ const Login = () => {
   const handleLogin = async (loginForm) => {
     try {
       const response = await axios.post('http://localhost:8080/login', loginForm);
-      const { token, role, username: user} = response.data;
-
+      const { token, role, username: user } = response.data;
+  
       if (role === 'broker') {
         dispatch(login({ user, token }));
         navigate('/broker');
@@ -29,6 +29,7 @@ const Login = () => {
       message.error('Login failed. Please try again.');
     }
   };
+  
 
   return (
     <div style={{ backgroundColor: 'white', height: '100vh' }}>

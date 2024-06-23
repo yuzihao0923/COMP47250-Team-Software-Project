@@ -1,26 +1,32 @@
-import { configureStore } from '@reduxjs/toolkit'
-import userReducer from './userSlice'
-import { persistStore, persistReducer } from 'redux-persist'
-import storage from 'redux-persist/lib/storage'
-import { combineReducers } from "redux"
+import { configureStore } from '@reduxjs/toolkit';
+import userReducer from './userSlice';
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import { combineReducers } from 'redux';
+import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 
 const persistConfig = {
-    key: 'root',   // 在localStorge中生成key为root的值
-    storage,
-    // blacklist: ['user'],     //设置某个 reducer 数据不持久化，
-    whitelist: ['user']        // 设置只有某个 reducer 持久化，其他都不持久化
-}
+  key: 'root',
+  storage,
+  whitelist: ['user'],
+};
 
 const rootReducer = combineReducers({
-    user: userReducer
-})
+  user: userReducer,
+});
 
-const myPersistReducer = persistReducer(persistConfig, rootReducer)
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 const store = configureStore({
-    reducer: myPersistReducer
-})
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+});
 
-const persistor = persistStore(store)
+const persistor = persistStore(store);
 
-export { store, persistor }
+export { store, persistor };
