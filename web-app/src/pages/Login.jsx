@@ -16,10 +16,10 @@ const Login = () => {
   const handleLogin = async (loginForm) => {
     try {
       const response = await axios.post('http://localhost:8080/login', loginForm);
-      const { token, role, username} = response.data;
+      const { token, role, username: user} = response.data;
 
       if (role === 'broker') {
-        dispatch(login({ username, token }));
+        dispatch(login({ user, token }));
         navigate('/broker');
       } else {
         message.warning('This account is not a broker, please try again');
