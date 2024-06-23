@@ -85,9 +85,9 @@ func (rsi *RedisServiceInfo) CreateConsumerGroup() error {
 }
 
 // WriteToStream writes data to the specified Redis Stream.
-func (rsi *RedisServiceInfo) WriteToStream(mes message.Message) error {
+func (rsi *RedisServiceInfo) WriteToStream(mes message.Message, producerUsername string) error {
 	ctx := context.Background()
-	_, err := Rdb.XAdd(ctx, &redis.XAddArgs{
+	messageID, err := Rdb.XAdd(ctx, &redis.XAddArgs{
 		Stream: rsi.StreamName,
 		ID:     "*", // Auto-generate ID
 		Values: mes.ToMap(),
@@ -96,16 +96,16 @@ func (rsi *RedisServiceInfo) WriteToStream(mes message.Message) error {
 		log.LogError("Redis", fmt.Sprintf("Failed to write to stream '%s': %v", rsi.StreamName, err))
 		return err
 	}
-	log.LogInfo("Redis", fmt.Sprintf("Data written to stream '%s' successfully", rsi.StreamName))
-	log.LogInfo("Producer", fmt.Sprintf("Send '%s' successfully", mes.Payload))
+	log.LogInfo("Redis", fmt.Sprintf("Message from '%s' to stream '%s' successfully", producerUsername, rsi.StreamName))
+	log.LogInfo(fmt.Sprintf("Producer: %s", producerUsername), fmt.Sprintf("sent %s: '%s' successfully", messageID, mes.Payload))
 	return nil
 }
 
 // ReadFromStream reads data from the specified Redis Stream for a consumer group.
-func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName string) ([]redis.XStream, error) {
+func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerUsername string) ([]redis.XStream, error) {
 	streams, err := Rdb.XReadGroup(ctx, &redis.XReadGroupArgs{
 		Group:    rsi.GroupName,
-		Consumer: consumerName,
+		Consumer: consumerUsername,
 		Streams:  []string{rsi.StreamName, ">"},
 		Count:    10,
 		Block:    30 * time.Second,
@@ -121,7 +121,12 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName st
 
 	for _, stream := range streams {
 		for _, mes := range stream.Messages {
-			log.LogInfo("Consumer", fmt.Sprintf("received: %s", mes.ID))
+			message, err := message.NewMessageFromMap(mes.Values, mes.ID)
+			if err != nil {
+				log.LogError("Message", fmt.Sprintf("Failed to convert message from map: %v", err))
+				continue
+			}
+			log.LogInfo(fmt.Sprintf("Consumer: %s", consumerUsername), fmt.Sprintf("received: %s: '%s'", mes.ID, message.Payload))
 		}
 	}
 
@@ -129,13 +134,13 @@ func (rsi *RedisServiceInfo) ReadFromStream(ctx context.Context, consumerName st
 }
 
 // ACK calls xack to remove msg from pending list
-func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string) error {
+func (rsi *RedisServiceInfo) XACK(ctx context.Context, messageID string, consumerUsername string) error {
 	_, err := Rdb.XAck(ctx, rsi.StreamName, rsi.GroupName, messageID).Result()
 	if err != nil {
 		log.LogError("Redis", fmt.Sprintf("Failed to acknowledge message '%s' in stream '%s': %v", messageID, rsi.StreamName, err))
 		return err
 	}
-	log.LogInfo("Redis", fmt.Sprintf("Message '%s' acknowledged successfully in stream '%s'", messageID, rsi.StreamName))
-	log.LogInfo("Consumer", fmt.Sprintf("acknowledged: %s", messageID))
+	log.LogInfo("Redis", fmt.Sprintf("Message '%s' to '%s' acknowledged successfully in stream '%s'", messageID, consumerUsername, rsi.StreamName))
+	log.LogInfo(fmt.Sprintf("Consumer: %s", consumerUsername), fmt.Sprintf("acknowledged: %s", messageID))
 	return nil
 }
