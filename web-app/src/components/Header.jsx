@@ -24,7 +24,7 @@ export default function Head() {
                     <h1 className='text-black font-light text-2xl'>Hi, {username}</h1>
                 </div>
                 <div className='h-full flex items-center space-x-6 flex-nowrap '>
-                    <Link className='contents lg:text-sm md:text-base sm:text-lg '>Change password</Link>
+                    {/* <Link className='contents lg:text-sm md:text-base sm:text-lg '>Change password</Link> */}
                     <Button type="primary" size={'middle'} icon={<LogoutOutlined />} onClick={logout}>
                         Logout
                     </Button>

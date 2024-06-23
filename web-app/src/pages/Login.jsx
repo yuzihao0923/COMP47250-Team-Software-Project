@@ -15,18 +15,17 @@ const Login = () => {
 
   const handleLogin = async (loginForm) => {
     try {
-      const response = await axios.post('http://172.25.186.92:8080/login', loginForm);
-      console.log('Response:', response);
-  
+      const response = await axios.post('http://localhost:8080/login', loginForm);
       const { token, role, username: user } = response.data;
   
       if (role === 'broker') {
         dispatch(login({ user, token }));
-        navigate('/broker');
+        navigate('/home');
       } else {
         message.warning('This account is not a broker, please try again');
       }
     } catch (err) {
+
       console.error('Axios request error:', err); // catch axios error
       if (err.response) {
         // error about server response
@@ -43,8 +42,10 @@ const Login = () => {
         console.error('Login error message:', err.message);
         message.error('Login failed. Please try again.');
       }
+
     }
   };
+  
 
   return (
     <div style={{ backgroundColor: 'white', height: '100vh' }}>

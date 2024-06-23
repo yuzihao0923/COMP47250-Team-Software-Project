@@ -69,7 +69,8 @@
 
 - Golang
 - Redis
-- Node.js 
+- Node.js 22.3.0
+- npm 10.8.1
 - MongoDB
 
 After installing above, build the project named "COMP47250-Team-Software-Project".
@@ -93,6 +94,7 @@ cd web-app
 
 ```bash
 npm install
+npm install chart.js react-chartjs-2
 ```
 
 ## How to Run locally
