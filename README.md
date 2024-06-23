@@ -94,6 +94,7 @@ cd web-app
 
 ```bash
 npm install
+npm install chart.js react-chartjs-2
 ```
 
 ## How to Run locally
