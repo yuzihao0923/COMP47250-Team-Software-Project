@@ -2,7 +2,6 @@ package api
 
 import (
 	"COMP47250-Team-Software-Project/internal/auth"
-	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"COMP47250-Team-Software-Project/internal/redis"
 	"COMP47250-Team-Software-Project/pkg/serializer"
@@ -11,18 +10,16 @@ import (
 )
 
 // HandleProduce: Handle the request of producer sending message
-func HandleProduce(w http.ResponseWriter, r *http.Request) {
+func HandleProduce(r *http.Request) HandlerResult {
 	producerUsername := r.Context().Value(auth.UsernameKey).(string)
 	var msg message.Message
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &msg)
 	if err != nil {
-		log.WriteErrorResponse(w, http.StatusBadRequest, err)
-		return
+		return HandlerResult{nil, fmt.Errorf("failed to deserialize message: %v", err)}
 	}
 
 	if msg.ConsumerInfo.StreamName == "" {
-		log.WriteErrorResponse(w, http.StatusBadRequest, fmt.Errorf("stream name is required"))
-		return
+		return HandlerResult{nil, fmt.Errorf("stream name is required")}
 	}
 
 	rsi := redis.RedisServiceInfo{
@@ -30,9 +27,8 @@ func HandleProduce(w http.ResponseWriter, r *http.Request) {
 	}
 	err = rsi.WriteToStream(msg, producerUsername)
 	if err != nil {
-		log.WriteErrorResponse(w, http.StatusInternalServerError, err)
-		return
+		return HandlerResult{nil, fmt.Errorf("failed to write to stream: %v", err)}
 	}
 
-	w.WriteHeader(http.StatusOK)
+	return HandlerResult{Data: "Message produced successfully", Error: nil}
 }
