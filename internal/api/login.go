@@ -5,21 +5,21 @@ import (
 	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/pkg/serializer"
 	"context"
+	"errors"
 	"net/http"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func HandleLogin(w http.ResponseWriter, r *http.Request) {
+func HandleLogin(r *http.Request) HandlerResult {
 	var creds struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &creds)
 	if err != nil {
-		http.Error(w, "Failed to parse login request", http.StatusBadRequest)
-		return
+		return HandlerResult{nil, errors.New("failed to parse login request")}
 	}
 
 	var user struct {
@@ -31,28 +31,31 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			http.Error(w, "This username is not valid, please try again", http.StatusUnauthorized)
+			return HandlerResult{nil, errors.New("this username is not valid, please try again")}
 		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return HandlerResult{nil, err}
 		}
-		return
 	}
 
 	if user.Password != creds.Password {
-		http.Error(w, "This password is incorrect, please try again", http.StatusUnauthorized)
-		return
+		return HandlerResult{nil, errors.New("this password is incorrect, please try again")}
 	}
 
 	token, err := auth.GenerateJWT(creds.Username)
 	if err != nil {
-		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
-		return
+		return HandlerResult{nil, errors.New("failed to generate token")}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	serializer.JSONSerializerInstance.SerializeToWriter(map[string]string{
+	// w.Header().Set("Content-Type", "application/json")
+	// serializer.JSONSerializerInstance.SerializeToWriter(map[string]string{
+	// 	"token":    token,
+	// 	"username": creds.Username,
+	// 	"role":     user.Role,
+	// }, w)
+	data := map[string]string{
 		"token":    token,
 		"username": creds.Username,
 		"role":     user.Role,
-	}, w)
+	}
+	return HandlerResult{Data: data, Error: nil}
 }

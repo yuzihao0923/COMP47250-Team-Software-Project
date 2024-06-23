@@ -25,8 +25,24 @@ const Login = () => {
         message.warning('This account is not a broker, please try again');
       }
     } catch (err) {
-      console.log(err);
-      message.error('Login failed. Please try again.');
+
+      console.error('Axios request error:', err); // catch axios error
+      if (err.response) {
+        // error about server response
+        console.error('Login error response data:', err.response.data);
+        console.error('Login error response status:', err.response.status);
+        console.error('Login error response headers:', err.response.headers);
+        message.error(err.response.data);
+      } else if (err.request) {
+        // send successfully but no response
+        console.error('Login error request data:', err.request);
+        message.error('No response received from server');
+      } else {
+        // other error
+        console.error('Login error message:', err.message);
+        message.error('Login failed. Please try again.');
+      }
+
     }
   };
   
