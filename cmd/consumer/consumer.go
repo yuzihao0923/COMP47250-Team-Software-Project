@@ -47,13 +47,12 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token 
 		}
 
 		for _, msg := range messages {
-			time.Sleep(time.Millisecond) // Ensure the order of log between "producer send" & "consumer receive"
 			log.LogInfo("Consumer", "Consumer received message: "+string(msg.Payload))
 
 			AcknowledgeMessage(brokerPort, msg, token)
 		}
 
-		time.Sleep(time.Second * 1)
+		// time.Sleep(time.Second * 1)
 	}
 }
 

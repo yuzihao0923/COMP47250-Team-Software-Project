@@ -1,7 +1,6 @@
 package client
 
 import (
-	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"COMP47250-Team-Software-Project/pkg/serializer"
 	"bytes"
@@ -69,7 +68,7 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token 
 		return nil, fmt.Errorf("error deserializing response body: %v", err)
 	}
 
-	log.LogInfo("Consumer", fmt.Sprintf("Messages consumed from broker: %d messages", len(messages)))
+	// log.LogInfo("Consumer", fmt.Sprintf("Messages consumed from broker: %d messages", len(messages)))
 	return messages, nil
 }
 
