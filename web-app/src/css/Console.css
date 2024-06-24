@@ -1,4 +1,3 @@
-/* src/css/Console.css */
 .console-container {
   padding: 20px;
   background: linear-gradient(145deg, #2a2f33, #3c4247);
@@ -34,7 +33,7 @@
 .log-subsection {
   width: 49%;
   flex-grow: 1;
-  overflow-y: auto; /* Ensure each log subsection can scroll independently */
+  overflow-y: auto; 
 }
 
 .log-subsection h2, .broker-logs h2 {
@@ -42,8 +41,8 @@
   color: #81d4fa;
   font-weight: bold;
   position: sticky;
-  top: 0; /* Stick the header to the top of its container */
-  background-color: transparent; /* Make the header background transparent */
+  top: 0; 
+  background-color: transparent; 
   z-index: 1;
 }
 
@@ -52,9 +51,9 @@
   border: 1px solid #414a4c;
   border-radius: 8px;
   box-shadow: inset 0 0 10px rgba(0, 255, 252, 0.2);
-  height: 30vh; /* Set a fixed height for log containers */
-  overflow-y: auto; /* Allow content to scroll if it exceeds the fixed height */
-  background-color: transparent; /* Make background transparent to remove the extra layer */
+  height: 30vh; 
+  overflow-y: auto; 
+  background-color: transparent; 
 }
 
 .console-log {
@@ -69,7 +68,7 @@
   border-bottom: none;
 }
 
-/* Custom scrollbar styles */
+
 .console-logs::-webkit-scrollbar {
   width: 8px;
 }
@@ -91,11 +90,11 @@
 .charts-container {
   display: flex;
   justify-content: space-between;
-  gap: 10px; /* Adjust gap between charts */
+  gap: 10px; 
 }
 
 .chart-wrapper {
   flex: 1;
-  min-width: 0; /* Prevent overflow */
-  height: 500px; /* Set a fixed height for the charts */
+  min-width: 0; 
+  height: 500px; 
 }

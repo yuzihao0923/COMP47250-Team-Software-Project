@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
-import 'chartjs-adapter-date-fns'; // 新增的导入
+import 'chartjs-adapter-date-fns';
 import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
 
@@ -18,11 +18,11 @@ const BrokerConsole = () => {
   const [intervalBrokerAcknowledgedMessageCount, setIntervalBrokerAcknowledgedMessageCount] = useState(0);
 
   const [producerChartData, setProducerChartData] = useState({
-    labels: [], // Time labels for the chart
+    labels: [],
     datasets: [
       {
         label: 'Producer Messages per Interval',
-        data: [], // Data points for the chart
+        data: [], 
         borderColor: 'rgb(75, 192, 192)',
         tension: 0.1,
         fill: false,
@@ -94,7 +94,7 @@ const BrokerConsole = () => {
         const newLabels = [...prevData.labels, currentTime];
         const newDataPoints = [...prevData.datasets[0].data, intervalProducerMessageCount];
 
-        if (newLabels.length > 20) { // 每60秒显示12个点（每5秒更新一次）
+        if (newLabels.length > 20) { 
           newLabels.shift();
           newDataPoints.shift();
         }
@@ -154,9 +154,9 @@ const BrokerConsole = () => {
             type: 'time',
             time: {
                 unit: 'second',
-                stepSize: 10, // 每5秒一个刻度
+                stepSize: 10,
                 displayFormats: {
-                  second: 'h:mm:ss a', // 显示格式
+                  second: 'h:mm:ss a',
                 }
             },
             ticks: {
@@ -170,7 +170,7 @@ const BrokerConsole = () => {
                     return date.toLocaleTimeString();
                 }
             },
-            min: new Date(Date.now() - 60000), // 显示最近60秒的数据
+            min: new Date(Date.now() - 60000),
             max: new Date()
         },
         y: {
