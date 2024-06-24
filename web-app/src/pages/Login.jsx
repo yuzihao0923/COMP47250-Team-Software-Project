@@ -20,29 +20,21 @@ const Login = () => {
   
       if (role === 'broker') {
         dispatch(login({ user, token }));
-        navigate('/home');
+        navigate('/broker');
       } else {
         message.warning('This account is not a broker, please try again');
       }
     } catch (err) {
-
-      console.error('Axios request error:', err); // catch axios error
-      if (err.response) {
-        // error about server response
-        console.error('Login error response data:', err.response.data);
-        console.error('Login error response status:', err.response.status);
-        console.error('Login error response headers:', err.response.headers);
-        message.error(err.response.data);
-      } else if (err.request) {
-        // send successfully but no response
-        console.error('Login error request data:', err.request);
-        message.error('No response received from server');
-      } else {
-        // other error
-        console.error('Login error message:', err.message);
-        message.error('Login failed. Please try again.');
+      if (err.response && err.response.data) {
+        const errorMessage = err.response.data;
+        if (errorMessage.includes('username')) {
+          message.error('This username is not valid, please try again');
+        } else if (errorMessage.includes('password')) {
+          message.error('This password is incorrect, please try again');
+        } else {
+          message.error('Login failed. Please try again.');
+        }
       }
-
     }
   };
   
