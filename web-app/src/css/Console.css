@@ -1,74 +1,80 @@
-/* src/css/Console.css */
 .console-container {
   padding: 20px;
-  background: linear-gradient(145deg, #2a2f33, #3c4247); /* 更新渐变背景为稍亮色调 */
+  background: linear-gradient(145deg, #2a2f33, #3c4247);
   border-radius: 8px;
-  box-shadow: 0 2px 15px rgba(255, 255, 255, 0.2); /* 调亮外发光效果 */
+  box-shadow: 0 2px 15px rgba(255, 255, 255, 0.2);
   max-width: 95%;
   margin: 40px auto;
-  color: #cfd8dc; /* 浅灰色文字提高对比度 */
+  color: #cfd8dc;
 }
 
 .console-container h1 {
   text-align: center;
   font-size: 24px;
-  font-weight: bold; /* 加粗标题字体 */
-  color: #ffffff; /* 白色标题 */
+  font-weight: bold;
+  color: #ffffff;
 }
 
 .log-section {
-  margin-bottom: 30px;
+  margin-bottom: 10px;
 }
 
-.broker-logs, .producer-consumer-logs {
+.logs {
   height: 40vh;
-  overflow-y: auto; /* 添加滚动条以避免内容溢出 */
-  background-color: #2a2f33; /* 稍亮的背景色 */
+  background-color: transparent;
 }
 
 .producer-consumer-logs {
   display: flex;
   justify-content: space-between;
-  gap: 20px;
+  gap: 10px;
 }
 
 .log-subsection {
   width: 49%;
   flex-grow: 1;
+  overflow-y: auto; 
 }
 
 .log-subsection h2, .broker-logs h2 {
   margin-bottom: 10px;
-  color: #81d4fa; /* 使用亮蓝色增强标题可读性 */
-  font-weight: bold; /* 加粗标题字体 */
+  color: #81d4fa;
+  font-weight: bold;
+  position: sticky;
+  top: 0; 
+  background-color: transparent; 
+  z-index: 1;
 }
 
 .console-logs {
   padding: 10px;
-  border: 1px solid #414a4c; /* 暗灰色边框增加可见性 */
+  border: 1px solid #414a4c;
   border-radius: 8px;
-  box-shadow: inset 0 0 10px rgba(0, 255, 252, 0.2); /* 调亮内发光效果 */
+  box-shadow: inset 0 0 10px rgba(0, 255, 252, 0.2);
+  height: 30vh; 
+  overflow-y: auto; 
+  background-color: transparent; 
 }
 
 .console-log {
   font-family: 'Courier New', monospace;
   white-space: pre-wrap;
   padding: 5px 0;
-  border-bottom: 1px solid #414a4c; /* 暗灰色分割线 */
-  font-weight: bold; /* 加粗日志字体 */
+  border-bottom: 1px solid #414a4c;
+  font-weight: bold;
 }
 
 .console-log:last-child {
   border-bottom: none;
 }
 
-/* 自定义滚动条样式 */
+
 .console-logs::-webkit-scrollbar {
   width: 8px;
 }
 
 .console-logs::-webkit-scrollbar-thumb {
-  background-color: #81d4fa; /* 亮蓝色滚动条 */
+  background-color: #81d4fa;
   border-radius: 4px;
 }
 
@@ -79,4 +85,16 @@
 .console-container {
   width: 100%;
   height: 1335px;
+}
+
+.charts-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px; 
+}
+
+.chart-wrapper {
+  flex: 1;
+  min-width: 0; 
+  height: 500px; 
 }

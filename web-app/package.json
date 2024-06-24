@@ -23,6 +23,7 @@
     "axios": "^1.7.2",
     "babel-runtime": "^6.26.0",
     "chart.js": "^4.4.3",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "css-select": "^5.1.0",
     "nth-check": "^2.1.1",
     "react": "^18.3.1",
