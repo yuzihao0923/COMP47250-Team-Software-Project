@@ -1,6 +1,7 @@
 package client
 
 import (
+	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"COMP47250-Team-Software-Project/pkg/serializer"
 	"bytes"
@@ -69,6 +70,9 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token 
 	}
 
 	// log.LogInfo("Consumer", fmt.Sprintf("Messages consumed from broker: %d messages", len(messages)))
+	if len(messages) == 0 {
+		log.LogWarning("Consumer", "No new message now, please wait.")
+	}
 	return messages, nil
 }
 
