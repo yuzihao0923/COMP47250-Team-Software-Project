@@ -35,7 +35,7 @@ func GetPasswordInput(prompt string) string {
 
 // AuthenticateUser authenticates the user with the given username and password
 func AuthenticateUser(username, password string) (string, string, error) {
-	if database.GetUsersCollection() == nil {
+	if database.GetDBClient().UsersCollection == nil {
 		return "", "", fmt.Errorf("users collection is not initialized")
 	}
 

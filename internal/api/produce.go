@@ -10,8 +10,9 @@ import (
 )
 
 // HandleProduce: Handle the request of producer sending message
-func HandleProduce(r *http.Request) HandlerResult {
-	producerUsername := r.Context().Value(auth.UsernameKey).(string)
+func HandleProduce(rsi *redis.RedisServiceInfo, r *http.Request) HandlerResult {
+	ctx := r.Context()
+	producerUserName := r.Context().Value(auth.UsernameKey).(string)
 	var msg message.Message
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &msg)
 	if err != nil {
@@ -22,10 +23,11 @@ func HandleProduce(r *http.Request) HandlerResult {
 		return HandlerResult{nil, fmt.Errorf("stream name is required")}
 	}
 
-	rsi := redis.RedisServiceInfo{
+	rsi = &redis.RedisServiceInfo{
+		Client:     rsi.Client,
 		StreamName: msg.ConsumerInfo.StreamName,
 	}
-	err = rsi.WriteToStream(msg, producerUsername)
+	err = rsi.WriteToStream(ctx, producerUserName, msg)
 	if err != nil {
 		return HandlerResult{nil, fmt.Errorf("failed to write to stream: %v", err)}
 	}
