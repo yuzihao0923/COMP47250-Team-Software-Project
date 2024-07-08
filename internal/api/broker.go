@@ -2,9 +2,12 @@ package api
 
 import (
 	"COMP47250-Team-Software-Project/internal/auth"
+	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/pkg/pool"
 	"COMP47250-Team-Software-Project/pkg/serializer"
 	"net/http"
+
+	"COMP47250-Team-Software-Project/internal/redis"
 )
 
 type HandlerResult struct {
@@ -12,7 +15,7 @@ type HandlerResult struct {
 	Error error
 }
 
-func RegisterHandlers(mux *http.ServeMux, workerPool *pool.WorkerPool) {
+func RegisterHandlers(mux *http.ServeMux, workerPool *pool.WorkerPool, db *database.MongoDB, rsi *redis.RedisServiceInfo) {
 	jwtMiddleware := auth.JWTAuthMiddleware
 
 	mux.Handle("/login", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +23,7 @@ func RegisterHandlers(mux *http.ServeMux, workerPool *pool.WorkerPool) {
 		defer close(resultChan)
 
 		workerPool.Submit(pool.JobFunc(func() {
-			resultChan <- HandleLogin(r)
+			resultChan <- HandleLogin(db, r)
 		}))
 
 		// Handle result from worker
@@ -38,7 +41,7 @@ func RegisterHandlers(mux *http.ServeMux, workerPool *pool.WorkerPool) {
 		defer close(resultChan)
 
 		workerPool.Submit(pool.JobFunc(func() {
-			resultChan <- HandleProduce(r)
+			resultChan <- HandleProduce(rsi, r)
 		}))
 
 		result := <-resultChan
@@ -55,7 +58,7 @@ func RegisterHandlers(mux *http.ServeMux, workerPool *pool.WorkerPool) {
 		defer close(resultChan)
 
 		workerPool.Submit(pool.JobFunc(func() {
-			resultChan <- HandleRegister(r)
+			resultChan <- HandleRegister(rsi, r)
 		}))
 
 		result := <-resultChan
@@ -72,7 +75,7 @@ func RegisterHandlers(mux *http.ServeMux, workerPool *pool.WorkerPool) {
 		defer close(resultChan)
 
 		workerPool.Submit(pool.JobFunc(func() {
-			resultChan <- HandleConsume(r)
+			resultChan <- HandleConsume(rsi, r)
 		}))
 
 		result := <-resultChan
@@ -89,7 +92,7 @@ func RegisterHandlers(mux *http.ServeMux, workerPool *pool.WorkerPool) {
 		defer close(resultChan)
 
 		workerPool.Submit(pool.JobFunc(func() {
-			resultChan <- HandleACK(r)
+			resultChan <- HandleACK(rsi, r)
 		}))
 
 		result := <-resultChan

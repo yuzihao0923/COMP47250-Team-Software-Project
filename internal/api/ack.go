@@ -10,7 +10,7 @@ import (
 )
 
 // HandleACK: Handle Consumers' ACK.
-func HandleACK(r *http.Request) HandlerResult {
+func HandleACK(rsi *redis.RedisServiceInfo, r *http.Request) HandlerResult {
 	consumerUsername := r.Context().Value(auth.UsernameKey).(string)
 	var msg message.Message
 	err := serializer.JSONSerializerInstance.DeserializeFromReader(r.Body, &msg)
@@ -18,7 +18,8 @@ func HandleACK(r *http.Request) HandlerResult {
 		return HandlerResult{Error: fmt.Errorf("failed to deserialize message: %v", err)}
 	}
 
-	rsi := redis.RedisServiceInfo{
+	rsi = &redis.RedisServiceInfo{
+		Client:     rsi.Client,
 		StreamName: msg.ConsumerInfo.StreamName,
 		GroupName:  msg.ConsumerInfo.GroupName,
 	}

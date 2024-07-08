@@ -13,7 +13,7 @@ import (
 )
 
 // HandleRegister: Handle the register request of consumer group
-func HandleRegister(r *http.Request) HandlerResult {
+func HandleRegister(rsi *redis.RedisServiceInfo, r *http.Request) HandlerResult {
 	ctx := r.Context()
 	if ctx.Err() != nil {
 		return HandlerResult{Error: fmt.Errorf("request canceled or the client closed the connection")}
@@ -29,12 +29,13 @@ func HandleRegister(r *http.Request) HandlerResult {
 		return HandlerResult{Error: fmt.Errorf("consumer info is required")}
 	}
 
-	rsi := redis.RedisServiceInfo{
+	rsi = &redis.RedisServiceInfo{
+		Client:     rsi.Client,
 		StreamName: msg.ConsumerInfo.StreamName,
 		GroupName:  msg.ConsumerInfo.GroupName,
 	}
 
-	err = rsi.CreateConsumerGroup()
+	err = rsi.CreateConsumerGroup(ctx)
 	if err != nil {
 		if strings.Contains(err.Error(), "Consumer Group name already exists") {
 			return HandlerResult{Data: "Consumer Group name already exists"} // Return OK status to not block the process
@@ -47,7 +48,7 @@ func HandleRegister(r *http.Request) HandlerResult {
 }
 
 // HandleConsume: Handle consumers' request to consume message
-func HandleConsume(r *http.Request) HandlerResult {
+func HandleConsume(rsi *redis.RedisServiceInfo, r *http.Request) HandlerResult {
 	streamName := r.URL.Query().Get("stream")
 	if streamName == "" {
 		return HandlerResult{Error: fmt.Errorf("stream name is required")}
@@ -63,7 +64,8 @@ func HandleConsume(r *http.Request) HandlerResult {
 		return HandlerResult{Error: fmt.Errorf("consumer username is required")}
 	}
 
-	rsi := redis.RedisServiceInfo{
+	rsi = &redis.RedisServiceInfo{
+		Client:     rsi.Client,
 		StreamName: streamName,
 		GroupName:  groupName,
 	}

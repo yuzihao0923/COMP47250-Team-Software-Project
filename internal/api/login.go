@@ -8,11 +8,10 @@ import (
 	"errors"
 	"net/http"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func HandleLogin(r *http.Request) HandlerResult {
+func HandleLogin(db *database.MongoDB, r *http.Request) HandlerResult {
 	var creds struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -22,12 +21,13 @@ func HandleLogin(r *http.Request) HandlerResult {
 		return HandlerResult{nil, errors.New("failed to parse login request")}
 	}
 
-	var user struct {
-		Username string `bson:"username"`
-		Password string `bson:"password"`
-		Role     string `bson:"role"`
-	}
-	err = database.UsersCollection.FindOne(context.TODO(), bson.M{"username": creds.Username}).Decode(&user)
+	// var user struct {
+	// 	Username string `bson:"username"`
+	// 	Password string `bson:"password"`
+	// 	Role     string `bson:"role"`
+	// }
+	ctx := context.Background()
+	user, err := db.GetUserByUsername(ctx, creds.Username)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
