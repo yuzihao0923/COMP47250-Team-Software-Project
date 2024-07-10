@@ -5,7 +5,7 @@ let socket;
 export const connectWebSocket = (user, onMessageCallback) => {
   // const token = localStorage.getItem(`${username}_token`);
   const token = user.token
-  console.log(token);
+  // console.log(token);
 
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
     return socket;

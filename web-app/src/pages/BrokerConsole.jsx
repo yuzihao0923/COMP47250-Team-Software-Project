@@ -58,7 +58,7 @@ const BrokerConsole = () => {
   const updateInterval = useRef(null);
 
   useEffect(() => {
-    const socket = connectWebSocket(user.username, (message) => {
+    const socket = connectWebSocket(user, (message) => {
       const cleanedMessage = message.replace(/"/g, '');
       if (cleanedMessage.includes('[Producer')) {
         setProducerLogs(prevLogs => [...prevLogs, cleanedMessage]);
