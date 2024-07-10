@@ -42,6 +42,11 @@ func RegisterHandlers(mux *http.ServeMux, workerPool *pool.WorkerPool, db *datab
 
 		workerPool.Submit(pool.JobFunc(func() {
 			resultChan <- HandleProduce(rsi, r)
+			// 模拟 broker 出现错误
+			// resultChan <- HandlerResult{
+			// 	Data:  nil,
+			// 	Error: fmt.Errorf("broker cant handle produce"),
+			// }
 		}))
 
 		result := <-resultChan

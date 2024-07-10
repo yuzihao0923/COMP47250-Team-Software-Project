@@ -1,11 +1,12 @@
 // src/services/socket.js
-const API_URL = 'ws://172.25.186.92:8080/ws';
+const API_URL = 'ws://localhost:8080/ws';
+// const API_URL = 'ws://172.25.186.92:8080/ws';
 let socket;
 
 export const connectWebSocket = (user, onMessageCallback) => {
   // const token = localStorage.getItem(`${username}_token`);
   const token = user.token
-  console.log(token);
+  // console.log(token);
 
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
     return socket;

@@ -85,6 +85,15 @@ func (rsi *RedisServiceInfo) CreateConsumerGroup(ctx context.Context) error {
 }
 
 func (rsi *RedisServiceInfo) WriteToStream(ctx context.Context, producerUserName string, mes message.Message) error {
+	// 模拟redis没有打开
+	// rsi.Client.Close()
+
+	// 模拟超时
+	// 假设超时时间是1毫秒，但是操作需要2毫秒才能完成，就会超时 context deadline exceeded
+	// ctx, cancel := context.WithTimeout(ctx, 1*time.Millisecond)
+	// defer cancel()
+	// time.Sleep(2 * time.Millisecond)
+
 	messageID, err := rsi.Client.XAdd(ctx, &redis.XAddArgs{
 		Stream: rsi.StreamName,
 		ID:     "*", // Auto-generate ID
