@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/rs/cors"
@@ -72,8 +73,12 @@ func (b *Broker) Start() {
 		log.LogInfo("Broker", "Broker listening on "+b.Address+"...")
 		log.LogInfo("Broker", "Broker waiting for connections...")
 		err := server.ListenAndServe()
-		if err != http.ErrServerClosed {
-			log.LogError("Broker", "broker listen error: "+err.Error())
+		if err != nil {
+			if strings.Contains(err.Error(), "address already in use") {
+				log.LogWarning("Broker", "broker listen warning: "+err.Error())
+			} else if err != http.ErrServerClosed {
+				log.LogError("Broker", "broker listen error: "+err.Error())
+			}
 		}
 	}()
 
@@ -200,7 +205,7 @@ func (b *Broker) sendHeartbeat(proxyURL string) {
 
 func main() {
 	fmt.Println("Starting Broker...")
-	configPath := "/home/zzj/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml"
+	configPath := "/Users/why/Desktop/file/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml"
 	// check config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
