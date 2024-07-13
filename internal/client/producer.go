@@ -9,7 +9,7 @@ import (
 )
 
 // SendMessage: Send message to broker
-func SendMessage(brokerPort string, msg message.Message, token string) error {
+func SendMessage(brokerAddr string, msg message.Message, token string) error {
 	client := GetClientWithToken(token)
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
@@ -17,7 +17,7 @@ func SendMessage(brokerPort string, msg message.Message, token string) error {
 		return fmt.Errorf("error serializing message: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%s/produce", brokerPort), bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/produce", brokerAddr), bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("error creating produce request: %v", err)
 	}
