@@ -13,7 +13,8 @@ import (
 var proxyURL = "http://localhost:8888"
 
 // SendMessage: send a new message to a stream (with streamName)
-func SendMessage(brokerAddr, streamName string, payload []byte, token string) {
+
+func SendMessage(brokerAddr, streamName string, payload []byte, token string) error {
 	msg := message.Message{
 		Type: "produce",
 		ConsumerInfo: &message.ConsumerInfo{
@@ -21,13 +22,30 @@ func SendMessage(brokerAddr, streamName string, payload []byte, token string) {
 		},
 		Payload: payload,
 	}
-	err := client.SendMessage(brokerAddr, msg, token)
-	if err != nil {
-		log.LogError("Producer", "producer has error sending message: "+err.Error())
-		return
+
+	var err error
+	// err := client.SendMessage(brokerPort, msg, token)
+	// if err != nil {
+	// 	log.LogError("Producer", "producer has error sending message: "+err.Error())
+	// 	return
+	// }
+	// log.LogInfo("Producer", fmt.Sprintf("Producer sent message: %s", msg.Payload))
+	for retryCount := 0; retryCount < MaxRetryCount; retryCount++ {
+		err = client.SendMessage(brokerAddr, msg, token)
+		if err == nil {
+			log.LogInfo("Producer", fmt.Sprintf("Producer sent message: %s", msg.Payload))
+			return nil
+		}
+		log.LogError("Producer", fmt.Sprintf("Error sending message (attempt %d/%d): %s", retryCount+1, MaxRetryCount, err.Error()))
+		time.Sleep(RetryInterval)
 	}
-	log.LogInfo("Producer", fmt.Sprintf("Producer sent message: %s", msg.Payload))
+	return fmt.Errorf("failed to send message after %d attempts: %w", MaxRetryCount, err)
 }
+
+const (
+	MaxRetryCount = 1000
+	RetryInterval = 5 * time.Second
+)
 
 func main() {
 	// Ensure logs are printed before prompting user input
@@ -63,9 +81,15 @@ func main() {
 		}
 	}
 
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 5; i++ {
 		payload := []byte(fmt.Sprintf("Hello %d", i))
-		SendMessage(brokerAddr, "mystream", payload, token)
+
+		err := SendMessage(brokerAddr, "mystream", payload, token)
+		if err != nil {
+			// fmt.Println("[ERROR] [Producer] Failed to send message after retries:", err)
+
+			log.LogError("Producer", fmt.Sprintf("Failed to send message after retries: %v", err))
+		}
 		time.Sleep(time.Millisecond) // Slight delay to prevent overwhelming the broker
 	}
 }
