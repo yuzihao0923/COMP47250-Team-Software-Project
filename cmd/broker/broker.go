@@ -200,7 +200,14 @@ func (b *Broker) sendHeartbeat(proxyURL string) {
 
 func main() {
 	fmt.Println("Starting Broker...")
-	configLoader := configloader.NewYAMLConfigLoader("/home/zjz/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml")
+	configPath := "/Users/why/Desktop/file/COMP47250-Team-Software-Project/configs/brokers.yaml"
+	// check config file exists
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
+		time.Sleep(1 * time.Second) // wairt 1 second before exit
+		os.Exit(1)
+	}
+	configLoader := configloader.NewYAMLConfigLoader(configPath)
 	conf, err := configLoader.LoadConfig()
 	if err != nil {
 		log.LogError("Broker", "Failed to load configuration: "+err.Error())
