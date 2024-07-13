@@ -7,12 +7,13 @@ import (
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
-	"os"
 	"time"
 )
 
+var proxyURL = "http://localhost:8888"
+
 // SendMessage: send a new message to a stream (with streamName)
-func SendMessage(brokerPort, streamName string, payload []byte, token string) {
+func SendMessage(brokerAddr, streamName string, payload []byte, token string) {
 	msg := message.Message{
 		Type: "produce",
 		ConsumerInfo: &message.ConsumerInfo{
@@ -20,7 +21,7 @@ func SendMessage(brokerPort, streamName string, payload []byte, token string) {
 		},
 		Payload: payload,
 	}
-	err := client.SendMessage(brokerPort, msg, token)
+	err := client.SendMessage(brokerAddr, msg, token)
 	if err != nil {
 		log.LogError("Producer", "producer has error sending message: "+err.Error())
 		return
@@ -32,12 +33,15 @@ func main() {
 	// Ensure logs are printed before prompting user input
 	fmt.Println("[INFO] [Producer] Starting producer...")
 
-	brokerPort := os.Getenv("BROKER_PORT")
-	if brokerPort == "" {
-		brokerPort = "8080" // Default port
+	broker, err := client.GetBroker(proxyURL)
+	if err != nil {
+		log.LogError("Consumer", fmt.Sprintf("Get broker failed, error: %v", err))
+		return
 	}
 
-	err := database.ConnectMongoDB()
+	brokerAddr := broker.Address
+
+	err = database.ConnectMongoDB()
 	if err != nil {
 		fmt.Println("[ERROR] [Producer] Failed to connect to database:", err)
 		return
@@ -49,7 +53,7 @@ func main() {
 		username := auth.GetUserInput("\nEnter username: ")
 		password := auth.GetPasswordInput("Enter password: ")
 
-		token, role, err = auth.AuthenticateUser(username, password)
+		token, role, err = auth.AuthenticateUser(username, password, brokerAddr)
 		if err != nil {
 			fmt.Println(err)
 		} else if role != "producer" {
@@ -61,7 +65,7 @@ func main() {
 
 	for i := 0; i < 50; i++ {
 		payload := []byte(fmt.Sprintf("Hello %d", i))
-		SendMessage(brokerPort, "mystream", payload, token)
+		SendMessage(brokerAddr, "mystream", payload, token)
 		time.Sleep(time.Millisecond) // Slight delay to prevent overwhelming the broker
 	}
 }

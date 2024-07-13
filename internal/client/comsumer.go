@@ -8,10 +8,17 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
+type Broker struct {
+	ID        string    `json:"id"`
+	Address   string    `json:"address"`
+	LastCheck time.Time `json:"-"`
+}
+
 // RegisterConsumer: Send request of registering consumer to API
-func RegisterConsumer(brokerPort string, msg message.Message, token string) error {
+func RegisterConsumer(brokerAddr string, msg message.Message, token string) error {
 	client := GetClientWithToken(token)
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
@@ -19,7 +26,7 @@ func RegisterConsumer(brokerPort string, msg message.Message, token string) erro
 		return fmt.Errorf("error serializing registration message: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%s/register", brokerPort), bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/register", brokerAddr), bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("error creating registration request: %v", err)
 	}
@@ -38,10 +45,10 @@ func RegisterConsumer(brokerPort string, msg message.Message, token string) erro
 	return nil
 }
 
-func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token string) ([]message.Message, error) {
+func ConsumeMessages(brokerAddr, streamName, groupName, consumerUsername, token string) ([]message.Message, error) {
 	client := GetClientWithToken(token)
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("http://localhost:%s/consume?stream=%s&group=%s&consumer=%s", brokerPort, streamName, groupName, consumerUsername), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s/consume?stream=%s&group=%s&consumer=%s", brokerAddr, streamName, groupName, consumerUsername), nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating consume request: %v", err)
 	}
@@ -77,7 +84,7 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token 
 }
 
 // SendACK: consumer send ack to broker
-func SendACK(brokerPort string, msg message.Message, token string) error {
+func SendACK(brokerAddr string, msg message.Message, token string) error {
 	client := GetClientWithToken(token)
 
 	data, err := serializer.JSONSerializerInstance.Serialize(msg)
@@ -85,7 +92,7 @@ func SendACK(brokerPort string, msg message.Message, token string) error {
 		return fmt.Errorf("error serializing message: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%s/ack", brokerPort), bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s/ack", brokerAddr), bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("error creating ACK request: %v", err)
 	}
