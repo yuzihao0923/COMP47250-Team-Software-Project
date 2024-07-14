@@ -7,15 +7,16 @@ import (
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
-	"os"
 	"time"
 )
+
+var proxyURL = "http://localhost:8888"
 
 var username string
 var password string
 
 // RegisterConsumerGroup: use API to register a consumer group (with groupName) in a stream (with streamName)
-func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
+func RegisterConsumerGroup(brokerAddr, streamName, groupName, token string) {
 	msg := message.Message{
 		Type: "registration",
 		ConsumerInfo: &message.ConsumerInfo{
@@ -23,7 +24,7 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
 			GroupName:  groupName,
 		},
 	}
-	err := client.RegisterConsumer(brokerPort, msg, token)
+	err := client.RegisterConsumer(brokerAddr, msg, token)
 	if err != nil {
 		log.LogError("Consumer", "consumer has error registering: "+err.Error())
 		return
@@ -31,9 +32,9 @@ func RegisterConsumerGroup(brokerPort, streamName, groupName, token string) {
 	log.LogInfo("Consumer", "Consumer registered to Broker...")
 }
 
-func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token string) {
+func ConsumeMessages(brokerAddr, streamName, groupName, consumerUsername, token string) {
 	for {
-		messages, err := client.ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token)
+		messages, err := client.ConsumeMessages(brokerAddr, streamName, groupName, consumerUsername, token)
 		if err != nil {
 			if err.Error() == "no new messages" {
 				log.LogWarning("Consumer", "No new messages, retrying...")
@@ -49,15 +50,15 @@ func ConsumeMessages(brokerPort, streamName, groupName, consumerUsername, token 
 		for _, msg := range messages {
 			log.LogInfo("Consumer", "Consumer received message: "+string(msg.Payload))
 
-			AcknowledgeMessage(brokerPort, msg, token)
+			AcknowledgeMessage(brokerAddr, msg, token)
 		}
 
 		// time.Sleep(time.Second * 1)
 	}
 }
 
-func AcknowledgeMessage(brokerPort string, msg message.Message, token string) {
-	err := client.SendACK(brokerPort, msg, token)
+func AcknowledgeMessage(brokerAddr string, msg message.Message, token string) {
+	err := client.SendACK(brokerAddr, msg, token)
 	if err != nil {
 		log.LogError("Consumer", "consumer has error sending ACK: "+err.Error())
 		return
@@ -68,12 +69,15 @@ func AcknowledgeMessage(brokerPort string, msg message.Message, token string) {
 func main() {
 	fmt.Println("[INFO] [Consumer] Starting consumer...")
 
-	brokerPort := os.Getenv("BROKER_PORT")
-	if brokerPort == "" {
-		brokerPort = "8080" // Default port
+	broker, err := client.GetBroker(proxyURL)
+	if err != nil {
+		log.LogError("Consumer", fmt.Sprintf("Get broker failed, error: %v", err))
+		return
 	}
 
-	err := database.ConnectMongoDB()
+	brokerAddr := broker.Address
+
+	err = database.ConnectMongoDB()
 	if err != nil {
 		fmt.Println("[ERROR] [Consumer] Failed to connect to database:", err)
 		return
@@ -85,7 +89,7 @@ func main() {
 		username = auth.GetUserInput("\nEnter username: ")
 		password = auth.GetPasswordInput("Enter password: ")
 
-		token, role, err = auth.AuthenticateUser(username, password)
+		token, role, err = auth.AuthenticateUser(username, password, brokerAddr)
 		if err != nil {
 			fmt.Println(err)
 		} else if role != "consumer" {
@@ -97,7 +101,7 @@ func main() {
 	}
 
 	// Register consumer group
-	RegisterConsumerGroup(brokerPort, "mystream", "mygroup", token)
+	RegisterConsumerGroup(brokerAddr, "mystream", "mygroup", token)
 
-	ConsumeMessages(brokerPort, "mystream", "mygroup", username, token)
+	ConsumeMessages(brokerAddr, "mystream", "mygroup", username, token)
 }
