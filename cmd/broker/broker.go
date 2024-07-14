@@ -216,7 +216,7 @@ func main() {
 		fmt.Println("Load Config success..")
 	}
 
-	brokerConfig := conf.Brokers[2] // Brokers[1]~[3]
+	brokerConfig := conf.Brokers[2] // Brokers[0]~[5]
 
 	db, err := database.NewMongoDB("mongodb://localhost:27017", "userdb", "users")
 	if err != nil {
