@@ -127,3 +127,20 @@ go run producer.go
 Enter producer's username-password pairs: "p1", "123"
 
 5. See the results on webpage, or check on the terminal
+
+
+## Steps to run distributed Q
+
+1. Start ProxyServer firstly
+   ```
+   go run proxy.go
+   ```
+2. Change the code in broker.go:	brokerConfig := conf.Brokers[**0**]. Available broker numbers: 0-5
+
+3. Run Broker in a new terminal
+
+4. Change the same code in broker.go:   brokerConfig := conf.Brokers[**1**]
+
+5. Run Broker in a new terminal
+...
+6. Run consumers and producers like before way 
