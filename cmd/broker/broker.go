@@ -200,11 +200,11 @@ func (b *Broker) sendHeartbeat(proxyURL string) {
 
 func main() {
 	fmt.Println("Starting Broker...")
-	configPath := "/Users/why/Desktop/file/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml"
+	configPath := "/home/yuzihao0923/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml"
 	// check config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
-		time.Sleep(1 * time.Second) // wairt 1 second before exit
+		time.Sleep(1 * time.Second) // wait 1 second before exit
 		os.Exit(1)
 	}
 	configLoader := configloader.NewYAMLConfigLoader(configPath)
@@ -224,6 +224,13 @@ func main() {
 		return
 	} else {
 		fmt.Println("DataBase connected...")
+		ctx := context.Background()
+		err := db.InitializeMongoDB(ctx)
+		if err != nil {
+			log.LogError("Broker", "Failed to initialize database: "+err.Error())
+			return
+		}
+		log.LogInfo("Broker", "Database initialized successfully")
 	}
 	defer func() {
 		ctx := context.Background()
@@ -231,18 +238,16 @@ func main() {
 			log.LogError("Broker", "Failed to close MongoDB connection: "+err.Error())
 		}
 	}()
-	// err := database.InitializeMongoDB()
-	// if err != nil {
-	// 	log.LogError("Broker", "Failed to initialize database: "+err.Error())
-	// 	return
-	// }
-	// log.LogInfo("Broker", "Database initialized successfully")
 
-	// Init broadcast here with redis
-	// redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage)
-
-	// Create redis client instance
-	rsi := redis.NewRedisClient("localhost:6379", "", 0)
+	// Create redis cluster client instance
+	rsi := redis.NewRedisClusterClient([]string{
+		"localhost:6381",
+		"localhost:6382",
+		"localhost:6383",
+		"localhost:6384",
+		"localhost:6385",
+		"localhost:6386",
+	}, "", 0)
 	ctx := context.Background()
 
 	// Check connection, Ping func will flush all data in redis
