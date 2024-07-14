@@ -200,11 +200,11 @@ func (b *Broker) sendHeartbeat(proxyURL string) {
 
 func main() {
 	fmt.Println("Starting Broker...")
-	configPath := "/Users/why/Desktop/file/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml"
+	configPath := "/home/yuzihao0923/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml"
 	// check config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
-		time.Sleep(1 * time.Second) // wairt 1 second before exit
+		time.Sleep(1 * time.Second) // wait 1 second before exit
 		os.Exit(1)
 	}
 	configLoader := configloader.NewYAMLConfigLoader(configPath)
@@ -216,7 +216,7 @@ func main() {
 		fmt.Println("Load Config success..")
 	}
 
-	brokerConfig := conf.Brokers[2]
+	brokerConfig := conf.Brokers[2] // Brokers[0]~[5]
 
 	db, err := database.NewMongoDB("mongodb://localhost:27017", "userdb", "users")
 	if err != nil {
@@ -239,11 +239,15 @@ func main() {
 		}
 	}()
 
-	// Init broadcast here with redis
-	// redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage)
-
-	// Create redis client instance
-	rsi := redis.NewRedisClient("localhost:6379", "", 0)
+	// Create redis cluster client instance
+	rsi := redis.NewRedisClusterClient([]string{
+		"localhost:6381",
+		"localhost:6382",
+		"localhost:6383",
+		"localhost:6384",
+		"localhost:6385",
+		"localhost:6386",
+	}, "", 0)
 	ctx := context.Background()
 
 	// Check connection, Ping func will flush all data in redis
