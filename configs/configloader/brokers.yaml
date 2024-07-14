@@ -1,0 +1,18 @@
+brokers:
+  - id: broker1
+    address: "localhost:8081"
+
+  - id: broker2
+    address: "localhost:8082"
+
+  - id: broker3
+    address: "localhost:8083"
+
+  - id: broker4
+    address: "localhost:8084"
+
+  - id: broker5
+    address: "localhost:8085"
+
+  - id: broker6
+    address: "localhost:8086"

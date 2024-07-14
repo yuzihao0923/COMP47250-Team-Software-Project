@@ -34,12 +34,12 @@ func GetPasswordInput(prompt string) string {
 }
 
 // AuthenticateUser authenticates the user with the given username and password
-func AuthenticateUser(username, password string) (string, string, error) {
+func AuthenticateUser(username, password, brokerAddr string) (string, string, error) {
 	if database.GetDBClient().UsersCollection == nil {
 		return "", "", fmt.Errorf("users collection is not initialized")
 	}
 
-	token, role, err := loginUser(username, password)
+	token, role, err := loginUser(username, password, brokerAddr)
 	if err != nil {
 		return "", "", err
 	}
@@ -48,7 +48,7 @@ func AuthenticateUser(username, password string) (string, string, error) {
 }
 
 // loginUser sends a login request and returns the token and role
-func loginUser(username, password string) (string, string, error) {
+func loginUser(username, password, brokerAddr string) (string, string, error) {
 	loginData := map[string]string{
 		"username": username,
 		"password": password,
@@ -59,7 +59,8 @@ func loginUser(username, password string) (string, string, error) {
 		return "", "", err
 	}
 
-	resp, err := http.Post("http://localhost:8080/login", "application/json", strings.NewReader(string(jsonData)))
+	fmt.Println(brokerAddr)
+	resp, err := http.Post("http://"+brokerAddr+"/login", "application/json", strings.NewReader(string(jsonData)))
 	if err != nil {
 		return "", "", err
 	}
