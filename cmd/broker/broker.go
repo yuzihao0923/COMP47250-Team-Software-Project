@@ -224,6 +224,13 @@ func main() {
 		return
 	} else {
 		fmt.Println("DataBase connected...")
+		ctx := context.Background()
+		err := db.InitializeMongoDB(ctx)
+		if err != nil {
+			log.LogError("Broker", "Failed to initialize database: "+err.Error())
+			return
+		}
+		log.LogInfo("Broker", "Database initialized successfully")
 	}
 	defer func() {
 		ctx := context.Background()
@@ -231,12 +238,6 @@ func main() {
 			log.LogError("Broker", "Failed to close MongoDB connection: "+err.Error())
 		}
 	}()
-	// err := database.InitializeMongoDB()
-	// if err != nil {
-	// 	log.LogError("Broker", "Failed to initialize database: "+err.Error())
-	// 	return
-	// }
-	// log.LogInfo("Broker", "Database initialized successfully")
 
 	// Init broadcast here with redis
 	// redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage)
