@@ -1,8 +1,8 @@
 # Makefile for front-end test
 
-.PHONY: start stop proxy broker redis create-cluster web kill-proxy kill-broker
+.PHONY: start stop proxy broker redis create-cluster web
 
-start: proxy broker redis create-cluster web kill-proxy kill-broker
+start: proxy broker redis create-cluster web
 
 proxy:
 	@echo "Starting proxy..."
@@ -11,16 +11,18 @@ proxy:
 broker:
 	@echo "Starting broker..."
 	@go run ./cmd/broker/broker.go &
+	@sleep 1 &
 
 redis:
 	@echo "Starting Redis servers..."
 	@for port in 6381 6382 6383 6384 6385 6386; do \
-		redis-server ./internal/redis-cluster/redis-$$port.conf; \
+		redis-server ./internal/redis-cluster/redis-$$port.conf & \
 	done
+	@sleep 1 &
 
 create-cluster:
 	@echo "Creating Redis cluster..."
-	@redis-cli --cluster create localhost:6381 localhost:6382 localhost:6383 localhost:6384 localhost:6385 localhost:6386 --cluster-replicas 1 --cluster-yes
+	@redis-cli --cluster create 127.0.0.1:6381 127.0.0.1:6382 127.0.0.1:6383 127.0.0.1:6384 127.0.0.1:6385 127.0.0.1:6386 --cluster-replicas 1 --cluster-yes
 
 # web:
 #   @echo "Starting web server..."
@@ -36,8 +38,8 @@ kill-broker:
 
 stop:
 	@echo "Stopping all services..."
-	@pkill redis-server
-	$(MAKE) kill-broker
+	@pkill redis-server &
+	$(MAKE) kill-broker &
 	$(MAKE) kill-proxy
 	# @pkill -f 'go run ./cmd/proxyServer/proxy.go'
 	# @pkill -f 'go run ./cmd/broker/broker.go'
