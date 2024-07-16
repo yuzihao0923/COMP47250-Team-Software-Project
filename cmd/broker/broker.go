@@ -200,7 +200,8 @@ func (b *Broker) sendHeartbeat(proxyURL string) {
 
 func main() {
 	fmt.Println("Starting Broker...")
-	configPath := "../../configs/configloader/brokers.yaml"
+	// configPath := "../../configs/configloader/brokers.yaml" # 执行makefile需要改成绝对路径
+	configPath := "/Users/why/Desktop/file/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml"
 	// check config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
