@@ -68,7 +68,7 @@
 ## Environment
 
 - Golang
-- Redis
+- Redis 6.0.16
 - Node.js 22.3.0
 - npm 10.8.1
 - MongoDB

@@ -1,26 +1,40 @@
-# Makefile for front-end test
+.PHONY: start stop proxy broker redis web
 
-.PHONY: start stop broker web redis
-
-start: broker web redis
-
-broker:
-	@echo "Starting broker..."
-	@go run ./cmd/broker/broker.go &
-
-web:
-	@echo "Starting web server..."
-	@cd web-app && npm start &
+start: redis proxy broker web
 
 redis:
 	@echo "Starting Redis servers..."
-	@for conf_file in internal/redis-cluster/redis-6381.conf internal/redis-cluster/redis-6382.conf internal/redis-cluster/redis-6383.conf internal/redis-cluster/redis-6384.conf internal/redis-cluster/redis-6385.conf internal/redis-cluster/redis-6386.conf; do \
-		redis-server $$conf_file & \
-		sleep 1; \
+	@cd internal/redis-cluster && \
+	for port in 6381 6382 6383 6384 6385 6386; do \
+		redis-server redis-$$port.conf & \
 	done
+	@sleep 1
+
+proxy:
+	@echo "Starting proxy..."
+	@cd cmd/proxyServer && go run proxy.go &
+
+broker:
+	@echo "Starting broker..."
+	@cd cmd/broker && go run broker.go &
+	@sleep 1
+
+# web:
+#   @echo "Starting web server..."
+#   @cd web-app && npm start &
+
+kill-proxy:
+	@echo "Killing all proxy processes..."
+	@ps aux | grep '[p]roxy' | awk '{print $$2}' | xargs kill
+
+kill-broker:
+	@echo "Killing all broker processes..."
+	@ps aux | grep '[b]roker' | awk '{print $$2}' | xargs kill
 
 stop:
 	@echo "Stopping all services..."
-	@pkill -f 'go run ./cmd/broker/broker.go'
-	@pkill -f 'npm start'
-	@pkill redis-server
+	@for port in 6381 6382 6383 6384 6385 6386; do \
+		redis-cli -p $$port shutdown; \
+	done
+	$(MAKE) kill-broker &
+	$(MAKE) kill-proxy
