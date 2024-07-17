@@ -1,6 +1,6 @@
 .console-container {
   padding: 20px;
-  background: linear-gradient(145deg, #2a2f33, #3c4247);
+  background-color: rgb(213, 198, 234);
   border-radius: 8px;
   box-shadow: 0 2px 15px rgba(255, 255, 255, 0.2);
   max-width: 95%;
