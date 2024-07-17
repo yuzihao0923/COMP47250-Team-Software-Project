@@ -5,6 +5,8 @@ import 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
+import Card from '../components/Card';
+import { SendOutlined, ShareAltOutlined, ApiOutlined } from '@ant-design/icons';
 
 const BrokerConsole = () => {
   const [brokerLogs, setBrokerLogs] = useState([]);
@@ -22,7 +24,7 @@ const BrokerConsole = () => {
     datasets: [
       {
         label: 'Producer Messages per Interval',
-        data: [], 
+        data: [],
         borderColor: 'rgb(75, 192, 192)',
         tension: 0.1,
         fill: false,
@@ -94,7 +96,7 @@ const BrokerConsole = () => {
         const newLabels = [...prevData.labels, currentTime];
         const newDataPoints = [...prevData.datasets[0].data, intervalProducerMessageCount];
 
-        if (newLabels.length > 20) { 
+        if (newLabels.length > 20) {
           newLabels.shift();
           newDataPoints.shift();
         }
@@ -150,52 +152,56 @@ const BrokerConsole = () => {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-        x: {
-            type: 'time',
-            time: {
-                unit: 'second',
-                stepSize: 10,
-                displayFormats: {
-                  second: 'h:mm:ss a',
-                }
-            },
-            ticks: {
-                maxRotation: 0,
-                minRotation: 0,
-                source: 'auto',
-                autoSkip: true,
-                maxTicksLimit: 20,
-                callback: function(value) {
-                    const date = new Date(value);
-                    return date.toLocaleTimeString();
-                }
-            },
-            min: new Date(Date.now() - 60000),
-            max: new Date()
+      x: {
+        type: 'time',
+        time: {
+          unit: 'second',
+          stepSize: 10,
+          displayFormats: {
+            second: 'h:mm:ss a',
+          }
         },
-        y: {
-            beginAtZero: true,
-            ticks: {
-                stepSize: 1,
-                callback: function(value) {
-                    if (value % 1 === 0) {
-                        return value;
-                    }
-                }
+        ticks: {
+          maxRotation: 0,
+          minRotation: 0,
+          source: 'auto',
+          autoSkip: true,
+          maxTicksLimit: 20,
+          callback: function (value) {
+            const date = new Date(value);
+            return date.toLocaleTimeString();
+          }
+        },
+        min: new Date(Date.now() - 60000),
+        max: new Date()
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 1,
+          callback: function (value) {
+            if (value % 1 === 0) {
+              return value;
             }
+          }
         }
+      }
     },
     animation: {
-        duration: 300
+      duration: 300
     }
   };
 
   return (
     <div className="console-container">
       <h1>Broker Console</h1>
-      <div>Total Producer Messages Sent: {totalProducerMessages}</div>
-      <div>Total Consumer Messages Received: {totalConsumerReceivedMessages}</div>
-      <div>Total Broker Acknowledged Messages: {totalBrokerAcknowledgedMessages}</div>
+      <div className='card-area mb-10'>
+        <Card logoBackground='bg-sky-200' logo={<SendOutlined />} data={totalProducerMessages} dataTitle='Total Producer Messages Sent' />
+        <Card logoBackground='bg-sky-300' logo={<ApiOutlined />} data={totalBrokerAcknowledgedMessages} dataTitle='Total Broker Acknowledged Messages' />
+        <Card logoBackground='bg-sky-400' logo={<ShareAltOutlined />} data={totalConsumerReceivedMessages} dataTitle='Total Consumer Messages Received' />
+      </div>
+
+      <h1>Monitor Chart</h1>
       <div className="charts-container">
         <div className="chart-wrapper">
           <Line data={producerChartData} options={chartOptions} />
@@ -207,6 +213,7 @@ const BrokerConsole = () => {
           <Line data={brokerChartData} options={chartOptions} />
         </div>
       </div>
+
       <div className="log-section broker-logs">
         <h2>Broker & Redis Logs</h2>
         <div className="console-logs">
