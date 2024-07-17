@@ -53,7 +53,7 @@ func main() {
 
 	broker, err := client.GetBroker(proxyURL)
 	if err != nil {
-		log.LogError("Consumer", fmt.Sprintf("Get broker failed, error: %v", err))
+		log.LogError("Producer", fmt.Sprintf("Get broker failed, error: %v", err))
 		return
 	}
 
