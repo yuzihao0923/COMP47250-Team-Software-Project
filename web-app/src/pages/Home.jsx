@@ -1,32 +1,45 @@
 import React from 'react';
-import { Outlet } from 'react-router';
+import { Outlet, useNavigate } from 'react-router';
 import Head from '../components/Header';
-// import { Menu } from 'antd';
-// import { AppstoreOutlined, BugOutlined } from '@ant-design/icons';
+import { Menu } from 'antd';
+import { SettingOutlined, BugOutlined, UserOutlined } from '@ant-design/icons';
 
-// const items = [
-//     {
-//         label: 'Components Logs',
-//         key: 'logs',
-//         icon: <BugOutlined />,
-//     },
-//     {
-//         label: 'Jasmine',
-//         key: 'app',
-//         icon: <AppstoreOutlined />,
-//     },
-// ];
+const items = [
+    {
+        label: 'Components Logs',
+        key: '/',
+        icon: <BugOutlined />,
+    },
+    {
+        label: 'Profile',
+        key: 'profile',
+        icon: <UserOutlined />
+    },
+    {
+        label: 'Settings',
+        key: 'settings',
+        icon: <SettingOutlined />,
+    },
+];
 
 export default function Home() {
-    // function onMenuClick(e) {
-    //     console.log('click ', e);
-    // }
 
+    const navigate = useNavigate()
+
+    function onMenuClick(e) {
+        // console.log(location);
+        // console.log('click ', e);
+        if (e.key === '/') {
+            navigate('/')
+        } else {
+            navigate(`/${e.key}`)
+        }
+    }
     return (
         <div>
             <Head />
             <div className='max-w-6xl mx-auto mt-6'>
-                {/* 
+                
                 <Menu 
                     mode="horizontal" 
                     items={items} 
@@ -38,10 +51,10 @@ export default function Home() {
                         backgroundColor: '#272b2c', 
                         color: '#fff'
                     }}
-                    defaultSelectedKeys={['logs']}
+                    defaultSelectedKeys={['/']}
                     onClick={onMenuClick}
                 />
-                */}
+               
             </div>
             <Outlet />
         </div>
