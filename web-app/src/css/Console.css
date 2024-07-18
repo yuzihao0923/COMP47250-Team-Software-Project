@@ -93,13 +93,12 @@
 }
 
 .charts-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
 }
 
 .chart-wrapper {
-  flex: 1;
-  min-width: 0;
   height: 500px;
 }
