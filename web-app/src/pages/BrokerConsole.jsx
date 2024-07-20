@@ -7,9 +7,7 @@ import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
 import Card from '../components/Card';
 import { SendOutlined, ShareAltOutlined, ApiOutlined } from '@ant-design/icons';
-import { List, Typography } from 'antd';
-
-const { Text } = Typography;
+import Logs from '../components/Logs';
 
 const BrokerConsole = () => {
   const [brokerLogs, setBrokerLogs] = useState([]);
@@ -220,84 +218,12 @@ const BrokerConsole = () => {
       <h1>Components Logs</h1>
       <div className='w-full'>
         {/* Broker & Redis Logs */}
-        <div>
-          <h2 className='mb-3 text-gray-500 font-medium'>Broker & Redis Logs</h2>
-          <div className='bg-orange-100 py-5 px-5 mb-10 max-h-60 overflow-y-auto overflow-x-hidden'>
-            <List
-              itemLayout='horizontal'
-              dataSource={brokerLogs}
-              renderItem={(item) => (
-                <List.Item>
-                  {item.trim().startsWith('[ERROR]') ? <Text type="danger">{item}</Text>
-                    :
-                    item.trim().startsWith('[WARNING]') ? <Text type="warning">{item}</Text> : item}
-                </List.Item>
-              )}
-            />
-          </div>
-        </div>
+        <Logs logsTitle='Broker & Redis Logs' logsBackgroundColor='bg-orange-100' logsData={brokerLogs} />
         {/* Producer Logs */}
-        <div>
-          <h2 className='mb-3 text-gray-500 font-medium'>Producer Logs</h2>
-          <div className='bg-indigo-200 py-5 px-5 mb-10 max-h-60 overflow-y-auto overflow-x-hidden'>
-            <List
-              itemLayout='horizontal'
-              dataSource={producerLogs}
-              renderItem={(item) => (
-                <List.Item>
-                  {item.trim().startsWith('[ERROR]') ? <Text type="danger">{item}</Text>
-                    :
-                    item.trim().startsWith('[WARNING]') ? <Text type="warning">{item}</Text> : item}
-                </List.Item>
-              )}
-            />
-          </div>
-        </div>
+        <Logs logsTitle='Producer Logs' logsBackgroundColor='bg-indigo-200' logsData={producerLogs} />
         {/* Consumer Logs */}
-        <div>
-          <h2 className='mb-3 text-gray-500 font-medium'>Consumer Logs</h2>
-          <div className='bg-cyan-100 py-5 px-5 max-h-60 overflow-y-auto overflow-x-hidden'>
-            <List
-              itemLayout='horizontal'
-              dataSource={consumerLogs}
-              renderItem={(item) => (
-                <List.Item>
-                  {item.trim().startsWith('[ERROR]') ? <Text type="danger">{item}</Text>
-                    :
-                    item.trim().startsWith('[WARNING]') ? <Text type="warning">{item}</Text> : item}
-                </List.Item>
-              )}
-            />
-          </div>
-        </div>
+        <Logs logsTitle='Consumer Logs' logsBackgroundColor='bg-cyan-100' logsData={consumerLogs} />
       </div>
-
-      {/* <div className="log-section broker-logs">
-        <h2>Broker & Redis Logs</h2>
-        <div className="console-logs">
-          {brokerLogs.map((log, index) => (
-            <p key={index} className="console-log">{log}</p>
-          ))}
-        </div>
-      </div>
-      <div className="log-section producer-consumer-logs">
-        <div className="log-subsection producer-logs">
-          <h2>Producer Logs</h2>
-          <div className="console-logs">
-            {producerLogs.map((log, index) => (
-              <p key={index} className="console-log">{log}</p>
-            ))}
-          </div>
-        </div>
-        <div className="log-subsection consumer-logs">
-          <h2>Consumer Logs</h2>
-          <div className="console-logs">
-            {consumerLogs.map((log, index) => (
-              <p key={index} className="console-log">{log}</p>
-            ))}
-          </div>
-        </div>
-      </div> */}
     </div>
   );
 };
