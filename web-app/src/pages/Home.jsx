@@ -1,47 +1,76 @@
-import React from 'react';
-import { Outlet } from 'react-router';
+import React, { useEffect, useState } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router';
 import Head from '../components/Header';
-// import { Menu } from 'antd';
-// import { AppstoreOutlined, BugOutlined } from '@ant-design/icons';
+import { Menu } from 'antd';
+import { SettingOutlined, BugOutlined, UserOutlined } from '@ant-design/icons';
 
-// const items = [
-//     {
-//         label: 'Components Logs',
-//         key: 'logs',
-//         icon: <BugOutlined />,
-//     },
-//     {
-//         label: 'Jasmine',
-//         key: 'app',
-//         icon: <AppstoreOutlined />,
-//     },
-// ];
+const items = [
+    {
+        label: 'Components Logs',
+        key: '/',
+        icon: <BugOutlined />,
+    },
+    {
+        label: 'Profile',
+        key: 'profile',
+        icon: <UserOutlined />
+    },
+    {
+        label: 'Settings',
+        key: 'settings',
+        icon: <SettingOutlined />,
+    },
+];
 
 export default function Home() {
-    // function onMenuClick(e) {
-    //     console.log('click ', e);
-    // }
+
+    const navigate = useNavigate()
+    const location = useLocation()
+    const [menuKey, setMenuKey] = useState(null)
+
+    function onMenuClick(e) {
+        // console.log(location);
+        // console.log('click ', e);
+        if (e.key === '/') {
+            navigate('/')
+        } else {
+            navigate(`/${e.key}`)
+        }
+    }
+
+    useEffect(()=>{
+        const currentPath = location.pathname
+        if(currentPath === '/'){
+            setMenuKey(currentPath)
+        }else{
+            setMenuKey(currentPath.replace('/',''))
+        }
+    },[location.pathname])
+
+    if(menuKey === null){
+        return null;
+    }
 
     return (
         <div>
             <Head />
             <div className='max-w-6xl mx-auto mt-6'>
-                {/* 
+                
                 <Menu 
                     mode="horizontal" 
                     items={items} 
-                    theme='dark' 
                     style={{
                         height: 80,
+                        paddingLeft: '1.25rem',
+                        paddingRight: '1.25rem',
                         display: 'flex',
                         alignItems: 'center',
-                        backgroundColor: '#272b2c', 
-                        color: '#fff'
+                        backgroundColor: 'rgb(233, 228, 240)'
                     }}
-                    defaultSelectedKeys={['logs']}
+                    selectedKeys={[path]}
                     onClick={onMenuClick}
                 />
-                */}
+               
             </div>
             <Outlet />
         </div>
