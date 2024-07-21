@@ -1,100 +1,35 @@
 .console-container {
-  padding: 20px;
-  background: linear-gradient(145deg, #2a2f33, #3c4247);
-  border-radius: 8px;
-  box-shadow: 0 2px 15px rgba(255, 255, 255, 0.2);
-  max-width: 95%;
+  max-width: 72rem;
   margin: 40px auto;
   color: #cfd8dc;
 }
 
-.console-container h1 {
+.console-container h1{
   text-align: center;
   font-size: 24px;
   font-weight: bold;
-  color: #ffffff;
+  color: rgb(55 65 81);
+  margin-bottom: 2rem;
 }
 
-.log-section {
-  margin-bottom: 10px;
-}
-
-.logs {
-  height: 40vh;
-  background-color: transparent;
-}
-
-.producer-consumer-logs {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.log-subsection {
-  width: 49%;
-  flex-grow: 1;
-  overflow-y: auto; 
-}
-
-.log-subsection h2, .broker-logs h2 {
-  margin-bottom: 10px;
-  color: #81d4fa;
-  font-weight: bold;
-  position: sticky;
-  top: 0; 
-  background-color: transparent; 
-  z-index: 1;
-}
-
-.console-logs {
-  padding: 10px;
-  border: 1px solid #414a4c;
-  border-radius: 8px;
-  box-shadow: inset 0 0 10px rgba(0, 255, 252, 0.2);
-  height: 30vh; 
-  overflow-y: auto; 
-  background-color: transparent; 
-}
-
-.console-log {
-  font-family: 'Courier New', monospace;
-  white-space: pre-wrap;
-  padding: 5px 0;
-  border-bottom: 1px solid #414a4c;
-  font-weight: bold;
-}
-
-.console-log:last-child {
-  border-bottom: none;
-}
-
-
-.console-logs::-webkit-scrollbar {
-  width: 8px;
-}
-
-.console-logs::-webkit-scrollbar-thumb {
-  background-color: #81d4fa;
-  border-radius: 4px;
-}
-
-.console-logs::-webkit-scrollbar-track {
-  background-color: #2a2f33;
+.card-area {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
 }
 
 .console-container {
   width: 100%;
-  height: 1335px;
 }
 
 .charts-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px; 
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
 }
 
 .chart-wrapper {
-  flex: 1;
-  min-width: 0; 
-  height: 500px; 
+  height: 500px;
 }

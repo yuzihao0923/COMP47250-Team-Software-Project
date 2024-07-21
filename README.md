@@ -68,7 +68,7 @@
 ## Environment
 
 - Golang
-- Redis
+- Redis 6.0.16
 - Node.js 22.3.0
 - npm 10.8.1
 - MongoDB
@@ -126,4 +126,4 @@ go run producer.go
 ```
 Enter producer's username-password pairs: "p1", "123"
 
-5. See the results on webpage, or check on the terminal
+5. Check results on the terminal

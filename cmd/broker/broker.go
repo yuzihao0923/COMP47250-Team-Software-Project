@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"github.com/rs/cors"
@@ -23,7 +24,7 @@ var proxyURL = "http://localhost:8888"
 
 type Broker struct {
 	ID           string
-	Address      string // 记录自己的ip地址。用来向proxy服务器注册
+	Address      string // Record its own IP address for registering with the proxy server
 	dbManager    *database.MongoDB
 	redisService *redis.RedisServiceInfo
 	pool         *pool.WorkerPool
@@ -63,11 +64,11 @@ func (b *Broker) Start() {
 		Handler: handler,
 	}
 
-	// 捕获系统中断的信号
+	// Capture system interrupt signal
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 
-	// 启动服务器
+	// Start the server
 	go func() {
 		log.LogInfo("Broker", "Broker listening on "+b.Address+"...")
 		log.LogInfo("Broker", "Broker waiting for connections...")
@@ -77,8 +78,8 @@ func (b *Broker) Start() {
 		}
 	}()
 
-	// 定时器发送心跳
-	ticker := time.NewTicker(5 * time.Second) // 5秒一次
+	// Send heartbeat periodically
+	ticker := time.NewTicker(5 * time.Second) // Every 5 seconds
 	go func() {
 		for {
 			select {
@@ -93,13 +94,14 @@ func (b *Broker) Start() {
 		}
 	}()
 
-	<-stop //等待系统中断信号
+	// Wait for system interrupt signal
+	<-stop
 	log.LogInfo("Broker", "Shutdown signal received, shutting down server...")
 
-	// 发送取消注册信号
+	// Send unregister signal
 	// b.UnregisterFromProxy(proxyURL)
 
-	//创建一个超时上下文，用于关闭broker server
+	// Create a timeout context for shutting down the broker server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -198,9 +200,50 @@ func (b *Broker) sendHeartbeat(proxyURL string) {
 	}
 }
 
+func initDB() (*database.MongoDB, error) {
+	db, err := database.NewMongoDB("mongodb://localhost:27017", "userdb", "users")
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	ctx := context.Background()
+	err = db.InitializeMongoDB(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize database: %w", err)
+	}
+
+	log.LogInfo("Broker", "Database initialized successfully")
+	return db, nil
+}
+
+func startBroker(brokerConfig configloader.BrokerConfig, db *database.MongoDB, rsi *redis.RedisServiceInfo, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	pool := pool.NewWorkerPool(10, 100) // 10 workers, JobQueueSize 100
+	pool.Start()
+
+	broker := NewBroker(brokerConfig.ID, brokerConfig.Address, db, rsi, pool)
+
+	err := broker.register2Proxy(proxyURL)
+	if err != nil {
+		log.LogError("Broker", fmt.Sprintf("Failed to register broker %s: %v", brokerConfig.ID, err))
+		return
+	}
+
+	broker.Start()
+}
+
 func main() {
-	fmt.Println("Starting Broker...")
-	configLoader := configloader.NewYAMLConfigLoader("/home/zjz/COMP47250-Team-Software-Project/configs/configloader/brokers.yaml")
+	fmt.Println("Starting Broker cluster...")
+
+	configPath := "../../configs/configloader/brokers.yaml"
+	// Check if config file exists
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
+		time.Sleep(1 * time.Second) // Wait 1 second before exit
+		os.Exit(1)
+	}
+	configLoader := configloader.NewYAMLConfigLoader(configPath)
 	conf, err := configLoader.LoadConfig()
 	if err != nil {
 		log.LogError("Broker", "Failed to load configuration: "+err.Error())
@@ -209,21 +252,12 @@ func main() {
 		fmt.Println("Load Config success..")
 	}
 
-	brokerConfig := conf.Brokers[2]
-
-	db, err := database.NewMongoDB("mongodb://localhost:27017", "userdb", "users")
+	db, err := initDB()
 	if err != nil {
-		log.LogError("Broker", "Failed to initialize database: "+err.Error())
+		log.LogError("Broker", err.Error())
 		return
 	} else {
-		fmt.Println("DataBase connected...")
-		ctx := context.Background()
-		err := db.InitializeMongoDB(ctx)
-		if err != nil {
-			log.LogError("Broker", "Failed to initialize database: "+err.Error())
-			return
-		}
-
+		fmt.Println("Database connected...")
 	}
 	defer func() {
 		ctx := context.Background()
@@ -231,32 +265,31 @@ func main() {
 			log.LogError("Broker", "Failed to close MongoDB connection: "+err.Error())
 		}
 	}()
-	// err := database.InitializeMongoDB()
-	// if err != nil {
-	// 	log.LogError("Broker", "Failed to initialize database: "+err.Error())
-	// 	return
-	// }
-	// log.LogInfo("Broker", "Database initialized successfully")
 
-	// Init broadcast here with redis
-	// redis.Initialize("localhost:6379", "", 0, api.BroadcastMessage)
-
-	// Create redis client instance
-	rsi := redis.NewRedisClient("localhost:6379", "", 0)
+	// Create Redis cluster client instance
+	rsi := redis.NewRedisClusterClient([]string{
+		"localhost:6381",
+		"localhost:6382",
+		"localhost:6383",
+		"localhost:6384",
+		"localhost:6385",
+		"localhost:6386",
+	}, "", 0)
 	ctx := context.Background()
 
-	// Check connection, Ping func will flush all data in redis
+	// Check connection, Ping function will flush all data in Redis
 	if err := rsi.Ping(ctx, api.BroadcastMessage); err != nil {
 		log.LogError("Broker", fmt.Sprintf("Failed to connect to Redis: %v", err))
 	} else {
-		fmt.Println("redis connected...")
+		fmt.Println("Redis connected...")
 	}
 
-	pool := pool.NewWorkerPool(10, 100) // 10 workers, JobQueueSize 100
-	pool.Start()
+	var wg sync.WaitGroup
+	for _, brokerConfig := range conf.Brokers {
+		wg.Add(1)
+		go startBroker(brokerConfig, db, rsi, &wg)
+	}
 
-	broker := NewBroker(brokerConfig.ID, brokerConfig.Address, db, rsi, pool)
-
-	broker.register2Proxy(proxyURL)
-	broker.Start()
+	wg.Wait()
+	fmt.Println("All brokers started.")
 }

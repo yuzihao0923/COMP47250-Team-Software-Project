@@ -17,14 +17,14 @@ export default function Head() {
     }
 
     return (
-        <div className='bg-[#2a2f33] border-b border-slate-400 shadow-md sticky top-0 z-50'>
+        <div className='bg-pink-100 border-b border-slate-400 shadow-md sticky top-0 z-50'>
             <header className='flex justify-between items-center max-w-6xl mx-auto h-20 max-h-20'>
                 <div className='flex-shrink-0'>
                     <h1 className='text-white font-bold text-2xl'>Hi, {username}</h1>  {/* 加粗并保持一致的字体风格 */}
                 </div>
                 <div className='h-full flex items-center space-x-6 flex-nowrap'>
                     {/* <Link to="/change-password" className='text-white text-lg hover:text-blue-300 font-bold'>Change password</Link> */}
-                    <Button type="primary" size={'middle'} icon={<LogoutOutlined />} onClick={logout} style={{ backgroundColor: '#81d4fa', borderColor: '#57c3f3', fontWeight: 'bold' }}>
+                    <Button type="primary" size={'middle'} icon={<LogoutOutlined />} onClick={logout}>
                         Logout  {/* 加粗按钮文本 */}
                     </Button>
                 </div>
