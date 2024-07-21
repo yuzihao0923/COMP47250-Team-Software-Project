@@ -59,7 +59,7 @@ func main() {
 
 	brokerAddr := broker.Address
 
-	err = database.ConnectMongoDB()
+	_, err = database.ConnectMongoDB("mongodb://localhost:27017", "comp47250", "users")
 	if err != nil {
 		fmt.Println("[ERROR] [Producer] Failed to connect to database:", err)
 		return
