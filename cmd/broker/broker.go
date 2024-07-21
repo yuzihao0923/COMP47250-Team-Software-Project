@@ -217,6 +217,13 @@ func main() {
 		return
 	} else {
 		fmt.Println("DataBase connected...")
+		ctx := context.Background()
+		err := db.InitializeMongoDB(ctx)
+		if err != nil {
+			log.LogError("Broker", "Failed to initialize database: "+err.Error())
+			return
+		}
+
 	}
 	defer func() {
 		ctx := context.Background()
