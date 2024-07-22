@@ -1,5 +1,7 @@
 .PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4 broker5 broker6
+.PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4 broker5 broker6
 
+start: redis initdb proxy broker
 start: redis initdb proxy broker
 
 redis:
@@ -9,6 +11,10 @@ redis:
 		redis-server redis-$$port.conf & \
 	done
 	@sleep 1
+
+initdb:
+	@echo "Initializing database..."
+	@cd cmd/database && go run database.go
 
 initdb:
 	@echo "Initializing database..."
@@ -88,6 +94,14 @@ stop:
 	done
 	$(MAKE) kill-broker &
 	$(MAKE) kill-proxy
+
+kill-proxy:
+	@echo "Killing all proxy processes..."
+	@ps aux | grep '[p]roxy' | awk '{print $$2}' | xargs kill
+
+kill-broker:
+	@echo "Killing all broker processes..."
+	@ps aux | grep '[b]roker' | awk '{print $$2}' | xargs kill
 
 kill-proxy:
 	@echo "Killing all proxy processes..."
