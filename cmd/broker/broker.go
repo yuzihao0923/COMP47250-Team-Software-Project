@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -24,7 +25,7 @@ var proxyURL = "http://localhost:8888"
 
 type Broker struct {
 	ID           string
-	Address      string // Record its own IP address for registering with the proxy server
+	Address      string
 	dbManager    *database.MongoDB
 	redisService *redis.RedisServiceInfo
 	pool         *pool.WorkerPool
@@ -79,7 +80,7 @@ func (b *Broker) Start() {
 	}()
 
 	// Send heartbeat periodically
-	ticker := time.NewTicker(5 * time.Second) // Every 5 seconds
+	ticker := time.NewTicker(5 * time.Second)
 	go func() {
 		for {
 			select {
@@ -110,7 +111,6 @@ func (b *Broker) Start() {
 	} else {
 		log.LogInfo("Broker", "Server shutdown successfully")
 	}
-
 }
 
 func (b *Broker) register2Proxy(proxyURL string) error {
@@ -200,22 +200,6 @@ func (b *Broker) sendHeartbeat(proxyURL string) {
 	}
 }
 
-func initDB() (*database.MongoDB, error) {
-	db, err := database.NewMongoDB("mongodb://localhost:27017", "userdb", "users")
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize database: %w", err)
-	}
-
-	ctx := context.Background()
-	err = db.InitializeMongoDB(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize database: %w", err)
-	}
-
-	log.LogInfo("Broker", "Database initialized successfully")
-	return db, nil
-}
-
 func startBroker(brokerConfig configloader.BrokerConfig, db *database.MongoDB, rsi *redis.RedisServiceInfo, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -234,62 +218,61 @@ func startBroker(brokerConfig configloader.BrokerConfig, db *database.MongoDB, r
 }
 
 func main() {
-	fmt.Println("Starting Broker cluster...")
+    brokerID := flag.String("id", "", "Broker ID")
+    flag.Parse()
 
-	configPath := "../../configs/configloader/brokers.yaml"
-	// Check if config file exists
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
-		time.Sleep(1 * time.Second) // Wait 1 second before exit
-		os.Exit(1)
-	}
-	configLoader := configloader.NewYAMLConfigLoader(configPath)
-	conf, err := configLoader.LoadConfig()
-	if err != nil {
-		log.LogError("Broker", "Failed to load configuration: "+err.Error())
-		return
-	} else {
-		fmt.Println("Load Config success..")
-	}
+    if *brokerID == "" {
+        fmt.Println("Broker ID is required")
+        os.Exit(1)
+    }
 
-	db, err := initDB()
-	if err != nil {
-		log.LogError("Broker", err.Error())
-		return
-	} else {
-		fmt.Println("Database connected...")
-	}
-	defer func() {
-		ctx := context.Background()
-		if err := db.Close(ctx); err != nil {
-			log.LogError("Broker", "Failed to close MongoDB connection: "+err.Error())
-		}
-	}()
+    configPath := "../../configs/configloader/brokers.yaml"
+    if _, err := os.Stat(configPath); os.IsNotExist(err) {
+        log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
+        time.Sleep(1 * time.Second) // Wait 1 second before exit
+        os.Exit(1)
+    }
+    configLoader := configloader.NewYAMLConfigLoader(configPath)
+    conf, err := configLoader.LoadConfig()
+    if err != nil {
+        log.LogError("Broker", "Failed to load configuration: "+err.Error())
+        return
+    } else {
+        fmt.Println("Load Config success..")
+    }
 
-	// Create Redis cluster client instance
-	rsi := redis.NewRedisClusterClient([]string{
-		"localhost:6381",
-		"localhost:6382",
-		"localhost:6383",
-		"localhost:6384",
-		"localhost:6385",
-		"localhost:6386",
-	}, "", 0)
-	ctx := context.Background()
+    // Connect MongoDB for each broker
+    db, err := database.ConnectMongoDB("mongodb://localhost:27017", "comp47250", "users")
+    if err != nil {
+        log.LogError("Broker", "Failed to initialize MongoDB: "+err.Error())
+        return
+    }
 
-	// Check connection, Ping function will flush all data in Redis
-	if err := rsi.Ping(ctx, api.BroadcastMessage); err != nil {
-		log.LogError("Broker", fmt.Sprintf("Failed to connect to Redis: %v", err))
-	} else {
-		fmt.Println("Redis connected...")
-	}
+    rsi := redis.NewRedisClusterClient([]string{
+        "localhost:6381",
+        "localhost:6382",
+        "localhost:6383",
+        "localhost:6384",
+        "localhost:6385",
+        "localhost:6386",
+    }, "", 0)
+    ctx := context.Background()
 
-	var wg sync.WaitGroup
-	for _, brokerConfig := range conf.Brokers {
-		wg.Add(1)
-		go startBroker(brokerConfig, db, rsi, &wg)
-	}
+    // Check connection, Ping function will flush all data in Redis
+    if err := rsi.Ping(ctx, api.BroadcastMessage); err != nil {
+        log.LogError("Broker", fmt.Sprintf("Failed to connect to Redis: %v", err))
+    } else {
+        fmt.Println("Redis connected...")
+    }
 
-	wg.Wait()
-	fmt.Println("All brokers started.")
+    var wg sync.WaitGroup
+    for _, brokerConfig := range conf.Brokers {
+        if brokerConfig.ID == *brokerID {
+            wg.Add(1)
+            go startBroker(brokerConfig, db, rsi, &wg)
+        }
+    }
+
+    wg.Wait()
+    fmt.Printf("%s started.\n", *brokerID)
 }
