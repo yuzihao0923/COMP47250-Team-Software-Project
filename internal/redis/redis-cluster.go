@@ -17,7 +17,7 @@ type RedisServiceInfo struct {
 	GroupName  string
 }
 
-func NewRedisClusterClient(addrs []string, password string, db int) *RedisServiceInfo {
+func NewRedisClusterClient(addrs []string, password string, db int, nodeChangeFunc func(string)) *RedisServiceInfo {
 	rdb := redis.NewClusterClient(&redis.ClusterOptions{
 		Addrs:        addrs,
 		Password:     password,
@@ -25,8 +25,28 @@ func NewRedisClusterClient(addrs []string, password string, db int) *RedisServic
 		MinIdleConns: 10,
 		PoolTimeout:  2 * time.Second,
 	})
-	return &RedisServiceInfo{
+
+	rsi := &RedisServiceInfo{
 		Client: rdb,
+	}
+
+	// 启动节点监听
+	go rsi.monitorClusterNodes(nodeChangeFunc)
+
+	return rsi
+}
+
+// 监听集群节点变化
+func (rsi *RedisServiceInfo) monitorClusterNodes(nodeChangeFunc func(string)) {
+	pubsub := rsi.Client.Subscribe(context.Background(), "__sentinel__:hello")
+	defer pubsub.Close()
+
+	ch := pubsub.Channel()
+
+	for msg := range ch {
+		if strings.Contains(msg.Payload, "slave") {
+			nodeChangeFunc(time.Now().Format(time.RFC3339))
+		}
 	}
 }
 

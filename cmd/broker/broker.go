@@ -218,61 +218,61 @@ func startBroker(brokerConfig configloader.BrokerConfig, db *database.MongoDB, r
 }
 
 func main() {
-    brokerID := flag.String("id", "", "Broker ID")
-    flag.Parse()
+	brokerID := flag.String("id", "", "Broker ID")
+	flag.Parse()
 
-    if *brokerID == "" {
-        fmt.Println("Broker ID is required")
-        os.Exit(1)
-    }
+	if *brokerID == "" {
+		fmt.Println("Broker ID is required")
+		os.Exit(1)
+	}
 
-    configPath := "../../configs/configloader/brokers.yaml"
-    if _, err := os.Stat(configPath); os.IsNotExist(err) {
-        log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
-        time.Sleep(1 * time.Second) // Wait 1 second before exit
-        os.Exit(1)
-    }
-    configLoader := configloader.NewYAMLConfigLoader(configPath)
-    conf, err := configLoader.LoadConfig()
-    if err != nil {
-        log.LogError("Broker", "Failed to load configuration: "+err.Error())
-        return
-    } else {
-        fmt.Println("Load Config success..")
-    }
+	configPath := "../../configs/configloader/brokers.yaml"
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		log.LogError("Broker", fmt.Sprintf("Configuration file does not exist: %s", configPath))
+		time.Sleep(1 * time.Second) // Wait 1 second before exit
+		os.Exit(1)
+	}
+	configLoader := configloader.NewYAMLConfigLoader(configPath)
+	conf, err := configLoader.LoadConfig()
+	if err != nil {
+		log.LogError("Broker", "Failed to load configuration: "+err.Error())
+		return
+	} else {
+		fmt.Println("Load Config success..")
+	}
 
-    // Connect MongoDB for each broker
-    db, err := database.ConnectMongoDB("mongodb://localhost:27017", "comp47250", "users")
-    if err != nil {
-        log.LogError("Broker", "Failed to initialize MongoDB: "+err.Error())
-        return
-    }
+	// Connect MongoDB for each broker
+	db, err := database.ConnectMongoDB("mongodb://localhost:27017", "comp47250", "users")
+	if err != nil {
+		log.LogError("Broker", "Failed to initialize MongoDB: "+err.Error())
+		return
+	}
 
-    rsi := redis.NewRedisClusterClient([]string{
-        "localhost:6381",
-        "localhost:6382",
-        "localhost:6383",
-        "localhost:6384",
-        "localhost:6385",
-        "localhost:6386",
-    }, "", 0)
-    ctx := context.Background()
+	rsi := redis.NewRedisClusterClient([]string{
+		"localhost:6381",
+		"localhost:6382",
+		"localhost:6383",
+		"localhost:6384",
+		"localhost:6385",
+		"localhost:6386",
+	}, "", 0, api.BroadcastMessage)
+	ctx := context.Background()
 
-    // Check connection, Ping function will flush all data in Redis
-    if err := rsi.Ping(ctx, api.BroadcastMessage); err != nil {
-        log.LogError("Broker", fmt.Sprintf("Failed to connect to Redis: %v", err))
-    } else {
-        fmt.Println("Redis connected...")
-    }
+	// Check connection, Ping function will flush all data in Redis
+	if err := rsi.Ping(ctx, api.BroadcastMessage); err != nil {
+		log.LogError("Broker", fmt.Sprintf("Failed to connect to Redis: %v", err))
+	} else {
+		fmt.Println("Redis connected...")
+	}
 
-    var wg sync.WaitGroup
-    for _, brokerConfig := range conf.Brokers {
-        if brokerConfig.ID == *brokerID {
-            wg.Add(1)
-            go startBroker(brokerConfig, db, rsi, &wg)
-        }
-    }
+	var wg sync.WaitGroup
+	for _, brokerConfig := range conf.Brokers {
+		if brokerConfig.ID == *brokerID {
+			wg.Add(1)
+			go startBroker(brokerConfig, db, rsi, &wg)
+		}
+	}
 
-    wg.Wait()
-    fmt.Printf("%s started.\n", *brokerID)
+	wg.Wait()
+	fmt.Printf("%s started.\n", *brokerID)
 }
