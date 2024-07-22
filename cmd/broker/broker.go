@@ -255,7 +255,7 @@ func main() {
 		"localhost:6384",
 		"localhost:6385",
 		"localhost:6386",
-	}, "", 0)
+	}, "", 0, api.BroadcastMessage)
 	ctx := context.Background()
 
 	// Check connection, Ping function will flush all data in Redis
