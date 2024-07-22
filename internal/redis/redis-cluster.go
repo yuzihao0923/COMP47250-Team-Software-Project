@@ -70,7 +70,7 @@ func (rsi *RedisServiceInfo) FlushAll(ctx context.Context) error {
 		log.LogError("Redis", "Failed to flush all data from Redis")
 		return err
 	}
-	log.LogInfo("Redis", "Flush all!")
+	//log.LogInfo("Redis", "Flush all!")
 	return nil
 }
 
