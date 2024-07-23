@@ -29,6 +29,9 @@ const consumerSlice = createSlice({
                 state.intervalConsumerReceivedMessageCount += 1;
             }
         },
+        clearConsumerLog: (state, action) => {
+            state.consumerLogs = []
+        },
         resetConsumerIntervalCounts: (state) => {
             state.intervalConsumerReceivedMessageCount = 0;
         },

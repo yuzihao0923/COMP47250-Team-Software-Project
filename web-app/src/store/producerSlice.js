@@ -27,6 +27,9 @@ const producerSlice = createSlice({
             state.totalProducerMessages += 1;
             state.intervalProducerMessageCount += 1;
         },
+        clearProducerLog: (state, action) => {
+            state.producerLogs = []
+        },
         resetProducerIntervalCounts: (state) => {
             state.intervalProducerMessageCount = 0;
         },
