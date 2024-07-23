@@ -25,7 +25,7 @@ const brokerSlice = createSlice({
         addBrokerLog: (state, action) => {
             state.brokerLogs.push(action.payload);
         },
-        resetIntervalCounts: (state) => {
+        resetBrokerIntervalCounts: (state) => {
             state.intervalBrokerAcknowledgedMessageCount = 0;
         },
         addBrokerAcknowledgedMessage: (state) => {
@@ -39,5 +39,5 @@ const brokerSlice = createSlice({
     },
 });
 
-export const { addConsumerLog, resetIntervalCounts, updateConsumerChartData } = brokerSlice.actions;
+export const { addBrokerLog, resetBrokerIntervalCounts, addBrokerAcknowledgedMessage, updateBrokerChartData } = brokerSlice.actions;
 export default brokerSlice.reducer;

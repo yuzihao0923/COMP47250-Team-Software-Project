@@ -29,7 +29,7 @@ const consumerSlice = createSlice({
                 state.intervalConsumerReceivedMessageCount += 1;
             }
         },
-        resetIntervalCounts: (state) => {
+        resetConsumerIntervalCounts: (state) => {
             state.intervalConsumerReceivedMessageCount = 0;
         },
         updateConsumerChartData: (state, action) => {
@@ -39,5 +39,5 @@ const consumerSlice = createSlice({
     },
 });
 
-export const { addConsumerLog, resetIntervalCounts, updateConsumerChartData } = consumerSlice.actions;
+export const { addConsumerLog, resetConsumerIntervalCounts, updateConsumerChartData } = consumerSlice.actions;
 export default consumerSlice.reducer;
