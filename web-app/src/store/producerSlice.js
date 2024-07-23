@@ -27,7 +27,7 @@ const producerSlice = createSlice({
             state.totalProducerMessages += 1;
             state.intervalProducerMessageCount += 1;
         },
-        resetIntervalCounts: (state) => {
+        resetProducerIntervalCounts: (state) => {
             state.intervalProducerMessageCount = 0;
         },
         updateProducerChartData: (state, action) => {
@@ -37,5 +37,5 @@ const producerSlice = createSlice({
     },
 });
 
-export const { addProducerLog, resetIntervalCounts, updateProducerChartData } = producerSlice.actions;
+export const { addProducerLog, resetProducerIntervalCounts, updateProducerChartData } = producerSlice.actions;
 export default producerSlice.reducer;
