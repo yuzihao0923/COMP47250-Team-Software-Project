@@ -1,16 +1,20 @@
 import React from 'react';
 
-import { List, Typography } from 'antd';
+import { Button, List, Typography } from 'antd';
 
 const { Text } = Typography;
 
 export default function Logs(props) {
 
-    const { logsTitle, logsBackgroundColor, logsData} = props
+    const { logsTitle, logsBackgroundColor, logsData } = props
 
     return (
         <div>
-            <h2 className='mb-3 text-gray-500 font-medium'>{logsTitle}</h2>
+            <div className='flex justify-between'>
+                <h2 className='mb-3 text-gray-500 font-medium'>{logsTitle}</h2>
+                <Button>Export Logs</Button>
+                <a ref={downloadLinkRef} style={{ display: 'none' }} href='/'>Download</a>
+            </div>
             <div className={`${logsBackgroundColor} py-5 px-5 mb-10 max-h-60 overflow-y-auto overflow-x-hidden`}>
                 <List
                     itemLayout='horizontal'
