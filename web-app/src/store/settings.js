@@ -12,7 +12,6 @@ const settingsSlice = createSlice({
       const { warningNumber } = action.payload;
       state.warningNumber = warningNumber;
     },
-    
   },
 });
 

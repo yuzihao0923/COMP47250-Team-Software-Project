@@ -1,7 +1,12 @@
 import React from 'react';
 import { Button, Form, InputNumber } from 'antd';
+import { changeWarningNumber } from '../store/settings'
+import { useDispatch, useSelector } from 'react-redux';
 
 export default function Settings() {
+
+  const dispatch = useDispatch()
+  const warningNumber = useSelector((state) => state.settings.warningNumber);
 
   const onFinish = (values) => {
     console.log('Success:', values);
@@ -11,6 +16,7 @@ export default function Settings() {
   };
   const onChange = (value) => {
     console.log('changed', value);
+    dispatch(changeWarningNumber({ warningNumber: value }))
   };
 
   return (
@@ -37,7 +43,7 @@ export default function Settings() {
           label="warning number"
           name="warningNumber"
         >
-          <InputNumber min={0} defaultValue={0} onChange={onChange} />;
+          <InputNumber min={0} value={warningNumber} onChange={onChange} />;
         </Form.Item>
       </Form>
     </div>
