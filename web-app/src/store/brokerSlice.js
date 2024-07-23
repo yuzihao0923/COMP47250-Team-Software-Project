@@ -25,6 +25,9 @@ const brokerSlice = createSlice({
         addBrokerLog: (state, action) => {
             state.brokerLogs.push(action.payload);
         },
+        clearBrokerLog: (state, action) => {
+            state.brokerLogs = []
+        },
         resetBrokerIntervalCounts: (state) => {
             state.intervalBrokerAcknowledgedMessageCount = 0;
         },
