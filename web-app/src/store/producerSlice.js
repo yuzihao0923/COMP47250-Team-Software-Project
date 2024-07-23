@@ -37,5 +37,5 @@ const producerSlice = createSlice({
     },
 });
 
-export const { addProducerLog, resetIntervalCounts, updateProducerChartData } = userSlice.actions;
+export const { addProducerLog, resetIntervalCounts, updateProducerChartData } = producerSlice.actions;
 export default producerSlice.reducer;
