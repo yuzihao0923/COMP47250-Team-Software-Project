@@ -1,5 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './userSlice';
+import producerReducer from './producerSlice';
+import consumerReducer from './consumerSlice';
+import brokerReducer from './brokerSlice';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { combineReducers } from 'redux';
@@ -13,6 +16,9 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   user: userReducer,
+  producer: producerReducer,
+  consumer: consumerReducer,
+  broker: brokerReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
