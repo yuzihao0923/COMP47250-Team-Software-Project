@@ -1,7 +1,5 @@
-.PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4 broker5 broker6
-.PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4 broker5 broker6
+.PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4
 
-start: redis initdb proxy broker
 start: redis initdb proxy broker
 
 redis:
@@ -20,8 +18,6 @@ proxy:
 	@echo "Starting proxy..."
 	@cd cmd/proxyServer && go run proxy.go &
 
-broker: broker1 broker2 broker3 broker4 broker5 broker6
-
 broker1:
 	@echo "Starting broker 1..."
 	@cd cmd/broker && go run broker.go -id broker1 &
@@ -38,14 +34,14 @@ broker4:
 	@echo "Starting broker 4..."
 	@cd cmd/broker && go run broker.go -id broker4 &
 
-broker5:
-	@echo "Starting broker 5..."
-	@cd cmd/broker && go run broker.go -id broker5 &
+# broker5:
+# 	@echo "Starting broker 5..."
+# 	@cd cmd/broker && go run broker.go -id broker5 &
 
-broker6:
-	@echo "Starting broker 6..."
-	@cd cmd/broker && go run broker.go -id broker6 &
-broker: broker1 broker2 broker3 broker4 broker5 broker6
+# broker6:
+# 	@echo "Starting broker 6..."
+# 	@cd cmd/broker && go run broker.go -id broker6 &
+broker: broker1 broker2 broker3 broker4
 
 # web:
 #   @echo "Starting web server..."
