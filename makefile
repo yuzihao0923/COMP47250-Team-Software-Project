@@ -1,5 +1,7 @@
 .PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4 broker5 broker6
+.PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4 broker5 broker6
 
+start: redis initdb proxy broker
 start: redis initdb proxy broker
 
 redis:
@@ -43,14 +45,11 @@ broker5:
 broker6:
 	@echo "Starting broker 6..."
 	@cd cmd/broker && go run broker.go -id broker6 &
+broker: broker1 broker2 broker3 broker4 broker5 broker6
 
-stop:
-	@echo "Stopping all services..."
-	@for port in 6381 6382 6383 6384 6385 6386; do \
-		redis-cli -p $$port shutdown; \
-	done
-	$(MAKE) kill-broker &
-	$(MAKE) kill-proxy
+# web:
+#   @echo "Starting web server..."
+#   @cd web-app && npm start &
 
 kill-proxy:
 	@echo "Killing all proxy processes..."
@@ -59,3 +58,11 @@ kill-proxy:
 kill-broker:
 	@echo "Killing all broker processes..."
 	@ps aux | grep '[b]roker' | awk '{print $$2}' | xargs kill
+
+stop:
+	@echo "Stopping all services..."
+	@for port in 6381 6382 6383 6384 6385 6386; do \
+		redis-cli -p $$port shutdown; \
+	done
+	$(MAKE) kill-broker &
+	$(MAKE) kill-proxy
