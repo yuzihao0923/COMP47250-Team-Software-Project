@@ -18,8 +18,6 @@ proxy:
 	@echo "Starting proxy..."
 	@cd cmd/proxyServer && go run proxy.go &
 
-broker: broker1 broker2 broker3 broker4 broker5 broker6
-
 broker1:
 	@echo "Starting broker 1..."
 	@cd cmd/broker && go run broker.go -id broker1 &
