@@ -1,6 +1,6 @@
 .PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4
 
-start: redis initdb proxy broker
+start: redis initdb proxy broker web
 
 redis:
 	@echo "Starting Redis servers..."
@@ -41,11 +41,12 @@ broker4:
 # broker6:
 # 	@echo "Starting broker 6..."
 # 	@cd cmd/broker && go run broker.go -id broker6 &
-broker: broker1 broker2 broker3 broker4
 
-# web:
-#   @echo "Starting web server..."
-#   @cd web-app && npm start &
+web:
+	@echo "Starting web..."
+	@cd web-app && npm start &
+
+broker: broker1 broker2 broker3 broker4
 
 kill-proxy:
 	@echo "Killing all proxy processes..."

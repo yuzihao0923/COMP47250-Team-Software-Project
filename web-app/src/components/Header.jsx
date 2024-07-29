@@ -1,34 +1,32 @@
-import React from 'react'
+import React from 'react';
 import { Button } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
-// import { Link, useNavigate } from 'react-router-dom'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { logout as reduxLogout } from '../store/userSlice'
+import { logout as reduxLogout } from '../store/userSlice';
 
 export default function Head() {
-    const { username } = useSelector(state => state.user)
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
+    const { username } = useSelector(state => state.user);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     function logout() {
-        dispatch(reduxLogout())
-        navigate('/')
+        dispatch(reduxLogout());
+        navigate('/');
     }
 
     return (
-        <div className='bg-pink-100 border-b border-slate-400 shadow-md sticky top-0 z-50'>
+        <div className='bg-gray-900 border-b border-gray-700 shadow-md sticky top-0 z-50'>
             <header className='flex justify-between items-center max-w-6xl mx-auto h-20 max-h-20'>
                 <div className='flex-shrink-0'>
-                    <h1 className='text-white font-bold text-2xl'>Hi, {username}</h1>  {/* 加粗并保持一致的字体风格 */}
+                    <h1 className='hollow-fluorescent-edge text-2xl font-bold'>Hi, {username}</h1>
                 </div>
                 <div className='h-full flex items-center space-x-6 flex-nowrap'>
-                    {/* <Link to="/change-password" className='text-white text-lg hover:text-blue-300 font-bold'>Change password</Link> */}
-                    <Button type="primary" size={'middle'} icon={<LogoutOutlined />} onClick={logout}>
-                        Logout  {/* 加粗按钮文本 */}
+                    <Button type="default" ghost size={'middle'} icon={<LogoutOutlined />} onClick={logout} style={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.3)' }}>
+                        Logout
                     </Button>
                 </div>
             </header>
         </div>
-    )
+    );
 }

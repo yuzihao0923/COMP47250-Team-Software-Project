@@ -1,6 +1,7 @@
 body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(to right, rgb(211, 204, 227), rgb(233, 228, 240));
+  font-family: 'Roboto', Arial, sans-serif;
+  background: linear-gradient(to right, #333333, #444444);
+  color: #cfd8dc;
   margin: 0;
   padding: 0;
 }
