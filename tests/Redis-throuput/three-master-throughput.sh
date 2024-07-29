@@ -4,6 +4,10 @@ NUM_TESTS=10
 TEST_DURATION=60
 CLUSTER_TYPE="redis-3-master"
 
+# 创建结果和日志目录
+mkdir -p results
+mkdir -p logs
+
 # Function to run single test iteration
 function run_test_iteration {
     ITERATION=$1
@@ -20,7 +24,7 @@ function run_test_iteration {
     echo "Collecting results..."
 
     # 收集日志或指标
-    THROUGHPUT=$(grep -oP 'Throughput: \K\d+' logs/broker.log | tail -1)
+    THROUGHPUT=$(grep -oP 'Processed message at \K.*' logs/broker.log | wc -l)
     echo "Iteration $ITERATION throughput: $THROUGHPUT"
     echo $THROUGHPUT >> results/${CLUSTER_TYPE}_throughput.txt
 
