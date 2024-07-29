@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"sync"
 )
 
@@ -14,27 +13,14 @@ type logMessage struct {
 	message string
 }
 
-var (
-	logChannel    = make(chan logMessage, 100)
-	logEntries    []string
-	logMutex      sync.Mutex
-	logFile       *os.File
-	BroadcastFunc func(string) // BroadcastFunc is a function that will be called to broadcast log messages.
-)
+var logChannel = make(chan logMessage, 100)
+var logEntries []string
+var logMutex sync.Mutex
+
+// BroadcastFunc is a function that will be called to broadcast log messages.
+var BroadcastFunc func(string)
 
 func init() {
-	// 确保 logs 目录存在
-	if _, err := os.Stat("logs"); os.IsNotExist(err) {
-		os.Mkdir("logs", os.ModePerm)
-	}
-
-	// 打开日志文件
-	var err error
-	logFile, err = os.OpenFile("/home/yuzihao0923/COMP47250-Team-Software-Project/tests/Redis-throuput/logs/broker.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	go processLogMessages()
 }
 
@@ -45,11 +31,6 @@ func processLogMessages() {
 		logEntries = append(logEntries, entry)
 		logMutex.Unlock()
 		log.Print(entry)
-
-		// 写入文件
-		if _, err := logFile.WriteString(entry + "\n"); err != nil {
-			log.Fatal(err)
-		}
 
 		// Broadcast the log entry if BroadcastFunc is set
 		if BroadcastFunc != nil {

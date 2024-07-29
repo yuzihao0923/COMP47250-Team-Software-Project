@@ -16,14 +16,12 @@ import (
 	"os"
 	"os/signal"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/rs/cors"
 )
 
 var proxyURL = "http://localhost:8888"
-var messageCount uint64
 
 type Broker struct {
 	ID           string
@@ -92,23 +90,6 @@ func (b *Broker) Start() {
 			case <-stop:
 				ticker.Stop()
 				log.LogInfo("Broker", "Stopping heartbeat...")
-				return
-			}
-		}
-	}()
-
-	// Log throughput periodically
-	throughputTicker := time.NewTicker(1 * time.Second)
-	go func() {
-		for {
-			select {
-			case <-throughputTicker.C:
-				count := atomic.LoadUint64(&messageCount)
-				atomic.StoreUint64(&messageCount, 0)
-				log.LogInfo("Broker", fmt.Sprintf("Throughput: %d messages/second", count))
-			case <-stop:
-				throughputTicker.Stop()
-				log.LogInfo("Broker", "Stopping throughput logging...")
 				return
 			}
 		}
