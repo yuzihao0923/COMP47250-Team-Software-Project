@@ -54,7 +54,7 @@ class ProducerTasks(TaskSet):
     @task
     def produce_message(self):
         token = self.token
-        for i in range(1):
+        for i in range(80000):
             payload = f"Hello {i}".encode()
             str_payload = base64.b64encode(payload).decode('utf-8')
             self.send_message(self.broker_addr, "mystream", str_payload, token)
