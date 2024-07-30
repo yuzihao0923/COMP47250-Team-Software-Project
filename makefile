@@ -56,6 +56,10 @@ kill-broker:
 	@echo "Killing all broker processes..."
 	@ps aux | grep '[b]roker' | awk '{print $$2}' | xargs kill
 
+kill-web:
+	@echo "Killing web process..."
+	@ps aux | grep '[n]pm start' | awk '{print $$2}' | xargs kill
+
 stop:
 	@echo "Stopping all services..."
 	@for port in 6381 6382 6383 6384 6385 6386; do \
@@ -63,3 +67,4 @@ stop:
 	done
 	$(MAKE) kill-broker &
 	$(MAKE) kill-proxy
+	$(MAKE) kill-web
