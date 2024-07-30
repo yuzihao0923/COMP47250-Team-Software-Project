@@ -80,7 +80,7 @@ func main() {
 		}
 	}
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 200; i++ {
 		payload := []byte(fmt.Sprintf("Hello %d", i))
 
 		err := SendMessage(brokerAddr, "mystream", payload, token)
@@ -89,6 +89,6 @@ func main() {
 
 			log.LogError("Producer", fmt.Sprintf("Failed to send message after retries: %v", err))
 		}
-		time.Sleep(time.Millisecond) // Slight delay to prevent overwhelming the broker
+		// time.Sleep(time.Millisecond) // Slight delay to prevent overwhelming the broker
 	}
 }

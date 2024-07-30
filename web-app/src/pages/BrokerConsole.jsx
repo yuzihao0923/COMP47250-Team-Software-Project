@@ -12,59 +12,14 @@ import Logs from '../components/Logs';
 import { addProducerLog, resetProducerIntervalCounts, updateProducerChartData } from '../store/producerSlice'
 import { addConsumerLog, resetConsumerIntervalCounts, updateConsumerChartData } from '../store/consumerSlice'
 import { addBrokerLog, resetBrokerIntervalCounts, addBrokerAcknowledgedMessage, updateBrokerChartData } from '../store/brokerSlice'
+import { addProxyLog} from '../store/proxySlice';
 
 const BrokerConsole = () => {
-  // const [brokerLogs, setBrokerLogs] = useState([]);
-  // const [producerLogs, setProducerLogs] = useState([]);
-  // const [consumerLogs, setConsumerLogs] = useState([]);
-  // const [totalProducerMessages, setTotalProducerMessages] = useState(0);
-  // const [totalConsumerReceivedMessages, setTotalConsumerReceivedMessages] = useState(0);
-  // const [totalBrokerAcknowledgedMessages, setTotalBrokerAcknowledgedMessages] = useState(0);
-  // const [intervalProducerMessageCount, setIntervalProducerMessageCount] = useState(0);
-  // const [intervalConsumerReceivedMessageCount, setIntervalConsumerReceivedMessageCount] = useState(0);
-  // const [intervalBrokerAcknowledgedMessageCount, setIntervalBrokerAcknowledgedMessageCount] = useState(0);
-
-  // const [producerChartData, setProducerChartData] = useState({
-  //   labels: [],
-  //   datasets: [
-  //     {
-  //       label: 'Producer Messages per Interval',
-  //       data: [],
-  //       borderColor: 'rgb(75, 192, 192)',
-  //       tension: 0.1,
-  //       fill: false,
-  //     }
-  //   ]
-  // });
-  // const [consumerChartData, setConsumerChartData] = useState({
-  //   labels: [],
-  //   datasets: [
-  //     {
-  //       label: 'Consumer Messages Received per Interval',
-  //       data: [],
-  //       borderColor: 'rgb(255, 99, 132)',
-  //       tension: 0.1,
-  //       fill: false,
-  //     }
-  //   ]
-  // });
-  // const [brokerChartData, setBrokerChartData] = useState({
-  //   labels: [],
-  //   datasets: [
-  //     {
-  //       label: 'Broker Acknowledged Messages per Interval',
-  //       data: [],
-  //       borderColor: 'rgb(54, 162, 235)',
-  //       tension: 0.1,
-  //       fill: false,
-  //     }
-  //   ]
-  // });
-
   const dispatch = useDispatch();
   const brokerLogs = useSelector((state) => state.broker.brokerLogs);
   const producerLogs = useSelector((state) => state.producer.producerLogs);
   const consumerLogs = useSelector((state) => state.consumer.consumerLogs);
+  const proxyLogs = useSelector((state) => state.proxy.proxyLogs);
   const totalProducerMessages = useSelector((state) => state.producer.totalProducerMessages);
   const totalConsumerReceivedMessages = useSelector((state) => state.consumer.totalConsumerReceivedMessages);
   const totalBrokerAcknowledgedMessages = useSelector((state) => state.broker.totalBrokerAcknowledgedMessages);
@@ -78,37 +33,9 @@ const BrokerConsole = () => {
   const user = useSelector(state => state.user);
   const updateInterval = useRef(null);
 
-  // useEffect(() => {
-  //   const socket = connectWebSocket(user, (message) => {
-  //     const cleanedMessage = message.replace(/"/g, '');
-  //     if (cleanedMessage.includes('[Producer')) {
-  //       setProducerLogs(prevLogs => [...prevLogs, cleanedMessage]);
-  //       setTotalProducerMessages(prevCount => prevCount + 1);
-  //       setIntervalProducerMessageCount(prevCount => prevCount + 1);
-  //     } else if (cleanedMessage.includes('[Broker') || cleanedMessage.includes('[Redis')) {
-  //       setBrokerLogs(prevLogs => [...prevLogs, cleanedMessage]);
-  //       if (cleanedMessage.includes('acknowledged successfully')) {
-  //         setTotalBrokerAcknowledgedMessages(prevCount => prevCount + 1);
-  //         setIntervalBrokerAcknowledgedMessageCount(prevCount => prevCount + 1);
-  //       }
-  //     } else if (cleanedMessage.includes('[Consumer')) {
-  //       setConsumerLogs(prevLogs => [...prevLogs, cleanedMessage]);
-  //       if (cleanedMessage.includes('received')) {
-  //         setTotalConsumerReceivedMessages(prevCount => prevCount + 1);
-  //         setIntervalConsumerReceivedMessageCount(prevCount => prevCount + 1);
-  //       }
-  //     }
-  //   });
-
-  //   return () => {
-  //     if (socket && socket.readyState === WebSocket.OPEN) {
-  //       socket.close();
-  //     }
-  //   };
-  // }, [user]);
-
   useEffect(() => {
     const socket = connectWebSocket(user, (message) => {
+      console.log("Received message:", message);
       const cleanedMessage = message.replace(/"/g, '');
       if (cleanedMessage.includes('[Producer')) {
         dispatch(addProducerLog(cleanedMessage));
@@ -119,6 +46,8 @@ const BrokerConsole = () => {
         }
       } else if (cleanedMessage.includes('[Consumer')) {
         dispatch(addConsumerLog(cleanedMessage));
+      } else if (cleanedMessage.includes('[ProxyServer')) {
+        dispatch(addProxyLog(cleanedMessage));
       }
     });
 
@@ -129,65 +58,6 @@ const BrokerConsole = () => {
     };
   }, [dispatch, user]);
 
-  // useEffect(() => {
-  //   updateInterval.current = setInterval(() => {
-  //     const currentTime = new Date();
-
-  //     setProducerChartData(prevData => {
-  //       const newLabels = [...prevData.labels, currentTime];
-  //       const newDataPoints = [...prevData.datasets[0].data, intervalProducerMessageCount];
-
-  //       if (newLabels.length > 20) {
-  //         newLabels.shift();
-  //         newDataPoints.shift();
-  //       }
-
-  //       return {
-  //         ...prevData,
-  //         labels: newLabels,
-  //         datasets: [{ ...prevData.datasets[0], data: newDataPoints }]
-  //       };
-  //     });
-
-  //     setConsumerChartData(prevData => {
-  //       const newLabels = [...prevData.labels, currentTime];
-  //       const newReceivedDataPoints = [...prevData.datasets[0].data, intervalConsumerReceivedMessageCount];
-
-  //       if (newLabels.length > 20) {
-  //         newLabels.shift();
-  //         newReceivedDataPoints.shift();
-  //       }
-
-  //       return {
-  //         ...prevData,
-  //         labels: newLabels,
-  //         datasets: [{ ...prevData.datasets[0], data: newReceivedDataPoints }]
-  //       };
-  //     });
-
-  //     setBrokerChartData(prevData => {
-  //       const newLabels = [...prevData.labels, currentTime];
-  //       const newAcknowledgedDataPoints = [...prevData.datasets[0].data, intervalBrokerAcknowledgedMessageCount];
-
-  //       if (newLabels.length > 20) {
-  //         newLabels.shift();
-  //         newAcknowledgedDataPoints.shift();
-  //       }
-
-  //       return {
-  //         ...prevData,
-  //         labels: newLabels,
-  //         datasets: [{ ...prevData.datasets[0], data: newAcknowledgedDataPoints }]
-  //       };
-  //     });
-
-  //     setIntervalProducerMessageCount(0);
-  //     setIntervalConsumerReceivedMessageCount(0);
-  //     setIntervalBrokerAcknowledgedMessageCount(0);
-  //   }, 3000);
-
-  //   return () => clearInterval(updateInterval.current);
-  // }, [intervalProducerMessageCount, intervalConsumerReceivedMessageCount, intervalBrokerAcknowledgedMessageCount]);
 
   useEffect(() => {
     updateInterval.current = setInterval(() => {
@@ -283,13 +153,14 @@ const BrokerConsole = () => {
       </div>
 
       <h1 className="hollow-fluorescent-edge">Components Logs</h1>
-      <div className='w-full'>
+      <div className='w-full' style={{ backgroundColor: '#121212' }}> {}
+        <Logs logsTitle='Proxy Logs' logsData={proxyLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
         {/* Broker & Redis Logs */}
-        <Logs logsTitle='Broker & Redis Logs' logsBackgroundColor='bg-orange-100' logsData={brokerLogs} />
+        <Logs logsTitle='Broker & Redis Logs' logsData={brokerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
         {/* Producer Logs */}
-        <Logs logsTitle='Producer Logs' logsBackgroundColor='bg-indigo-200' logsData={producerLogs} />
+        <Logs logsTitle='Producer Logs' logsData={producerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
         {/* Consumer Logs */}
-        <Logs logsTitle='Consumer Logs' logsBackgroundColor='bg-cyan-100' logsData={consumerLogs} />
+        <Logs logsTitle='Consumer Logs' logsData={consumerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
       </div>
     </div>
   );
