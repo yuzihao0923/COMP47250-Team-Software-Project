@@ -6,12 +6,14 @@ import time
 
 # 配置 Redis 集群连接
 REDIS_NODES = [
-    {"host": "localhost", "port": "6381"},
-    {"host": "localhost", "port": "6382"},
-    {"host": "localhost", "port": "6383"},
-    {"host": "localhost", "port": "6384"},
-    {"host": "localhost", "port": "6385"},
-    {"host": "localhost", "port": "6386"},
+    {"host": "localhost", "port": "6387"},
+    {"host": "localhost", "port": "6388"},
+    {"host": "localhost", "port": "6389"},
+    {"host": "localhost", "port": "6390"},
+    {"host": "localhost", "port": "6391"},
+    {"host": "localhost", "port": "6392"},
+    {"host": "localhost", "port": "6393"},
+    {"host": "localhost", "port": "6394"},
 ]
 
 class RedisClient:
