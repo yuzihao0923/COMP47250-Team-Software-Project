@@ -57,8 +57,8 @@ kill-broker:
 	@ps aux | grep '[b]roker' | awk '{print $$2}' | xargs kill
 
 kill-web:
-	@echo "Killing web process..."
-	@ps aux | grep '[n]pm start' | awk '{print $$2}' | xargs kill
+	@echo "Killing web process on port 3000..."
+	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
 
 stop:
 	@echo "Stopping all services..."
@@ -66,5 +66,5 @@ stop:
 		redis-cli -p $$port shutdown; \
 	done
 	$(MAKE) kill-broker &
-	$(MAKE) kill-proxy
+	$(MAKE) kill-proxy &
 	$(MAKE) kill-web
