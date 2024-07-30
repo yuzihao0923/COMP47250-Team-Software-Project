@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
@@ -6,7 +6,8 @@ import 'chartjs-adapter-date-fns';
 import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
 import Card from '../components/Card';
-import { SendOutlined, ShareAltOutlined, ApiOutlined } from '@ant-design/icons';
+// import { SendOutlined, ShareAltOutlined, ApiOutlined } from '@ant-design/icons';
+import { SendOutlined} from '@ant-design/icons';
 import Logs from '../components/Logs';
 import { addProducerLog, resetProducerIntervalCounts, updateProducerChartData } from '../store/producerSlice'
 import { addConsumerLog, resetConsumerIntervalCounts, updateConsumerChartData } from '../store/consumerSlice'
@@ -261,14 +262,14 @@ const BrokerConsole = () => {
 
   return (
     <div className="console-container">
-      <h1>Broker Console</h1>
+      <h1 className="hollow-fluorescent-edge">Broker Console</h1>
       <div className='card-area mb-10'>
-        <Card logoBackground='bg-sky-200' logo={<SendOutlined />} data={totalProducerMessages} dataTitle='Total Producer Messages Sent' />
-        <Card logoBackground='bg-sky-300' logo={<ApiOutlined />} data={totalBrokerAcknowledgedMessages} dataTitle='Total Broker Acknowledged Messages' />
-        <Card logoBackground='bg-sky-400' logo={<ShareAltOutlined />} data={totalConsumerReceivedMessages} dataTitle='Total Consumer Messages Received' />
+      <Card className="card producer-card" logoBackground='bg-dark-200' logo={<SendOutlined />} data={totalProducerMessages} dataTitle='Total Producer Messages Sent'  />
+      <Card className="card broker-card" logoBackground='bg-dark-300' logo={<SendOutlined />} data={totalBrokerAcknowledgedMessages} dataTitle='Total Broker Acknowledged Messages' />
+      <Card className="card consumer-card" logoBackground='bg-dark-400' logo={<SendOutlined />} data={totalConsumerReceivedMessages} dataTitle='Total Consumer Messages Received' />
       </div>
 
-      <h1>Monitor Chart</h1>
+      <h1 className="hollow-fluorescent-edge">Monitor Chart</h1>
       <div className="charts-container">
         <div className="chart-wrapper">
           <Line data={producerChartData} options={chartOptions} />
@@ -281,7 +282,7 @@ const BrokerConsole = () => {
         </div>
       </div>
 
-      <h1>Components Logs</h1>
+      <h1 className="hollow-fluorescent-edge">Components Logs</h1>
       <div className='w-full'>
         {/* Broker & Redis Logs */}
         <Logs logsTitle='Broker & Redis Logs' logsBackgroundColor='bg-orange-100' logsData={brokerLogs} />

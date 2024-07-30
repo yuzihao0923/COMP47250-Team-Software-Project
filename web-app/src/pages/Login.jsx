@@ -14,30 +14,40 @@ const Login = () => {
   const { token } = theme.useToken();
 
   const handleLogin = async (loginForm) => {
+    console.log("Attempting to login with:", loginForm);
+
     try {
-      const response = await axios.post('http://localhost:8080/login', loginForm);
-      const { token, role, username: user } = response.data;
-  
-      if (role === 'broker') {
-        dispatch(login({ user, token }));
-        navigate('/');
-      } else {
-        message.warning('This account is not a broker, please try again');
-      }
-    } catch (err) {
-      if (err.response && err.response.data) {
-        const errorMessage = err.response.data;
-        if (errorMessage.includes('username')) {
-          message.error('This username is not valid, please try again');
-        } else if (errorMessage.includes('password')) {
-          message.error('This password is incorrect, please try again');
+        const response = await axios.post('http://127.0.0.1:8081/login', loginForm);
+        console.log("Server response:", response.data);
+
+        const { token, role, username: user } = response.data;
+
+        if (role === 'broker') {
+            dispatch(login({ user, token }));
+            navigate('/');
+            console.log("Login successful, navigated to home page");
         } else {
-          message.error('Login failed. Please try again.');
+            message.warning('This account is not a broker, please try again');
+            console.log("Login failed: User is not a broker");
         }
-      }
+    } catch (err) {
+        console.error("Login error:", err);
+        if (err.response && err.response.data) {
+            const errorMessage = err.response.data;
+            console.log("Error message from server:", errorMessage);
+
+            if (errorMessage.includes('username')) {
+                message.error('This username is not valid, please try again');
+            } else if (errorMessage.includes('password')) {
+                message.error('This password is incorrect, please try again');
+            } else {
+                message.error('Login failed. Please try again.');
+            }
+        } else {
+            message.error('Network or server error. Please check the connection.');
+        }
     }
-  };
-  
+};
 
   return (
     <div style={{ backgroundColor: 'white', height: '100vh' }}>

@@ -11,6 +11,7 @@ import (
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/register", api.HandleRegisterBroker).Methods("POST")
+	// r.HandleFunc("/login", handleLogin).Methods("POST")
 	// r.HandleFunc("/unregister", api.HandleUnRegisterBroker).Methods("DELETE")
 	r.HandleFunc("/heartbeat", api.HandleHeartbeat).Methods("POST")
 	r.HandleFunc("/get-broker", api.HandleGetBroker).Methods("GET")
