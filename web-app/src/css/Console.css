@@ -1,35 +1,65 @@
 .console-container {
-  max-width: 72rem;
   margin: 40px auto;
-  color: #cfd8dc;
+  color: #ffffff;  /* 统一文字颜色为白色 */
+  border: 1px solid #555;
+  background-color: #121212;  /* 统一背景颜色 */
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 95%;
 }
 
-.console-container h1{
+.console-container h1 {
   text-align: center;
   font-size: 24px;
   font-weight: bold;
-  color: rgb(55 65 81);
+  color: #dcdcdc;  /* 保持标题颜色为浅灰色 */
   margin-bottom: 2rem;
 }
 
-.card-area {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
+.navbar {
+  background-color: #000;
+  color: #fff;
 }
 
-.console-container {
-  width: 100%;
+.navbar a {
+  color: #cfd8dc;
+  text-decoration: none;
+}
+
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+.card-area {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .charts-container {
-  width: 100%;
+  margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
 .chart-wrapper {
   height: 500px;
+  background-color: #242424;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
+
+.hollow-fluorescent-edge {
+  color: transparent;
+  -webkit-text-stroke: 1px #fff;
+  text-shadow:
+    0 0 1px #0ff,
+    0 0 9px #0ff;
+}
+.ant-menu-item-selected {
+  background-color: #424242 !important; /* Lighter gray background for selected item */
+  color: #fff !important; /* White text color for readability */
+}
+

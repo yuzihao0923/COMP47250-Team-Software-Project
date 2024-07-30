@@ -1,5 +1,5 @@
 // src/services/socket.js
-const API_URL = 'ws://localhost:8080/ws';
+const API_URL = 'ws://localhost:8081/ws';
 let socket;
 
 export const connectWebSocket = (user, onMessageCallback) => {

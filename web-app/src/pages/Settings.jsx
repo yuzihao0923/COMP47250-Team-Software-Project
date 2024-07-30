@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Form, InputNumber } from 'antd';
+import { Form, InputNumber } from 'antd';
 import { changeWarningNumber } from '../store/settings'
 import { useDispatch, useSelector } from 'react-redux';
 
