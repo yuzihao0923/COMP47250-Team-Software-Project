@@ -65,7 +65,6 @@ func main() {
 		return
 	}
 	fmt.Println("[INFO] [Producer] Database connected successfully")
-
 	var token, role string
 	for {
 		username := auth.GetUserInput("\nEnter username: ")

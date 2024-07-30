@@ -1,84 +1,124 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 import 'chartjs-adapter-date-fns';
 import { connectWebSocket } from '../services/socket';
 import '../css/Console.css';
 import Card from '../components/Card';
-import { SendOutlined, ShareAltOutlined, ApiOutlined } from '@ant-design/icons';
+// import { SendOutlined, ShareAltOutlined, ApiOutlined } from '@ant-design/icons';
+import { SendOutlined} from '@ant-design/icons';
 import Logs from '../components/Logs';
+import { addProducerLog, resetProducerIntervalCounts, updateProducerChartData } from '../store/producerSlice'
+import { addConsumerLog, resetConsumerIntervalCounts, updateConsumerChartData } from '../store/consumerSlice'
+import { addBrokerLog, resetBrokerIntervalCounts, addBrokerAcknowledgedMessage, updateBrokerChartData } from '../store/brokerSlice'
 
 const BrokerConsole = () => {
-  const [brokerLogs, setBrokerLogs] = useState([]);
-  const [producerLogs, setProducerLogs] = useState([]);
-  const [consumerLogs, setConsumerLogs] = useState([]);
-  const [totalProducerMessages, setTotalProducerMessages] = useState(0);
-  const [totalConsumerReceivedMessages, setTotalConsumerReceivedMessages] = useState(0);
-  const [totalBrokerAcknowledgedMessages, setTotalBrokerAcknowledgedMessages] = useState(0);
-  const [intervalProducerMessageCount, setIntervalProducerMessageCount] = useState(0);
-  const [intervalConsumerReceivedMessageCount, setIntervalConsumerReceivedMessageCount] = useState(0);
-  const [intervalBrokerAcknowledgedMessageCount, setIntervalBrokerAcknowledgedMessageCount] = useState(0);
+  // const [brokerLogs, setBrokerLogs] = useState([]);
+  // const [producerLogs, setProducerLogs] = useState([]);
+  // const [consumerLogs, setConsumerLogs] = useState([]);
+  // const [totalProducerMessages, setTotalProducerMessages] = useState(0);
+  // const [totalConsumerReceivedMessages, setTotalConsumerReceivedMessages] = useState(0);
+  // const [totalBrokerAcknowledgedMessages, setTotalBrokerAcknowledgedMessages] = useState(0);
+  // const [intervalProducerMessageCount, setIntervalProducerMessageCount] = useState(0);
+  // const [intervalConsumerReceivedMessageCount, setIntervalConsumerReceivedMessageCount] = useState(0);
+  // const [intervalBrokerAcknowledgedMessageCount, setIntervalBrokerAcknowledgedMessageCount] = useState(0);
 
-  const [producerChartData, setProducerChartData] = useState({
-    labels: [],
-    datasets: [
-      {
-        label: 'Producer Messages per Interval',
-        data: [],
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
-        fill: false,
-      }
-    ]
-  });
-  const [consumerChartData, setConsumerChartData] = useState({
-    labels: [],
-    datasets: [
-      {
-        label: 'Consumer Messages Received per Interval',
-        data: [],
-        borderColor: 'rgb(255, 99, 132)',
-        tension: 0.1,
-        fill: false,
-      }
-    ]
-  });
-  const [brokerChartData, setBrokerChartData] = useState({
-    labels: [],
-    datasets: [
-      {
-        label: 'Broker Acknowledged Messages per Interval',
-        data: [],
-        borderColor: 'rgb(54, 162, 235)',
-        tension: 0.1,
-        fill: false,
-      }
-    ]
-  });
+  // const [producerChartData, setProducerChartData] = useState({
+  //   labels: [],
+  //   datasets: [
+  //     {
+  //       label: 'Producer Messages per Interval',
+  //       data: [],
+  //       borderColor: 'rgb(75, 192, 192)',
+  //       tension: 0.1,
+  //       fill: false,
+  //     }
+  //   ]
+  // });
+  // const [consumerChartData, setConsumerChartData] = useState({
+  //   labels: [],
+  //   datasets: [
+  //     {
+  //       label: 'Consumer Messages Received per Interval',
+  //       data: [],
+  //       borderColor: 'rgb(255, 99, 132)',
+  //       tension: 0.1,
+  //       fill: false,
+  //     }
+  //   ]
+  // });
+  // const [brokerChartData, setBrokerChartData] = useState({
+  //   labels: [],
+  //   datasets: [
+  //     {
+  //       label: 'Broker Acknowledged Messages per Interval',
+  //       data: [],
+  //       borderColor: 'rgb(54, 162, 235)',
+  //       tension: 0.1,
+  //       fill: false,
+  //     }
+  //   ]
+  // });
+
+  const dispatch = useDispatch();
+  const brokerLogs = useSelector((state) => state.broker.brokerLogs);
+  const producerLogs = useSelector((state) => state.producer.producerLogs);
+  const consumerLogs = useSelector((state) => state.consumer.consumerLogs);
+  const totalProducerMessages = useSelector((state) => state.producer.totalProducerMessages);
+  const totalConsumerReceivedMessages = useSelector((state) => state.consumer.totalConsumerReceivedMessages);
+  const totalBrokerAcknowledgedMessages = useSelector((state) => state.broker.totalBrokerAcknowledgedMessages);
+  const intervalProducerMessageCount = useSelector((state) => state.producer.intervalProducerMessageCount);
+  const intervalConsumerReceivedMessageCount = useSelector((state) => state.consumer.intervalConsumerReceivedMessageCount);
+  const intervalBrokerAcknowledgedMessageCount = useSelector((state) => state.broker.intervalBrokerAcknowledgedMessageCount);
+  const producerChartData = useSelector((state) => state.producer.producerChartData);
+  const consumerChartData = useSelector((state) => state.consumer.consumerChartData);
+  const brokerChartData = useSelector((state) => state.broker.brokerChartData);
 
   const user = useSelector(state => state.user);
   const updateInterval = useRef(null);
+
+  // useEffect(() => {
+  //   const socket = connectWebSocket(user, (message) => {
+  //     const cleanedMessage = message.replace(/"/g, '');
+  //     if (cleanedMessage.includes('[Producer')) {
+  //       setProducerLogs(prevLogs => [...prevLogs, cleanedMessage]);
+  //       setTotalProducerMessages(prevCount => prevCount + 1);
+  //       setIntervalProducerMessageCount(prevCount => prevCount + 1);
+  //     } else if (cleanedMessage.includes('[Broker') || cleanedMessage.includes('[Redis')) {
+  //       setBrokerLogs(prevLogs => [...prevLogs, cleanedMessage]);
+  //       if (cleanedMessage.includes('acknowledged successfully')) {
+  //         setTotalBrokerAcknowledgedMessages(prevCount => prevCount + 1);
+  //         setIntervalBrokerAcknowledgedMessageCount(prevCount => prevCount + 1);
+  //       }
+  //     } else if (cleanedMessage.includes('[Consumer')) {
+  //       setConsumerLogs(prevLogs => [...prevLogs, cleanedMessage]);
+  //       if (cleanedMessage.includes('received')) {
+  //         setTotalConsumerReceivedMessages(prevCount => prevCount + 1);
+  //         setIntervalConsumerReceivedMessageCount(prevCount => prevCount + 1);
+  //       }
+  //     }
+  //   });
+
+  //   return () => {
+  //     if (socket && socket.readyState === WebSocket.OPEN) {
+  //       socket.close();
+  //     }
+  //   };
+  // }, [user]);
 
   useEffect(() => {
     const socket = connectWebSocket(user, (message) => {
       const cleanedMessage = message.replace(/"/g, '');
       if (cleanedMessage.includes('[Producer')) {
-        setProducerLogs(prevLogs => [...prevLogs, cleanedMessage]);
-        setTotalProducerMessages(prevCount => prevCount + 1);
-        setIntervalProducerMessageCount(prevCount => prevCount + 1);
+        dispatch(addProducerLog(cleanedMessage));
       } else if (cleanedMessage.includes('[Broker') || cleanedMessage.includes('[Redis')) {
-        setBrokerLogs(prevLogs => [...prevLogs, cleanedMessage]);
+        dispatch(addBrokerLog(cleanedMessage));
         if (cleanedMessage.includes('acknowledged successfully')) {
-          setTotalBrokerAcknowledgedMessages(prevCount => prevCount + 1);
-          setIntervalBrokerAcknowledgedMessageCount(prevCount => prevCount + 1);
+          dispatch(addBrokerAcknowledgedMessage());
         }
       } else if (cleanedMessage.includes('[Consumer')) {
-        setConsumerLogs(prevLogs => [...prevLogs, cleanedMessage]);
-        if (cleanedMessage.includes('received')) {
-          setTotalConsumerReceivedMessages(prevCount => prevCount + 1);
-          setIntervalConsumerReceivedMessageCount(prevCount => prevCount + 1);
-        }
+        dispatch(addConsumerLog(cleanedMessage));
       }
     });
 
@@ -87,67 +127,94 @@ const BrokerConsole = () => {
         socket.close();
       }
     };
-  }, [user]);
+  }, [dispatch, user]);
+
+  // useEffect(() => {
+  //   updateInterval.current = setInterval(() => {
+  //     const currentTime = new Date();
+
+  //     setProducerChartData(prevData => {
+  //       const newLabels = [...prevData.labels, currentTime];
+  //       const newDataPoints = [...prevData.datasets[0].data, intervalProducerMessageCount];
+
+  //       if (newLabels.length > 20) {
+  //         newLabels.shift();
+  //         newDataPoints.shift();
+  //       }
+
+  //       return {
+  //         ...prevData,
+  //         labels: newLabels,
+  //         datasets: [{ ...prevData.datasets[0], data: newDataPoints }]
+  //       };
+  //     });
+
+  //     setConsumerChartData(prevData => {
+  //       const newLabels = [...prevData.labels, currentTime];
+  //       const newReceivedDataPoints = [...prevData.datasets[0].data, intervalConsumerReceivedMessageCount];
+
+  //       if (newLabels.length > 20) {
+  //         newLabels.shift();
+  //         newReceivedDataPoints.shift();
+  //       }
+
+  //       return {
+  //         ...prevData,
+  //         labels: newLabels,
+  //         datasets: [{ ...prevData.datasets[0], data: newReceivedDataPoints }]
+  //       };
+  //     });
+
+  //     setBrokerChartData(prevData => {
+  //       const newLabels = [...prevData.labels, currentTime];
+  //       const newAcknowledgedDataPoints = [...prevData.datasets[0].data, intervalBrokerAcknowledgedMessageCount];
+
+  //       if (newLabels.length > 20) {
+  //         newLabels.shift();
+  //         newAcknowledgedDataPoints.shift();
+  //       }
+
+  //       return {
+  //         ...prevData,
+  //         labels: newLabels,
+  //         datasets: [{ ...prevData.datasets[0], data: newAcknowledgedDataPoints }]
+  //       };
+  //     });
+
+  //     setIntervalProducerMessageCount(0);
+  //     setIntervalConsumerReceivedMessageCount(0);
+  //     setIntervalBrokerAcknowledgedMessageCount(0);
+  //   }, 3000);
+
+  //   return () => clearInterval(updateInterval.current);
+  // }, [intervalProducerMessageCount, intervalConsumerReceivedMessageCount, intervalBrokerAcknowledgedMessageCount]);
 
   useEffect(() => {
     updateInterval.current = setInterval(() => {
       const currentTime = new Date();
 
-      setProducerChartData(prevData => {
-        const newLabels = [...prevData.labels, currentTime];
-        const newDataPoints = [...prevData.datasets[0].data, intervalProducerMessageCount];
+      dispatch(updateProducerChartData({
+        labels: [...producerChartData.labels, currentTime],
+        data: [...producerChartData.datasets[0].data, intervalProducerMessageCount]
+      }));
 
-        if (newLabels.length > 20) {
-          newLabels.shift();
-          newDataPoints.shift();
-        }
+      dispatch(updateConsumerChartData({
+        labels: [...consumerChartData.labels, currentTime],
+        data: [...consumerChartData.datasets[0].data, intervalConsumerReceivedMessageCount]
+      }));
 
-        return {
-          ...prevData,
-          labels: newLabels,
-          datasets: [{ ...prevData.datasets[0], data: newDataPoints }]
-        };
-      });
+      dispatch(updateBrokerChartData({
+        labels: [...brokerChartData.labels, currentTime],
+        data: [...brokerChartData.datasets[0].data, intervalBrokerAcknowledgedMessageCount]
+      }));
 
-      setConsumerChartData(prevData => {
-        const newLabels = [...prevData.labels, currentTime];
-        const newReceivedDataPoints = [...prevData.datasets[0].data, intervalConsumerReceivedMessageCount];
-
-        if (newLabels.length > 20) {
-          newLabels.shift();
-          newReceivedDataPoints.shift();
-        }
-
-        return {
-          ...prevData,
-          labels: newLabels,
-          datasets: [{ ...prevData.datasets[0], data: newReceivedDataPoints }]
-        };
-      });
-
-      setBrokerChartData(prevData => {
-        const newLabels = [...prevData.labels, currentTime];
-        const newAcknowledgedDataPoints = [...prevData.datasets[0].data, intervalBrokerAcknowledgedMessageCount];
-
-        if (newLabels.length > 20) {
-          newLabels.shift();
-          newAcknowledgedDataPoints.shift();
-        }
-
-        return {
-          ...prevData,
-          labels: newLabels,
-          datasets: [{ ...prevData.datasets[0], data: newAcknowledgedDataPoints }]
-        };
-      });
-
-      setIntervalProducerMessageCount(0);
-      setIntervalConsumerReceivedMessageCount(0);
-      setIntervalBrokerAcknowledgedMessageCount(0);
+      dispatch(resetProducerIntervalCounts());
+      dispatch(resetConsumerIntervalCounts());
+      dispatch(resetBrokerIntervalCounts());
     }, 3000);
 
     return () => clearInterval(updateInterval.current);
-  }, [intervalProducerMessageCount, intervalConsumerReceivedMessageCount, intervalBrokerAcknowledgedMessageCount]);
+  }, [dispatch, intervalProducerMessageCount, intervalConsumerReceivedMessageCount, intervalBrokerAcknowledgedMessageCount, producerChartData, consumerChartData, brokerChartData]);
 
   const chartOptions = {
     responsive: true,
@@ -195,14 +262,14 @@ const BrokerConsole = () => {
 
   return (
     <div className="console-container">
-      <h1>Broker Console</h1>
+      <h1 className="hollow-fluorescent-edge">Broker Console</h1>
       <div className='card-area mb-10'>
-        <Card logoBackground='bg-sky-200' logo={<SendOutlined />} data={totalProducerMessages} dataTitle='Total Producer Messages Sent' />
-        <Card logoBackground='bg-sky-300' logo={<ApiOutlined />} data={totalBrokerAcknowledgedMessages} dataTitle='Total Broker Acknowledged Messages' />
-        <Card logoBackground='bg-sky-400' logo={<ShareAltOutlined />} data={totalConsumerReceivedMessages} dataTitle='Total Consumer Messages Received' />
+      <Card className="card producer-card" logoBackground='bg-dark-200' logo={<SendOutlined />} data={totalProducerMessages} dataTitle='Total Producer Messages Sent'  />
+      <Card className="card broker-card" logoBackground='bg-dark-300' logo={<SendOutlined />} data={totalBrokerAcknowledgedMessages} dataTitle='Total Broker Acknowledged Messages' />
+      <Card className="card consumer-card" logoBackground='bg-dark-400' logo={<SendOutlined />} data={totalConsumerReceivedMessages} dataTitle='Total Consumer Messages Received' />
       </div>
 
-      <h1>Monitor Chart</h1>
+      <h1 className="hollow-fluorescent-edge">Monitor Chart</h1>
       <div className="charts-container">
         <div className="chart-wrapper">
           <Line data={producerChartData} options={chartOptions} />
@@ -215,7 +282,7 @@ const BrokerConsole = () => {
         </div>
       </div>
 
-      <h1>Components Logs</h1>
+      <h1 className="hollow-fluorescent-edge">Components Logs</h1>
       <div className='w-full'>
         {/* Broker & Redis Logs */}
         <Logs logsTitle='Broker & Redis Logs' logsBackgroundColor='bg-orange-100' logsData={brokerLogs} />

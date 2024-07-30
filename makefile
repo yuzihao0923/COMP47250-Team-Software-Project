@@ -1,6 +1,6 @@
-.PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4 broker5 broker6
+.PHONY: start stop proxy broker redis initdb web broker1 broker2 broker3 broker4
 
-start: redis initdb proxy broker
+start: redis initdb proxy broker web
 
 redis:
 	@echo "Starting Redis servers..."
@@ -8,8 +8,19 @@ redis:
 	for port in 6381 6382 6383 6384 6385 6386; do \
 		redis-server redis-$$port.conf & \
 	done
-	@sleep 1
 
+
+	# @cd tests/four-master-cluster/cluster && \
+	# for port in 6387 6388 6389 6390 6391 6392 6393 9394; do \
+	# 	redis-server redis-$$port.conf & \
+	# done
+
+	# @cd tests/five-master-cluster/cluster && \
+	# for port in 6395 6396 6397 6398 6399 6400 6401 9402 9403 9404; do \
+	# 	redis-server redis-$$port.conf & \
+	# done
+
+	@sleep 1
 
 initdb:
 	@echo "Initializing database..."
@@ -18,9 +29,6 @@ initdb:
 proxy:
 	@echo "Starting proxy..."
 	@cd cmd/proxyServer && go run proxy.go &
-
-
-broker: broker1 broker2 broker3 broker4 broker5 broker6
 
 broker1:
 	@echo "Starting broker 1..."
@@ -38,25 +46,31 @@ broker4:
 	@echo "Starting broker 4..."
 	@cd cmd/broker && go run broker.go -id broker4 &
 
-broker5:
-	@echo "Starting broker 5..."
-	@cd cmd/broker && go run broker.go -id broker5 &
+# broker5:
+# 	@echo "Starting broker 5..."
+# 	@cd cmd/broker && go run broker.go -id broker5 &
 
-broker6:
-	@echo "Starting broker 6..."
-	@cd cmd/broker && go run broker.go -id broker6 &
+# broker6:
+# 	@echo "Starting broker 6..."
+# 	@cd cmd/broker && go run broker.go -id broker6 &
 
-# web:
-#   @echo "Starting web server..."
-#   @cd web-app && npm start &
+web:
+	@echo "Starting web..."
+	@cd web-app && npm start &
+
+broker: broker1 broker2 broker3 broker4
 
 kill-proxy:
 	@echo "Killing all proxy processes..."
-	@ps aux | grep 'exe/[p]roxy' | awk '{print $$2}' | xargs kill
+	@ps aux | grep '[p]roxy' | awk '{print $$2}' | xargs kill
 
 kill-broker:
 	@echo "Killing all broker processes..."
-	@ps aux | grep 'exe/[b]roker' | awk '{print $$2}' | xargs kill
+	@ps aux | grep '[b]roker' | awk '{print $$2}' | xargs kill
+
+kill-web:
+	@echo "Killing web process on port 3000..."
+	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
 
 stop:
 	@echo "Stopping all services..."
@@ -64,4 +78,5 @@ stop:
 		redis-cli -p $$port shutdown; \
 	done
 	$(MAKE) kill-broker &
-	$(MAKE) kill-proxy
+	$(MAKE) kill-proxy &
+	$(MAKE) kill-web
