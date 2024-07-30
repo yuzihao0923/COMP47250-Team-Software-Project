@@ -249,38 +249,15 @@ func main() {
 	}
 
 	rsi := redis.NewRedisClusterClient([]string{
-		"localhost:6381",
-		"localhost:6382",
-		"localhost:6383",
-		"localhost:6384",
-		"localhost:6385",
-		"localhost:6386",
+		"localhost:6387",
+		"localhost:6388",
+		"localhost:6389",
+		"localhost:6390",
+		"localhost:6391",
+		"localhost:6392",
+		"localhost:6393",
+		"localhost:6394",
 	}, "", 0, api.BroadcastMessage)
-
-	// rsi := redis.NewRedisClusterClient([]string{
-	// 	"localhost:6387",
-	// 	"localhost:6388",
-	// 	"localhost:6389",
-	// 	"localhost:6390",
-	// 	"localhost:6391",
-	// 	"localhost:6392",
-	// 	"localhost:6393",
-	// 	"localhost:6394",
-	// }, "", 0, api.BroadcastMessage)
-
-	// rsi := redis.NewRedisClusterClient([]string{
-	// 	"localhost:6395",
-	// 	"localhost:6396",
-	// 	"localhost:6397",
-	// 	"localhost:6398",
-	// 	"localhost:6399",
-	// 	"localhost:6400",
-	// 	"localhost:6401",
-	// 	"localhost:6402",
-	// 	"localhost:6403",
-	// 	"localhost:6404",
-	// }, "", 0, api.BroadcastMessage)
-
 	ctx := context.Background()
 
 	// Check connection, Ping function will flush all data in Redis

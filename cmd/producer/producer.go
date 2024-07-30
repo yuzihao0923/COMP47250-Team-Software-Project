@@ -43,8 +43,8 @@ func SendMessage(brokerAddr, streamName string, payload []byte, token string) er
 }
 
 const (
-	MaxRetryCount = 1000
-	RetryInterval = 5 * time.Second
+	MaxRetryCount = 3
+	RetryInterval = 1 * time.Second
 )
 
 func main() {
@@ -65,7 +65,6 @@ func main() {
 		return
 	}
 	fmt.Println("[INFO] [Producer] Database connected successfully")
-
 	var token, role string
 	for {
 		username := auth.GetUserInput("\nEnter username: ")

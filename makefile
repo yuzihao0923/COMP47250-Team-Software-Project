@@ -8,6 +8,18 @@ redis:
 	for port in 6381 6382 6383 6384 6385 6386; do \
 		redis-server redis-$$port.conf & \
 	done
+
+
+	# @cd tests/four-master-cluster/cluster && \
+	# for port in 6387 6388 6389 6390 6391 6392 6393 9394; do \
+	# 	redis-server redis-$$port.conf & \
+	# done
+
+	# @cd tests/five-master-cluster/cluster && \
+	# for port in 6395 6396 6397 6398 6399 6400 6401 9402 9403 9404; do \
+	# 	redis-server redis-$$port.conf & \
+	# done
+
 	@sleep 1
 
 initdb:
