@@ -34,16 +34,12 @@ class ProducerTasks(TaskSet):
 
     def read_from_json_file(self):
         try:
-            with open("message.json", "r") as file:
-                lines = file.readlines()
-                if lines:
-                    # 从所有行中随机选择一行
-                    random_line = random.choice(lines).strip()
-                    message_data = json.loads(random_line)
-                    return message_data.get("stream_name"), message_data.get("group_name")
+            with open("../message/messages.json", "r") as file:
+                data = json.load(file)
+                return data
         except (IOError, json.JSONDecodeError) as e:
             print(f"Error reading JSON file: {e}")
-        return None, None
+            return []
 
     def send_message(self, broker_addr, stream_name, payload, token):
         msg = {
@@ -64,7 +60,10 @@ class ProducerTasks(TaskSet):
     @task
     def produce_message(self):
         token = self.token
-        stream_name, _ = self.read_from_json_file()
+        nameInfoList = self.read_from_json_file()
+        nameInfo = random.choice(nameInfoList)
+        stream_name = nameInfo["stream_name"]
+        print(nameInfo)
         if stream_name:
             payload = f"Hello {stream_name}".encode()
             str_payload = base64.b64encode(payload).decode('utf-8')
