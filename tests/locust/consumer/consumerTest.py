@@ -4,6 +4,7 @@ import json
 import time
 import random
 import string
+import os
 
 proxy_url = "http://localhost:8888"
 user_consumer = {"username": "c1", "password": "123"}
@@ -12,19 +13,51 @@ class ConsumerTasks(TaskSet):
     def on_start(self):
         self.broker_addr = self.get_broker_address()
         self.token = self.authenticate_user(user_consumer)
+        # self.clear_json_file()
         self.stream_name = ''.join(random.choices(string.ascii_letters, k=10))
         self.group_name = ''.join(random.choices(string.ascii_letters, k=10))
         self.write_to_json_file()
         self.register()
+
+    def clear_json_file(self):
+        file_path = "../message/messages.json"
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        # Clear the file
+        with open(file_path, "w") as file:
+            json.dump([], file)
     
     def read_from_json_file(self):
         try:
-            with open("messages.json", "r") as file:
+            with open("../message/messages.json", "r") as file:
                 data = json.load(file)
                 return data
         except (IOError, json.JSONDecodeError) as e:
             print(f"Error reading JSON file: {e}")
             return []
+    def write_to_json_file(self):
+        message_data = {
+            "stream_name": self.stream_name,
+            "group_name": self.group_name
+        }
+        
+        file_path = "../message/messages.json"
+        
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        # Read existing data or initialize an empty list
+        try:
+            with open(file_path, "r") as file:
+                data = json.load(file)
+        except (IOError, json.JSONDecodeError):
+            data = []
+        
+        data.append(message_data)
+        
+        # Write updated data back to the file
+        with open(file_path, "w") as file:
+            json.dump(data, file, indent=4)
 
     def get_broker_address(self):
         response = requests.get(f"{proxy_url}/get-broker")
@@ -42,21 +75,6 @@ class ConsumerTasks(TaskSet):
         else:
             raise Exception(f"User {user['username']} is not authorized")
     
-    def write_to_json_file(self):
-        message_data = {
-            "stream_name": self.stream_name,
-            "group_name": self.group_name
-        }
-        try:
-            with open("messages.json", "r") as file:
-                data = json.load(file)
-        except (IOError, json.JSONDecodeError):
-            data = []
-        
-        data.append(message_data)
-        
-        with open("messages.json", "w") as file:
-            json.dump(data, file, indent=4)
 
     def register(self):
         msg = {
@@ -74,19 +92,24 @@ class ConsumerTasks(TaskSet):
             print(f"Error registering consumer: {response.text}")
     @task
     def consume_messages(self):
+        # pass
         while True:
             try:
                 # 发送请求以消费消息
-                nameInfo=self.read_from_json_file()
+                nameInfoList = self.read_from_json_file()
+                nameInfo = random.choice(nameInfoList)
+                print(nameInfo)
                 response = self.client.get(
                     f"http://{self.broker_addr}/consume",
                     params={
-                        "stream": nameInfo[0],
-                        "group": nameInfo[1],
+                        "stream": nameInfo["stream_name"],
+                        "group": nameInfo["group_name"],
                         "consumer": user_consumer["username"]
                     },
                     headers={"Authorization": f"Bearer {self.token}"}
                 )
+
+                print("---------------"+str(response.status_code)+"------------")
                 
                 if response.status_code == 204:  # No Content
                     print("No new messages, retrying...")
@@ -94,10 +117,10 @@ class ConsumerTasks(TaskSet):
                 
                 elif response.status_code == 200:
                     messages = response.json()
-                    if len(messages) > 0:
-                        print(f"Consumed {len(messages)} messages.")
-                    else:
+                    if messages is None:
                         print("No new message now, please wait.")
+                    else:
+                        print(f"Consumed messages.")
                     break
                 
                 else:
