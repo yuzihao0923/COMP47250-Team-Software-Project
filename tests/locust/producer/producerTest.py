@@ -63,6 +63,8 @@ class ConsumerTasks(TaskSet):
     def on_start(self):
         self.broker_addr = self.get_broker_address()    
         self.token = self.authenticate_user(user_consumer)
+        self.messages = load_messages('messages.json')
+        self.message_index = 0
 
     def get_broker_address(self):
         response = requests.get(f"{proxy_url}/get-broker")
@@ -84,12 +86,12 @@ class ConsumerTasks(TaskSet):
         else:
             raise Exception(f"User {user['username']} is not authorized")
 
-    def register(self,broker_addr,msg,token):
+    def register(self, broker_addr, stream_name, group_name, token):
         msg = {
             "type": "registration",
             "consumer_info": {
-                "stream_name": "your_stream_name",
-                "group_name": "your_group_name"
+                "stream_name": stream_name,
+                "group_name": group_name
             }
         }
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
@@ -114,8 +116,14 @@ class ConsumerTasks(TaskSet):
     @task
     def consume_messages(self):
         token = self.token
-        for i in range(80000):
-            self.consume_message(self.broker_addr, "mystream", token)
+        if self.message_index < len(self.messages):
+            message = self.messages[self.message_index]
+            stream_name = message['consumer_info']['stream_name']
+            group_name = message['consumer_info']['group_name']
+            self.register(self.broker_addr, stream_name, group_name, token)
+            self.message_index += 1
+        else:
+            print("All messages processed")
 
 class ProducerUser(HttpUser):
     tasks = [ProducerTasks]
