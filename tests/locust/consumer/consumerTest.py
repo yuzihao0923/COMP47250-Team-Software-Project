@@ -90,6 +90,16 @@ class ConsumerTasks(TaskSet):
             print(f"Consumer registered: {response.text}")
         else:
             print(f"Error registering consumer: {response.text}")
+
+
+    def ack(self,msg):
+        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": "application/json"}
+        response = self.client.post(f"http://{self.broker_addr}/ack", json=msg, headers=headers)
+        if response.status_code == 200:
+            print(f": {response.text}")
+        else:
+            print(f"Error registering consumer: {response.text}")
+
     @task
     def consume_messages(self):
         # pass
@@ -121,6 +131,8 @@ class ConsumerTasks(TaskSet):
                         print("No new message now, please wait.")
                     else:
                         print(f"Consumed messages.")
+                        for message in messages:
+                            self.ack(message)
                     break
                 
                 else:
