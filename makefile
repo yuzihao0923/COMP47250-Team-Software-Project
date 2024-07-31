@@ -62,15 +62,15 @@ broker: broker1 broker2 broker3 broker4
 
 kill-proxy:
 	@echo "Killing all proxy processes..."
-	@ps aux | grep '[p]roxy' | awk '{print $$2}' | xargs kill
+	@ps aux | grep 'exe/[p]roxy' | awk '{print $$2}' | xargs kill
 
 kill-broker:
 	@echo "Killing all broker processes..."
-	@ps aux | grep '[b]roker' | awk '{print $$2}' | xargs kill
+	@ps aux | grep 'exe/[b]roker' | awk '{print $$2}' | xargs kill
 
-kill-web:
-	@echo "Killing web process on port 3000..."
-	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
+# kill-web:
+# 	@echo "Killing web process on port 3000..."
+# 	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
 
 stop:
 	@echo "Stopping all services..."
@@ -78,5 +78,6 @@ stop:
 		redis-cli -p $$port shutdown; \
 	done
 	$(MAKE) kill-broker &
-	$(MAKE) kill-proxy &
-	$(MAKE) kill-web
+	$(MAKE) kill-proxy 
+# &
+	# $(MAKE) kill-web
