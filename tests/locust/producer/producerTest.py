@@ -113,7 +113,7 @@ class ConsumerTasks(TaskSet):
             response = self.client.get(f"http://{broker_addr}/consume?stream_name={stream_name}", headers=headers)
             if response.status_code == 200:
                 print(f"Consumer received message: {response.json()['payload']}")
-                return
+                return response.json()['payload']
             print(f"Error consuming message (attempt {retry_count + 1}/{MaxRetryCount}): {response.text}")
             time.sleep(RetryInterval)
         print(f"Failed to consume message after {MaxRetryCount} attempts")
