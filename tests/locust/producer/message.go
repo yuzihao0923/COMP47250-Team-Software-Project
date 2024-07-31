@@ -41,6 +41,10 @@ func main() {
 
 	// Create a JSON encoder
 	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+
+	// Start a JSON array
+	file.WriteString("[\n")
 
 	// Generate 50000 messages
 	for i := 0; i < 50000; i++ {
@@ -51,12 +55,20 @@ func main() {
 			},
 		}
 
-		// Encode the message as JSON and write to the file
+		// Encode the message as JSON
 		err := encoder.Encode(message)
 		if err != nil {
 			log.Fatalf("Failed to write message to file: %v", err)
 		}
+
+		// Add a comma between objects
+		if i < 49999 {
+			file.WriteString(",\n")
+		}
 	}
+
+	// End the JSON array
+	file.WriteString("\n]")
 
 	fmt.Println("Successfully generated 50000 messages.")
 }

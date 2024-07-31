@@ -10,6 +10,11 @@ user_consumer = {"username": "c1", "password": "123"}
 MaxRetryCount = 3
 RetryInterval = 2
 
+def load_messages(file_path):
+    with open(file_path, 'r') as file:
+        messages = json.load(file)
+    return messages
+
 class ProducerTasks(TaskSet):
     def on_start(self):
         self.broker_addr = self.get_broker_address()     
