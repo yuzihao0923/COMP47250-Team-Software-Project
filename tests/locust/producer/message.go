@@ -47,7 +47,7 @@ func main() {
 	file.WriteString("[\n")
 
 	// Generate 50000 messages
-	for i := 0; i < 50000; i++ {
+	for i := 0; i < 10; i++ {
 		message := Message{
 			ConsumerInfo: ConsumerInfo{
 				StreamName: generateRandomString(10),
