@@ -11,12 +11,12 @@ redis:
 
 
 	# @cd tests/four-master-cluster/cluster && \
-	# for port in 6387 6388 6389 6390 6391 6392 6393 9394; do \
+	# for port in 6387 6388 6389 6390 6391 6392 6393 6394; do \
 	# 	redis-server redis-$$port.conf & \
 	# done
 
 	# @cd tests/five-master-cluster/cluster && \
-	# for port in 6395 6396 6397 6398 6399 6400 6401 9402 9403 9404; do \
+	# for port in 6395 6396 6397 6398 6399 6400 6401 6402 6403 6404; do \
 	# 	redis-server redis-$$port.conf & \
 	# done
 
@@ -62,15 +62,15 @@ broker: broker1 broker2 broker3 broker4
 
 kill-proxy:
 	@echo "Killing all proxy processes..."
-	@ps aux | grep '[p]roxy' | awk '{print $$2}' | xargs kill
+	@ps aux | grep 'exe/[p]roxy' | awk '{print $$2}' | xargs kill
 
 kill-broker:
 	@echo "Killing all broker processes..."
-	@ps aux | grep '[b]roker' | awk '{print $$2}' | xargs kill
+	@ps aux | grep 'exe/[b]roker' | awk '{print $$2}' | xargs kill
 
-kill-web:
-	@echo "Killing web process on port 3000..."
-	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
+# kill-web:
+# 	@echo "Killing web process on port 3000..."
+# 	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
 
 stop:
 	@echo "Stopping all services..."
@@ -78,5 +78,6 @@ stop:
 		redis-cli -p $$port shutdown; \
 	done
 	$(MAKE) kill-broker &
-	$(MAKE) kill-proxy &
-	$(MAKE) kill-web
+	$(MAKE) kill-proxy 
+# &
+	# $(MAKE) kill-web
