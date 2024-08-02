@@ -25,7 +25,6 @@ const BrokerConsole = () => {
   const processBatchedMessages = useCallback((messages) => {
     console.log('Raw messages:', messages);
 
-    // Remove surrounding quotes and split by newline
     const cleanedMessage = messages.replace(/^"|"$/g, '');
     const logEntries = cleanedMessage.split('\\n').filter(entry => entry.trim() !== '');
 
@@ -33,26 +32,19 @@ const BrokerConsole = () => {
 
     dispatch(batchAddLogs(logEntries));
 
-    let brokerCount = 0, consumerCount = 0, producerCount = 0, proxyCount = 0;
-
     logEntries.forEach(message => {
       if (message.includes('[Producer')) {
-        producerCount++;
-      } else if (message.includes('[Consumer')) {
-        consumerCount++;
+        dispatch(incrementProducerMessage());
+      } else if (message.includes('] received')) {
+        dispatch(incrementConsumerMessage());
       } else if (message.includes('[Broker') || message.includes('[Redis')) {
         if (message.includes('acknowledged successfully')) {
-          brokerCount++;
+          dispatch(addBrokerAcknowledgedMessage());
         }
       } else if (message.includes('[ProxyServer')) {
-        proxyCount++;
+        dispatch(incrementProxyMessage());
       }
     });
-
-    dispatch(incrementProducerMessage(producerCount));
-    dispatch(incrementConsumerMessage(consumerCount));
-    dispatch(addBrokerAcknowledgedMessage(brokerCount));
-    dispatch(incrementProxyMessage(proxyCount));
   }, [dispatch]);
 
   useEffect(() => {
@@ -114,19 +106,26 @@ const BrokerConsole = () => {
     return () => clearInterval(chartUpdateInterval);
   }, [dispatch]);
 
-  // Update chart data when metrics change
   useEffect(() => {
+    const now = new Date();
     setChartData(prevData => {
-      const lastIndex = prevData.length - 1;
-      const updatedLastPoint = {
-        ...prevData[lastIndex],
+      const newDataPoint = {
+        time: now.toISOString(),
         broker: metrics.intervalBrokerAcknowledgedMessageCount,
         consumer: metrics.intervalConsumerReceivedMessageCount,
         producer: metrics.intervalProducerMessageCount,
       };
-      return [...prevData.slice(0, lastIndex), updatedLastPoint];
+      const newData = [...prevData.slice(1), newDataPoint];
+
+      // Dispatch actions to reset interval counts after updating the chart
+      dispatch(resetBrokerIntervalCounts());
+      dispatch(resetConsumerIntervalCounts());
+      dispatch(resetProducerIntervalCounts());
+      dispatch(resetProxyIntervalCounts());
+
+      return newData;
     });
-  }, [metrics]);
+  }, [metrics, dispatch]);
 
   const formatXAxis = (tickItem) => {
     return new Date(tickItem).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });

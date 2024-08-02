@@ -9,9 +9,10 @@ const producerMetricsSlice = createSlice({
     name: 'producerMetrics',
     initialState,
     reducers: {
-        incrementProducerMessage: (state) => {
-            state.totalProducerMessages += 1;
-            state.intervalProducerMessageCount += 1;
+        incrementProducerMessage: (state, action) => {
+            const count = action.payload || 1;
+            state.totalProducerMessages += count;
+            state.intervalProducerMessageCount += count;
         },
         resetProducerIntervalCounts: (state) => {
             state.intervalProducerMessageCount = 0;

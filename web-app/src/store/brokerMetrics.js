@@ -9,9 +9,10 @@ const brokerMetricsSlice = createSlice({
     name: 'brokerMetrics',
     initialState,
     reducers: {
-        addBrokerAcknowledgedMessage: (state) => {
-            state.totalBrokerAcknowledgedMessages += 1;
-            state.intervalBrokerAcknowledgedMessageCount += 1;
+        addBrokerAcknowledgedMessage: (state, action) => {
+            const count = action.payload || 1;
+            state.totalBrokerAcknowledgedMessages += count;
+            state.intervalBrokerAcknowledgedMessageCount += count;
         },
         resetBrokerIntervalCounts: (state) => {
             state.intervalBrokerAcknowledgedMessageCount = 0;
