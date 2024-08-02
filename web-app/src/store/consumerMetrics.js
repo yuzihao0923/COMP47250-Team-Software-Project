@@ -9,9 +9,10 @@ const consumerMetricsSlice = createSlice({
     name: 'consumerMetrics',
     initialState,
     reducers: {
-        incrementConsumerMessage: (state) => {
-            state.totalConsumerReceivedMessages += 1;
-            state.intervalConsumerReceivedMessageCount += 1;
+        incrementConsumerMessage: (state, action) => {
+            const count = action.payload || 1;
+            state.totalConsumerReceivedMessages += count;
+            state.intervalConsumerReceivedMessageCount += count;
         },
         resetConsumerIntervalCounts: (state) => {
             state.intervalConsumerReceivedMessageCount = 0;
