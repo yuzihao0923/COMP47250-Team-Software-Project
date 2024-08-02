@@ -1,166 +1,210 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Line } from 'react-chartjs-2';
-import 'chart.js/auto';
-import 'chartjs-adapter-date-fns';
-import { connectWebSocket } from '../services/socket';
+import { selectAllLogs, selectAllMetrics } from '../store/selectors';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { connectWebSockets, closeAllSockets } from '../services/socket';
 import '../css/Console.css';
 import Card from '../components/Card';
-// import { SendOutlined, ShareAltOutlined, ApiOutlined } from '@ant-design/icons';
-import { SendOutlined} from '@ant-design/icons';
 import Logs from '../components/Logs';
-import { addProducerLog, resetProducerIntervalCounts, updateProducerChartData } from '../store/producerSlice'
-import { addConsumerLog, resetConsumerIntervalCounts, updateConsumerChartData } from '../store/consumerSlice'
-import { addBrokerLog, resetBrokerIntervalCounts, addBrokerAcknowledgedMessage, updateBrokerChartData } from '../store/brokerSlice'
-import { addProxyLog} from '../store/proxySlice';
+import { SendOutlined } from '@ant-design/icons';
+import { batchAddLogs } from '../store/logSlice';
+import { incrementProducerMessage, resetProducerIntervalCounts } from '../store/producerMetrics'
+import { incrementConsumerMessage, resetConsumerIntervalCounts } from '../store/consumerMetrics'
+import { addBrokerAcknowledgedMessage, resetBrokerIntervalCounts } from '../store/brokerMetrics'
+import { incrementProxyMessage, resetProxyIntervalCounts } from '../store/proxyMetrics'
+
 
 const BrokerConsole = () => {
   const dispatch = useDispatch();
-  const brokerLogs = useSelector((state) => state.broker.brokerLogs);
-  const producerLogs = useSelector((state) => state.producer.producerLogs);
-  const consumerLogs = useSelector((state) => state.consumer.consumerLogs);
-  const proxyLogs = useSelector((state) => state.proxy.proxyLogs);
-  const totalProducerMessages = useSelector((state) => state.producer.totalProducerMessages);
-  const totalConsumerReceivedMessages = useSelector((state) => state.consumer.totalConsumerReceivedMessages);
-  const totalBrokerAcknowledgedMessages = useSelector((state) => state.broker.totalBrokerAcknowledgedMessages);
-  const intervalProducerMessageCount = useSelector((state) => state.producer.intervalProducerMessageCount);
-  const intervalConsumerReceivedMessageCount = useSelector((state) => state.consumer.intervalConsumerReceivedMessageCount);
-  const intervalBrokerAcknowledgedMessageCount = useSelector((state) => state.broker.intervalBrokerAcknowledgedMessageCount);
-  const producerChartData = useSelector((state) => state.producer.producerChartData);
-  const consumerChartData = useSelector((state) => state.consumer.consumerChartData);
-  const brokerChartData = useSelector((state) => state.broker.brokerChartData);
-
+  const logs = useSelector(selectAllLogs);
+  const metrics = useSelector(selectAllMetrics);
   const user = useSelector(state => state.user);
-  const updateInterval = useRef(null);
 
-  useEffect(() => {
-    const socket = connectWebSocket(user, (message) => {
-      console.log("Received message:", message);
-      const cleanedMessage = message.replace(/"/g, '');
-      if (cleanedMessage.includes('[Producer')) {
-        dispatch(addProducerLog(cleanedMessage));
-      } else if (cleanedMessage.includes('[Broker') || cleanedMessage.includes('[Redis')) {
-        dispatch(addBrokerLog(cleanedMessage));
-        if (cleanedMessage.includes('acknowledged successfully')) {
-          dispatch(addBrokerAcknowledgedMessage());
+  const [chartData, setChartData] = useState([]);
+
+  const processBatchedMessages = useCallback((messages) => {
+    console.log('Raw messages:', messages);
+
+    // Remove surrounding quotes and split by newline
+    const cleanedMessage = messages.replace(/^"|"$/g, '');
+    const logEntries = cleanedMessage.split('\\n').filter(entry => entry.trim() !== '');
+
+    console.log('Processed log entries:', logEntries);
+
+    dispatch(batchAddLogs(logEntries));
+
+    let brokerCount = 0, consumerCount = 0, producerCount = 0, proxyCount = 0;
+
+    logEntries.forEach(message => {
+      if (message.includes('[Producer')) {
+        producerCount++;
+      } else if (message.includes('[Consumer')) {
+        consumerCount++;
+      } else if (message.includes('[Broker') || message.includes('[Redis')) {
+        if (message.includes('acknowledged successfully')) {
+          brokerCount++;
         }
-      } else if (cleanedMessage.includes('[Consumer')) {
-        dispatch(addConsumerLog(cleanedMessage));
-      } else if (cleanedMessage.includes('[ProxyServer')) {
-        dispatch(addProxyLog(cleanedMessage));
+      } else if (message.includes('[ProxyServer')) {
+        proxyCount++;
       }
     });
 
-    return () => {
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.close();
-      }
-    };
-  }, [dispatch, user]);
-
+    dispatch(incrementProducerMessage(producerCount));
+    dispatch(incrementConsumerMessage(consumerCount));
+    dispatch(addBrokerAcknowledgedMessage(brokerCount));
+    dispatch(incrementProxyMessage(proxyCount));
+  }, [dispatch]);
 
   useEffect(() => {
-    updateInterval.current = setInterval(() => {
-      const currentTime = new Date();
+    const handleWebSocketMessage = (event, port) => {
+      console.log(`WebSocket message received on port ${port}:`, event.data);
 
-      dispatch(updateProducerChartData({
-        labels: [...producerChartData.labels, currentTime],
-        data: [...producerChartData.datasets[0].data, intervalProducerMessageCount]
-      }));
+      if (typeof event.data === 'string') {
+        processBatchedMessages(event.data);
+      } else {
+        console.error('Unexpected WebSocket message format:', event.data);
+      }
+    };
 
-      dispatch(updateConsumerChartData({
-        labels: [...consumerChartData.labels, currentTime],
-        data: [...consumerChartData.datasets[0].data, intervalConsumerReceivedMessageCount]
-      }));
+    const _sockets = connectWebSockets(user, handleWebSocketMessage);
 
-      dispatch(updateBrokerChartData({
-        labels: [...brokerChartData.labels, currentTime],
-        data: [...brokerChartData.datasets[0].data, intervalBrokerAcknowledgedMessageCount]
-      }));
+    return () => {
+      closeAllSockets();
+    };
+  }, [user, processBatchedMessages]);
 
-      dispatch(resetProducerIntervalCounts());
-      dispatch(resetConsumerIntervalCounts());
-      dispatch(resetBrokerIntervalCounts());
+  useEffect(() => {
+    const initializeChartData = () => {
+      const now = new Date();
+      const oneMinuteAgo = new Date(now.getTime() - 60000);
+      const initialData = Array.from({ length: 21 }, (_, index) => {
+        const time = new Date(oneMinuteAgo.getTime() + index * 3000);
+        return {
+          time: time.toISOString(),
+          broker: 0,
+          consumer: 0,
+          producer: 0,
+        };
+      });
+      setChartData(initialData);
+    };
+
+    initializeChartData();
+
+    const chartUpdateInterval = setInterval(() => {
+      setChartData(prevData => {
+        const newDataPoint = {
+          time: new Date().toISOString(),
+          broker: metrics.intervalBrokerAcknowledgedMessageCount,
+          consumer: metrics.intervalConsumerReceivedMessageCount,
+          producer: metrics.intervalProducerMessageCount,
+        };
+        const newData = [...prevData.slice(1), newDataPoint];
+
+        // Dispatch actions to reset interval counts after updating the chart
+        dispatch(resetBrokerIntervalCounts());
+        dispatch(resetConsumerIntervalCounts());
+        dispatch(resetProducerIntervalCounts());
+        dispatch(resetProxyIntervalCounts());
+
+        return newData;
+      });
     }, 3000);
 
-    return () => clearInterval(updateInterval.current);
-  }, [dispatch, intervalProducerMessageCount, intervalConsumerReceivedMessageCount, intervalBrokerAcknowledgedMessageCount, producerChartData, consumerChartData, brokerChartData]);
+    return () => clearInterval(chartUpdateInterval);
+  }, [dispatch]);
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        type: 'time',
-        time: {
-          unit: 'second',
-          stepSize: 10,
-          displayFormats: {
-            second: 'h:mm:ss a',
-          }
-        },
-        ticks: {
-          maxRotation: 0,
-          minRotation: 0,
-          source: 'auto',
-          autoSkip: true,
-          maxTicksLimit: 20,
-          callback: function (value) {
-            const date = new Date(value);
-            return date.toLocaleTimeString();
-          }
-        },
-        min: new Date(Date.now() - 60000),
-        max: new Date()
-      },
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 1,
-          callback: function (value) {
-            if (value % 1 === 0) {
-              return value;
-            }
-          }
-        }
-      }
-    },
-    animation: {
-      duration: 300
-    }
+  // Update chart data when metrics change
+  useEffect(() => {
+    setChartData(prevData => {
+      const lastIndex = prevData.length - 1;
+      const updatedLastPoint = {
+        ...prevData[lastIndex],
+        broker: metrics.intervalBrokerAcknowledgedMessageCount,
+        consumer: metrics.intervalConsumerReceivedMessageCount,
+        producer: metrics.intervalProducerMessageCount,
+      };
+      return [...prevData.slice(0, lastIndex), updatedLastPoint];
+    });
+  }, [metrics]);
+
+  const formatXAxis = (tickItem) => {
+    return new Date(tickItem).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
   return (
     <div className="console-container">
       <h1 className="hollow-fluorescent-edge">Broker Console</h1>
       <div className='card-area mb-10'>
-      <Card className="card producer-card" logoBackground='bg-dark-200' logo={<SendOutlined />} data={totalProducerMessages} dataTitle='Total Producer Messages Sent'  />
-      <Card className="card broker-card" logoBackground='bg-dark-300' logo={<SendOutlined />} data={totalBrokerAcknowledgedMessages} dataTitle='Total Broker Acknowledged Messages' />
-      <Card className="card consumer-card" logoBackground='bg-dark-400' logo={<SendOutlined />} data={totalConsumerReceivedMessages} dataTitle='Total Consumer Messages Received' />
+        <Card
+          className="card broker-card"
+          logoBackground='bg-dark-200'
+          logo={<SendOutlined />}
+          data={metrics.totalBrokerAcknowledgedMessages}
+          dataTitle='Total Broker Acknowledged Messages'
+        />
+        <Card
+          className="card consumer-card"
+          logoBackground='bg-dark-300'
+          logo={<SendOutlined />}
+          data={metrics.totalConsumerReceivedMessages}
+          dataTitle='Total Consumer Messages Received'
+        />
+        <Card
+          className="card producer-card"
+          logoBackground='bg-dark-400'
+          logo={<SendOutlined />}
+          data={metrics.totalProducerMessages}
+          dataTitle='Total Producer Messages Sent'
+        />
       </div>
 
       <h1 className="hollow-fluorescent-edge">Monitor Chart</h1>
       <div className="charts-container">
-        <div className="chart-wrapper">
-          <Line data={producerChartData} options={chartOptions} />
-        </div>
-        <div className="chart-wrapper">
-          <Line data={consumerChartData} options={chartOptions} />
-        </div>
-        <div className="chart-wrapper">
-          <Line data={brokerChartData} options={chartOptions} />
-        </div>
+        <ResponsiveContainer width="100%" height={500}>
+          <LineChart data={chartData}>
+            <CartesianGrid horizontal={true} vertical={false} />
+            <XAxis
+              dataKey="time"
+              tickFormatter={formatXAxis}
+              interval="preserveEnd"
+              minTickGap={50}
+              ticks={[chartData[0]?.time, chartData[20]?.time]}
+            />
+            <YAxis />
+            <Tooltip labelFormatter={formatXAxis} />
+            <Legend />
+            <Line
+              type="stepAfter"
+              dataKey="broker"
+              stroke="#8884d8"
+              name="Broker Messages"
+              isAnimationActive={false}
+            />
+            <Line
+              type="stepAfter"
+              dataKey="consumer"
+              stroke="#82ca9d"
+              name="Consumer Messages"
+              isAnimationActive={false}
+            />
+            <Line
+              type="stepAfter"
+              dataKey="producer"
+              stroke="#ffc658"
+              name="Producer Messages"
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
 
       <h1 className="hollow-fluorescent-edge">Components Logs</h1>
-      <div className='w-full' style={{ backgroundColor: '#121212' }}> {}
-        <Logs logsTitle='Proxy Logs' logsData={proxyLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
-        {/* Broker & Redis Logs */}
-        <Logs logsTitle='Broker & Redis Logs' logsData={brokerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
-        {/* Producer Logs */}
-        <Logs logsTitle='Producer Logs' logsData={producerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
-        {/* Consumer Logs */}
-        <Logs logsTitle='Consumer Logs' logsData={consumerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
+      <div className='w-full' style={{ backgroundColor: '#121212' }}>
+        <Logs logsTitle='Broker & Redis Logs' logsData={logs.brokerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
+        <Logs logsTitle='Consumer Logs' logsData={logs.consumerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
+        <Logs logsTitle='Producer Logs' logsData={logs.producerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
+        <Logs logsTitle='Proxy Logs' logsData={logs.proxyLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
       </div>
     </div>
   );

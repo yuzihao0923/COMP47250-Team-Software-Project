@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
+	"strings"
 )
 
 type logMessage struct {
@@ -13,15 +15,21 @@ type logMessage struct {
 	message string
 }
 
-var logChannel = make(chan logMessage, 100)
+var logChannel = make(chan logMessage, 1000)
 var logEntries []string
 var logMutex sync.Mutex
 
 // BroadcastFunc is a function that will be called to broadcast log messages.
 var BroadcastFunc func(string)
 
+var logBatch []string
+var logBatchMutex sync.Mutex
+const batchSize = 100
+const batchInterval = 100 * time.Millisecond
+
 func init() {
 	go processLogMessages()
+	go processLogBatch()
 }
 
 func processLogMessages() {
@@ -32,10 +40,31 @@ func processLogMessages() {
 		logMutex.Unlock()
 		log.Print(entry)
 
-		// Broadcast the log entry if BroadcastFunc is set
-		if BroadcastFunc != nil {
-			BroadcastFunc(entry)
+		logBatchMutex.Lock()
+		logBatch = append(logBatch, entry)
+		if len(logBatch) >= batchSize {
+			if BroadcastFunc != nil {
+				BroadcastFunc(strings.Join(logBatch, "\n"))
+			}
+			logBatch = logBatch[:0]
 		}
+		logBatchMutex.Unlock()
+	}
+}
+
+func processLogBatch() {
+	ticker := time.NewTicker(batchInterval)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		logBatchMutex.Lock()
+		if len(logBatch) > 0 {
+			if BroadcastFunc != nil {
+				BroadcastFunc(strings.Join(logBatch, "\n"))
+			}
+			logBatch = logBatch[:0]
+		}
+		logBatchMutex.Unlock()
 	}
 }
 
