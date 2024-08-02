@@ -1,8 +1,8 @@
 .console-container {
   margin: 40px auto;
-  color: #ffffff; 
+  color: #ffffff;
   border: 1px solid #555;
-  background-color: #121212; 
+  background-color: #121212;
   padding: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   width: 95%;
@@ -12,7 +12,7 @@
   text-align: center;
   font-size: 24px;
   font-weight: bold;
-  color: #dcdcdc; 
+  color: #dcdcdc;
   margin-bottom: 2rem;
 }
 
@@ -38,9 +38,11 @@
 
 .charts-container {
   margin-top: 20px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  height: 500px;
+  background-color: #242424;
+  border: 1px solid #333333;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .chart-wrapper {
@@ -58,19 +60,29 @@
     0 0 1px #0ff,
     0 0 9px #0ff;
 }
+
 .ant-menu-item-selected {
-  background-color: #424242 !important; /* Lighter gray background for selected item */
-  color: #fff !important; /* White text color for readability */
+  background-color: #424242 !important;
+  /* Lighter gray background for selected item */
+  color: #fff !important;
+  /* White text color for readability */
 }
+
 .fluorescent-text {
-  color: #0ff; /* Fluorescent cyan */
-  text-shadow: 0 0 8px #0ff; /* Glow effect */
+  color: #0ff;
+  /* Fluorescent cyan */
+  text-shadow: 0 0 8px #0ff;
+  /* Glow effect */
 }
+
 .container {
-  background-color: #121212; /* Dark background for the container */
+  background-color: #121212;
+  /* Dark background for the container */
 }
 
 .list-item {
-  color: #0ff; /* Cyan color for text to create a fluorescent look */
-  text-shadow: 0 0 8px #0ff; /* Optional: Adds a glowing effect to the text */
+  color: #0ff;
+  /* Cyan color for text to create a fluorescent look */
+  text-shadow: 0 0 8px #0ff;
+  /* Optional: Adds a glowing effect to the text */
 }

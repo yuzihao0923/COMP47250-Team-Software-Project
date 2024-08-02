@@ -1,8 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './userSlice';
-import producerReducer from './producerSlice';
-import consumerReducer from './consumerSlice';
-import brokerReducer from './brokerSlice';
+import producerMetricsReducer from './producerMetrics';
+import consumerMetricsReducer from './consumerMetrics';
+import brokerMetricsReducer from './brokerMetrics';
+import proxyMetricsReducer from './proxyMetrics';
+import logReducer from './logSlice';
 import settingsReducer from './settings';
 import { persistStore, persistReducer } from 'redux-persist';
 import storageSession from 'redux-persist/lib/storage/session';
@@ -12,14 +14,16 @@ import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist
 const persistConfig = {
   key: 'root',
   storage: storageSession,
-  whitelist: ['user', 'producer', 'consumer', 'broker', 'settings'],
+  whitelist: ['user', 'producerMetrics', 'consumerMetrics', 'brokerMetrics', 'proxyMetrics', 'settings'],
 };
 
 const rootReducer = combineReducers({
   user: userReducer,
-  producer: producerReducer,
-  consumer: consumerReducer,
-  broker: brokerReducer,
+  producerMetrics: producerMetricsReducer,
+  consumerMetrics: consumerMetricsReducer,
+  brokerMetrics: brokerMetricsReducer,
+  proxyMetrics: proxyMetricsReducer,
+  logs: logReducer,
   settings: settingsReducer
 });
 
