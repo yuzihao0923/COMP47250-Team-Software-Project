@@ -54,9 +54,9 @@ broker5:
 # 	@echo "Starting broker 6..."
 # 	@cd cmd/broker && go run broker.go -id broker6 &
 
-# web:
-# 	@echo "Starting web..."
-# 	@cd web-app && npm start &
+web:
+	@echo "Starting web..."
+	@cd web-app && npm start &
 
 broker: broker1 broker2 broker3 broker4
 
@@ -64,15 +64,16 @@ consumers: consumer1 consumer2 consumer3
 
 consumer1:
 	@echo "Starting consumer 1..."
-	@cd cmd/consumer && echo -e "c1\n123" | go run consumer.go -stream mystream1 &
+	@cd cmd/consumer && go run consumer.go -stream mystream1 -username c1 -password 123 &
 
 consumer2:
 	@echo "Starting consumer 2..."
-	@cd cmd/consumer && echo -e "c2\n123" | go run consumer.go -stream mystream2 &
+	@cd cmd/consumer && go run consumer.go -stream mystream2 -username c2 -password 123 &
 
 consumer3:
 	@echo "Starting consumer 3..."
-	@cd cmd/consumer && echo -e "c3\n123" | go run consumer.go -stream mystream3 &
+	@cd cmd/consumer && go run consumer.go -stream mystream3 -username c3 -password 123 &
+
 
 
 kill-proxy:
@@ -83,9 +84,9 @@ kill-broker:
 	@echo "Killing all broker processes..."
 	@ps aux | grep 'exe/[b]roker' | awk '{print $$2}' | xargs kill
 
-# kill-web:
-# 	@echo "Killing web process on port 3000..."
-# 	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
+kill-web:
+	@echo "Killing web process on port 3000..."
+	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
 
 kill-consumers:
 	@echo "Killing all consumer processes..."
@@ -100,4 +101,4 @@ stop:
 	$(MAKE) kill-proxy
 	$(MAKE) kill-consumers
 # &
-# $(MAKE) kill-web
+	$(MAKE) kill-web

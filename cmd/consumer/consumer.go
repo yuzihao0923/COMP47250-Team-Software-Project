@@ -6,9 +6,9 @@ import (
 	"COMP47250-Team-Software-Project/internal/database"
 	"COMP47250-Team-Software-Project/internal/log"
 	"COMP47250-Team-Software-Project/internal/message"
+	"flag"
 	"fmt"
 	"time"
-	"flag"
 )
 
 var proxyURL = "http://localhost:8888"
@@ -85,28 +85,37 @@ func main() {
 	}
 	fmt.Println("[INFO] [Consumer] Database connected successfully")
 
-	var token, role string
-	for {
-		username = auth.GetUserInput("\nEnter username: ")
-		password = auth.GetPasswordInput("Enter password: ")
-
-		token, role, err = auth.AuthenticateUser(username, password, brokerAddr)
-		if err != nil {
-			fmt.Println(err)
-		} else if role != "consumer" {
-			fmt.Println("this user is not a consumer, please try again")
-		} else {
-			// successfully login
-			break
-		}
-	}
-
-	// Parse command-line arguments
+	// 解析命令行参数
+	username := flag.String("username", "", "Username for authentication")
+	password := flag.String("password", "", "Password for authentication")
 	streamName := flag.String("stream", "mystream", "Name of the stream to consume from")
 	flag.Parse()
+
+	var token, role string
+
+	token, role, err = auth.AuthenticateUser(*username, *password, brokerAddr)
+	if err != nil {
+		fmt.Println(err)
+	} else if role != "consumer" {
+		fmt.Println("this user is not a consumer, please try again")
+	}
+	// for {
+	// 	username = auth.GetUserInput("\nEnter username: ")
+	// 	password = auth.GetPasswordInput("Enter password: ")
+
+	// 	token, role, err = auth.AuthenticateUser(username, password, brokerAddr)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	} else if role != "consumer" {
+	// 		fmt.Println("this user is not a consumer, please try again")
+	// 	} else {
+	// 		// successfully login
+	// 		break
+	// 	}
+	// }
 
 	// Register consumer group
 	RegisterConsumerGroup(brokerAddr, *streamName, "mygroup", token)
 
-	ConsumeMessages(brokerAddr, *streamName, "mygroup", username, token)
+	ConsumeMessages(brokerAddr, *streamName, "mygroup", *username, token)
 }
