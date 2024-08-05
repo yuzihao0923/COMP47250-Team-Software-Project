@@ -1,4 +1,4 @@
-.PHONY: start stop proxy broker redis initdb web #consumers
+.PHONY: start stop proxy broker redis initdb web kill-broker1#consumers
 
 start: redis initdb proxy broker web #consumers
 
@@ -85,6 +85,10 @@ kill-broker:
 kill-web:
 	@echo "Killing web process on port 3000..."
 	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
+
+kill-broker1:
+	@echo "Killing broker1 on port 8081..."
+	@lsof -t -i:8081 | xargs kill -9 || echo "No process found on port 8081"
 
 # kill-consumers:
 # 	@echo "Killing all consumer processes..."

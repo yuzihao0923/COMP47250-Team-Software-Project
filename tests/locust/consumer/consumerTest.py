@@ -102,46 +102,54 @@ class ConsumerTasks(TaskSet):
 
     @task
     def consume_messages(self):
-        # pass
-        while True:
-            try:
-                # 发送请求以消费消息
-                nameInfoList = self.read_from_json_file()
-                nameInfo = random.choice(nameInfoList)
-                print(nameInfo)
-                response = self.client.get(
-                    f"http://{self.broker_addr}/consume",
-                    params={
-                        "stream": nameInfo["stream_name"],
-                        "group": nameInfo["group_name"],
-                        "consumer": user_consumer["username"]
-                    },
-                    headers={"Authorization": f"Bearer {self.token}"}
-                )
+        # 从JSON文件中读取消息流信息列表
+        nameInfoList = self.read_from_json_file()
 
-                print("---------------"+str(response.status_code)+"------------")
-                
-                if response.status_code == 204:  # No Content
-                    print("No new messages, retrying...")
-                    time.sleep(1)  # Wait for a bit before retrying
-                
-                elif response.status_code == 200:
-                    messages = response.json()
-                    if messages is None:
-                        print("No new message now, please wait.")
+        while True:  # 无限循环，依次从每个stream消费消息
+            for nameInfo in nameInfoList:
+                try:
+                    print(f"Trying to consume from: {nameInfo}")
+                    
+                    # 发送GET请求以消费消息
+                    response = self.client.get(
+                        f"http://{self.broker_addr}/consume",
+                        params={
+                            "stream": nameInfo["stream_name"],
+                            "group": nameInfo["group_name"],
+                            "consumer": user_consumer["username"]
+                        },
+                        headers={"Authorization": f"Bearer {self.token}"}
+                    )
+
+                    print("---------------" + str(response.status_code) + "------------")
+                    
+                    if response.status_code == 204:  # No Content
+                        print(f"No new messages in stream {nameInfo['stream_name']}, moving to next stream...")
+                        # 如果没有新消息，不需要立即重试，直接继续下一个stream
+                    
+                    elif response.status_code == 200:
+                        messages = response.json()
+                        if not messages:
+                            print(f"No new message now in stream {nameInfo['stream_name']}, moving to next stream...")
+                        else:
+                            print(f"Consumed messages from {nameInfo['stream_name']}.")
+                            for message in messages:
+                                self.ack(message)
+                        # 继续下一个stream
+                    
                     else:
-                        print(f"Consumed messages.")
-                        for message in messages:
-                            self.ack(message)
-                    break
-                
-                else:
-                    print(f"Failed to receive messages, status code: {response.status_code}")
-                    time.sleep(1)  # Wait for a bit before retrying
+                        # 出现其他响应码，记录错误并继续尝试
+                        print(f"Failed to receive messages from stream {nameInfo['stream_name']}, status code: {response.status_code}")
+                        time.sleep(1)  # 等待一段时间后重试
 
-            except Exception as e:
-                print(f"Error during message consumption: {str(e)}")
-                time.sleep(1)  # Wait for a bit before retrying
+                except Exception as e:
+                    # 捕获异常并记录日志
+                    print(f"Error during message consumption from stream {nameInfo['stream_name']}: {str(e)}")
+                    time.sleep(1)  # 等待一段时间后重试
+
+            # 在完成一次对所有streams的遍历后，可以选择等待一段时间再开始新一轮遍历
+            # time.sleep(1)  # 等待一段时间后再进行下一轮遍历
+
 
 
 class ConsumerUser(HttpUser):
