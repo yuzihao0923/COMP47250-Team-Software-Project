@@ -11,8 +11,8 @@ brokers:
   - id: broker4
     address: "localhost:8084"
 
-  # - id: broker5
-  #   address: "localhost:8085"
+  - id: broker5
+    address: "localhost:8085"
 
-  # - id: broker6
-  #   address: "localhost:8086"
+  - id: broker6
+    address: "localhost:8086"

@@ -8,6 +8,7 @@ import (
 	"COMP47250-Team-Software-Project/internal/message"
 	"fmt"
 	"time"
+	"flag"
 )
 
 var proxyURL = "http://localhost:8888"
@@ -82,7 +83,7 @@ func main() {
 		fmt.Println("[ERROR] [Consumer] Failed to connect to database:", err)
 		return
 	}
-	fmt.Println("[INFO] [Consumer] Database connected successfully")	
+	fmt.Println("[INFO] [Consumer] Database connected successfully")
 
 	var token, role string
 	for {
@@ -100,8 +101,12 @@ func main() {
 		}
 	}
 
-	// Register consumer group
-	RegisterConsumerGroup(brokerAddr, "mystream", "mygroup", token)
+	// Parse command-line arguments
+	streamName := flag.String("stream", "mystream", "Name of the stream to consume from")
+	flag.Parse()
 
-	ConsumeMessages(brokerAddr, "mystream", "mygroup", username, token)
+	// Register consumer group
+	RegisterConsumerGroup(brokerAddr, *streamName, "mygroup", token)
+
+	ConsumeMessages(brokerAddr, *streamName, "mygroup", username, token)
 }
