@@ -107,9 +107,9 @@ class ConsumerTasks(TaskSet):
 
         while True:  # 无限循环，依次从每个stream消费消息
             for nameInfo in nameInfoList:
+                # print("---------------" + "Consume from "+str(nameInfo["stream_name"]) + "------------")
+
                 try:
-                    print(f"Trying to consume from: {nameInfo}")
-                    
                     # 发送GET请求以消费消息
                     response = self.client.get(
                         f"http://{self.broker_addr}/consume",
@@ -125,12 +125,14 @@ class ConsumerTasks(TaskSet):
                     
                     if response.status_code == 204:  # No Content
                         print(f"No new messages in stream {nameInfo['stream_name']}, moving to next stream...")
+                        continue
                         # 如果没有新消息，不需要立即重试，直接继续下一个stream
                     
                     elif response.status_code == 200:
                         messages = response.json()
                         if not messages:
                             print(f"No new message now in stream {nameInfo['stream_name']}, moving to next stream...")
+                            continue
                         else:
                             print(f"Consumed messages from {nameInfo['stream_name']}.")
                             for message in messages:
