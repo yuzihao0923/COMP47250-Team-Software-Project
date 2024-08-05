@@ -10,11 +10,13 @@ proxy_url = "http://localhost:8888"
 user_producer = {"username": "p1", "password": "123"}
 MaxRetryCount = 3
 RetryInterval = 2
+MaxMessages = 2  # 设置最大消息数
 
 class ProducerTasks(TaskSet):
     def on_start(self):
         self.broker_addr = self.get_broker_address()
         self.token = self.authenticate_user(user_producer)
+        self.message_count = 0  # 初始化消息计数器
     
     def get_broker_address(self):
         response = requests.get(f"{proxy_url}/get-broker")
@@ -59,15 +61,22 @@ class ProducerTasks(TaskSet):
 
     @task
     def produce_message(self):
+        print(self.message_count)
+        if self.message_count >= MaxMessages:
+            print("Reached max messages, stopping.")
+            self.environment.runner.quit()
+            return
+        
         token = self.token
         nameInfoList = self.read_from_json_file()
         nameInfo = random.choice(nameInfoList)
         stream_name = nameInfo["stream_name"]
-        print(nameInfo)
+        # print(nameInfo)
         if stream_name:
             payload = f"Hello {stream_name}".encode()
             str_payload = base64.b64encode(payload).decode('utf-8')
             self.send_message(self.broker_addr, stream_name, str_payload, token)
+            self.message_count += 1  # 增加消息计数器
         else:
             print("Stream name not found. Ensure consumers are registered and message.json is updated.")
 

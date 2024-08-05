@@ -13,9 +13,6 @@ import (
 
 var proxyURL = "http://localhost:8888"
 
-var username string
-var password string
-
 // RegisterConsumerGroup: use API to register a consumer group (with groupName) in a stream (with streamName)
 func RegisterConsumerGroup(brokerAddr, streamName, groupName, token string) {
 	msg := message.Message{
