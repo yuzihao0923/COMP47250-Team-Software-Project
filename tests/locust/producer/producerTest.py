@@ -61,10 +61,9 @@ class ProducerTasks(TaskSet):
 
     @task
     def produce_message(self):
-        print(self.message_count)
         if self.message_count >= MaxMessages:
-            print("Reached max messages, stopping.")
-            self.environment.runner.quit()
+            # print("Reached max messages, stopping.")
+            # self.user.stop()
             return
         
         token = self.token
@@ -77,6 +76,7 @@ class ProducerTasks(TaskSet):
             str_payload = base64.b64encode(payload).decode('utf-8')
             self.send_message(self.broker_addr, stream_name, str_payload, token)
             self.message_count += 1  # 增加消息计数器
+            # time.sleep(6)
         else:
             print("Stream name not found. Ensure consumers are registered and message.json is updated.")
 
