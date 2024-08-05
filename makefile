@@ -50,9 +50,9 @@ broker5:
 	@echo "Starting broker 5..."
 	@cd cmd/broker && go run broker.go -id broker5 &
 
-# broker6:
-# 	@echo "Starting broker 6..."
-# 	@cd cmd/broker && go run broker.go -id broker6 &
+broker6:
+	@echo "Starting broker 6..."
+	@cd cmd/broker && go run broker.go -id broker6 &
 
 web:
 	@echo "Starting web..."
