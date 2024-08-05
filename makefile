@@ -1,4 +1,4 @@
-.PHONY: start stop proxy broker redis initdb web #consumers
+.PHONY: start stop proxy broker redis initdb web kill-broker1#consumers
 
 start: redis initdb proxy broker web #consumers
 
@@ -46,19 +46,12 @@ broker4:
 	@echo "Starting broker 4..."
 	@cd cmd/broker && go run broker.go -id broker4 &
 
-broker5:
-	@echo "Starting broker 5..."
-	@cd cmd/broker && go run broker.go -id broker5 &
-
-broker6:
-	@echo "Starting broker 6..."
-	@cd cmd/broker && go run broker.go -id broker6 &
 
 web:
 	@echo "Starting web..."
 	@cd web-app && npm start &
 
-broker: broker1 broker2 broker3 broker4
+broker: broker1 broker2 broker3 broker4 
 
 # consumers: consumer1 consumer2 consumer3
 
@@ -85,6 +78,10 @@ kill-broker:
 kill-web:
 	@echo "Killing web process on port 3000..."
 	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
+
+kill-broker1:
+	@echo "Killing broker1 on port 8081..."
+	@lsof -t -i:8081 | xargs kill -9 || echo "No process found on port 8081"
 
 # kill-consumers:
 # 	@echo "Killing all consumer processes..."

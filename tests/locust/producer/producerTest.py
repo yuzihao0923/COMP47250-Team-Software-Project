@@ -10,7 +10,7 @@ proxy_url = "http://localhost:8888"
 user_producer = {"username": "p1", "password": "123"}
 MaxRetryCount = 3
 RetryInterval = 2
-MaxMessages = 2  # 设置最大消息数
+MaxMessages = 1  # 设置最大消息数
 
 class ProducerTasks(TaskSet):
     def on_start(self):

@@ -43,7 +43,7 @@ func SendMessage(brokerAddr, streamName string, payload []byte, token string) er
 }
 
 const (
-	MaxRetryCount = 3
+	MaxRetryCount = 30
 	RetryInterval = 1 * time.Second
 )
 
@@ -89,6 +89,6 @@ func main() {
 
 			log.LogError("Producer", fmt.Sprintf("Failed to send message after retries: %v", err))
 		}
-		// time.Sleep(time.Millisecond) // Slight delay to prevent overwhelming the broker
+		time.Sleep(3*time.Second) // Slight delay to prevent overwhelming the broker
 	}
 }
