@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectAllLogs, selectAllMetrics } from '../store/selectors';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import ReactECharts from 'echarts-for-react';
 import { connectWebSockets, closeAllSockets } from '../services/socket';
 import '../css/Console.css';
 import Card from '../components/Card';
@@ -11,8 +11,6 @@ import { batchAddLogs } from '../store/logSlice';
 import { incrementProducerMessage, resetProducerIntervalCounts } from '../store/producerMetrics'
 import { incrementConsumerMessage, resetConsumerIntervalCounts } from '../store/consumerMetrics'
 import { addBrokerAcknowledgedMessage, resetBrokerIntervalCounts } from '../store/brokerMetrics'
-import { incrementProxyMessage, resetProxyIntervalCounts } from '../store/proxyMetrics'
-
 
 const BrokerConsole = () => {
   const dispatch = useDispatch();
@@ -20,116 +18,191 @@ const BrokerConsole = () => {
   const metrics = useSelector(selectAllMetrics);
   const user = useSelector(state => state.user);
 
-  const [chartData, setChartData] = useState([]);
+  const [chartOption, setChartOption] = useState({});
+  const messageCountsRef = useRef({ broker: 0, consumer: 0, producer: 0 });
+  const chartDataRef = useRef([]);
+  const chartRef = useRef(null);
 
   const processBatchedMessages = useCallback((messages) => {
-    console.log('Raw messages:', messages);
-
     const cleanedMessage = messages.replace(/^"|"$/g, '');
     const logEntries = cleanedMessage.split('\\n').filter(entry => entry.trim() !== '');
 
-    console.log('Processed log entries:', logEntries);
-
     dispatch(batchAddLogs(logEntries));
+
+    let totalProcessed = { broker: 0, consumer: 0, producer: 0 };
 
     logEntries.forEach(message => {
       if (message.includes('[Producer')) {
+        totalProcessed.producer++;
         dispatch(incrementProducerMessage());
       } else if (message.includes('] received')) {
+        totalProcessed.consumer++;
         dispatch(incrementConsumerMessage());
       } else if (message.includes('[Broker') || message.includes('[Redis')) {
         if (message.includes('acknowledged successfully')) {
+          totalProcessed.broker++;
           dispatch(addBrokerAcknowledgedMessage());
         }
-      } else if (message.includes('[ProxyServer')) {
-        dispatch(incrementProxyMessage());
       }
     });
+
+    messageCountsRef.current.broker += totalProcessed.broker;
+    messageCountsRef.current.consumer += totalProcessed.consumer;
+    messageCountsRef.current.producer += totalProcessed.producer;
+
+    return totalProcessed;
+  }, [dispatch]);
+
+  const updateChartData = useCallback(() => {
+    const now = Date.now();
+    const newDataPoint = [
+      now,
+      messageCountsRef.current.broker,
+      messageCountsRef.current.consumer,
+      messageCountsRef.current.producer
+    ];
+
+    chartDataRef.current = [...chartDataRef.current.slice(-59), newDataPoint];
+
+    setChartOption(prevOption => {
+      const updatedOption = {
+        ...prevOption,
+        xAxis: {
+          ...prevOption.xAxis,
+          min: chartDataRef.current[0][0],
+          max: now
+        },
+        series: [
+          {
+            name: 'Broker',
+            data: chartDataRef.current.map(item => [item[0], item[1]])
+          },
+          {
+            name: 'Consumer',
+            data: chartDataRef.current.map(item => [item[0], item[2]])
+          },
+          {
+            name: 'Producer',
+            data: chartDataRef.current.map(item => [item[0], item[3]])
+          }
+        ]
+      };
+
+      if (chartRef.current) {
+        chartRef.current.getEchartsInstance().setOption(updatedOption, {
+          notMerge: false,
+          lazyUpdate: false,
+          silent: true
+        });
+      }
+
+      return updatedOption;
+    });
+
+    messageCountsRef.current = { broker: 0, consumer: 0, producer: 0 };
+
+    dispatch(resetBrokerIntervalCounts());
+    dispatch(resetConsumerIntervalCounts());
+    dispatch(resetProducerIntervalCounts());
   }, [dispatch]);
 
   useEffect(() => {
     const handleWebSocketMessage = (event, port) => {
-      console.log(`WebSocket message received on port ${port}:`, event.data);
-
       if (typeof event.data === 'string') {
         processBatchedMessages(event.data);
-      } else {
-        console.error('Unexpected WebSocket message format:', event.data);
       }
     };
 
     const _sockets = connectWebSockets(user, handleWebSocketMessage);
 
+    // Set up interval for regular chart updates
+    const intervalId = setInterval(updateChartData, 1000);
+
     return () => {
       closeAllSockets();
+      clearInterval(intervalId);
     };
-  }, [user, processBatchedMessages]);
+  }, [user, processBatchedMessages, updateChartData]);
 
   useEffect(() => {
-    const initializeChartData = () => {
-      const now = new Date();
-      const oneMinuteAgo = new Date(now.getTime() - 60000);
-      const initialData = Array.from({ length: 21 }, (_, index) => {
-        const time = new Date(oneMinuteAgo.getTime() + index * 3000);
-        return {
-          time: time.toISOString(),
-          broker: 0,
-          consumer: 0,
-          producer: 0,
-        };
-      });
-      setChartData(initialData);
-    };
+    const now = Date.now();
+    chartDataRef.current = Array.from({ length: 60 }, (_, index) => [
+      now - (59 - index) * 1000,
+      0,
+      0,
+      0
+    ]);
 
-    initializeChartData();
-
-    const chartUpdateInterval = setInterval(() => {
-      setChartData(prevData => {
-        const newDataPoint = {
-          time: new Date().toISOString(),
-          broker: metrics.intervalBrokerAcknowledgedMessageCount,
-          consumer: metrics.intervalConsumerReceivedMessageCount,
-          producer: metrics.intervalProducerMessageCount,
-        };
-        const newData = [...prevData.slice(1), newDataPoint];
-
-        // Dispatch actions to reset interval counts after updating the chart
-        dispatch(resetBrokerIntervalCounts());
-        dispatch(resetConsumerIntervalCounts());
-        dispatch(resetProducerIntervalCounts());
-        dispatch(resetProxyIntervalCounts());
-
-        return newData;
-      });
-    }, 3000);
-
-    return () => clearInterval(chartUpdateInterval);
-  }, [dispatch]);
-
-  useEffect(() => {
-    const now = new Date();
-    setChartData(prevData => {
-      const newDataPoint = {
-        time: now.toISOString(),
-        broker: metrics.intervalBrokerAcknowledgedMessageCount,
-        consumer: metrics.intervalConsumerReceivedMessageCount,
-        producer: metrics.intervalProducerMessageCount,
-      };
-      const newData = [...prevData.slice(1), newDataPoint];
-
-      // Dispatch actions to reset interval counts after updating the chart
-      dispatch(resetBrokerIntervalCounts());
-      dispatch(resetConsumerIntervalCounts());
-      dispatch(resetProducerIntervalCounts());
-      dispatch(resetProxyIntervalCounts());
-
-      return newData;
+    setChartOption({
+      title: {
+        text: 'Message Rates (Last 60 Seconds)',
+        textStyle: { color: '#ffffff' }
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: function (params) {
+          const time = new Date(params[0].value[0]).toLocaleTimeString();
+          return params.reduce((acc, param) => {
+            return acc + `${param.seriesName}: ${param.value[1]}/s<br/>`;
+          }, `${time}<br/>`);
+        }
+      },
+      legend: {
+        data: ['Broker', 'Consumer', 'Producer'],
+        textStyle: { color: '#ffffff' }
+      },
+      xAxis: {
+        type: 'time',
+        splitLine: { show: false },
+        axisLabel: {
+          color: '#ffffff',
+          formatter: (value) => {
+            const date = new Date(value);
+            return date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          }
+        },
+        min: 'dataMin',
+        max: 'dataMax',
+        axisPointer: {
+          animation: false
+        }
+      },
+      yAxis: {
+        type: 'value',
+        splitLine: { show: false },
+        axisLabel: { color: '#ffffff' }
+      },
+      series: [
+        {
+          name: 'Broker',
+          type: 'line',
+          showSymbol: false,
+          data: [],
+          smooth: true,
+          animation: false
+        },
+        {
+          name: 'Consumer',
+          type: 'line',
+          showSymbol: false,
+          data: [],
+          smooth: true,
+          animation: false
+        },
+        {
+          name: 'Producer',
+          type: 'line',
+          showSymbol: false,
+          data: [],
+          smooth: true,
+          animation: false
+        }
+      ],
+      backgroundColor: 'transparent',
+      animation: false,
+      animationThreshold: 5000
     });
-  }, [metrics, dispatch]);
-
-  const formatXAxis = (tickItem) => {
-    return new Date(tickItem).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  };
+  }, []);
 
   return (
     <div className="console-container">
@@ -159,43 +232,14 @@ const BrokerConsole = () => {
       </div>
 
       <h1 className="hollow-fluorescent-edge">Monitor Chart</h1>
-      <div className="charts-container">
-        <ResponsiveContainer width="100%" height={500}>
-          <LineChart data={chartData}>
-            <CartesianGrid horizontal={true} vertical={false} />
-            <XAxis
-              dataKey="time"
-              tickFormatter={formatXAxis}
-              interval="preserveEnd"
-              minTickGap={50}
-              ticks={[chartData[0]?.time, chartData[20]?.time]}
-            />
-            <YAxis />
-            <Tooltip labelFormatter={formatXAxis} />
-            <Legend />
-            <Line
-              type="stepAfter"
-              dataKey="broker"
-              stroke="#8884d8"
-              name="Broker Messages"
-              isAnimationActive={false}
-            />
-            <Line
-              type="stepAfter"
-              dataKey="consumer"
-              stroke="#82ca9d"
-              name="Consumer Messages"
-              isAnimationActive={false}
-            />
-            <Line
-              type="stepAfter"
-              dataKey="producer"
-              stroke="#ffc658"
-              name="Producer Messages"
-              isAnimationActive={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className="charts-container" style={{ height: '500px' }}>
+        <ReactECharts
+          ref={chartRef}
+          option={chartOption}
+          notMerge={false}
+          lazyUpdate={true}
+          style={{ height: '100%' }}
+        />
       </div>
 
       <h1 className="hollow-fluorescent-edge">Components Logs</h1>
@@ -203,7 +247,6 @@ const BrokerConsole = () => {
         <Logs logsTitle='Broker & Redis Logs' logsData={logs.brokerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
         <Logs logsTitle='Consumer Logs' logsData={logs.consumerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
         <Logs logsTitle='Producer Logs' logsData={logs.producerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
-        <Logs logsTitle='Proxy Logs' logsData={logs.proxyLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
       </div>
     </div>
   );

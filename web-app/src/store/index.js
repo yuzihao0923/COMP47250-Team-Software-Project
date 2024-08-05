@@ -3,7 +3,6 @@ import userReducer from './userSlice';
 import producerMetricsReducer from './producerMetrics';
 import consumerMetricsReducer from './consumerMetrics';
 import brokerMetricsReducer from './brokerMetrics';
-import proxyMetricsReducer from './proxyMetrics';
 import logReducer from './logSlice';
 import settingsReducer from './settings';
 import { persistStore, persistReducer } from 'redux-persist';
@@ -14,7 +13,7 @@ import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist
 const persistConfig = {
   key: 'root',
   storage: storageSession,
-  whitelist: ['user', 'producerMetrics', 'consumerMetrics', 'brokerMetrics', 'proxyMetrics', 'settings'],
+  whitelist: ['user', 'producerMetrics', 'consumerMetrics', 'brokerMetrics', 'settings'],
 };
 
 const rootReducer = combineReducers({
@@ -22,7 +21,6 @@ const rootReducer = combineReducers({
   producerMetrics: producerMetricsReducer,
   consumerMetrics: consumerMetricsReducer,
   brokerMetrics: brokerMetricsReducer,
-  proxyMetrics: proxyMetricsReducer,
   logs: logReducer,
   settings: settingsReducer
 });
