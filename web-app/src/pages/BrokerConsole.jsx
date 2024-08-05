@@ -11,7 +11,6 @@ import { batchAddLogs } from '../store/logSlice';
 import { incrementProducerMessage, resetProducerIntervalCounts } from '../store/producerMetrics'
 import { incrementConsumerMessage, resetConsumerIntervalCounts } from '../store/consumerMetrics'
 import { addBrokerAcknowledgedMessage, resetBrokerIntervalCounts } from '../store/brokerMetrics'
-import { incrementProxyMessage, resetProxyIntervalCounts } from '../store/proxyMetrics'
 
 const BrokerConsole = () => {
   const dispatch = useDispatch();
@@ -25,12 +24,8 @@ const BrokerConsole = () => {
   const chartRef = useRef(null);
 
   const processBatchedMessages = useCallback((messages) => {
-    console.log('Raw messages:', messages);
-
     const cleanedMessage = messages.replace(/^"|"$/g, '');
     const logEntries = cleanedMessage.split('\\n').filter(entry => entry.trim() !== '');
-
-    console.log('Processed log entries:', logEntries);
 
     dispatch(batchAddLogs(logEntries));
 
@@ -48,8 +43,6 @@ const BrokerConsole = () => {
           totalProcessed.broker++;
           dispatch(addBrokerAcknowledgedMessage());
         }
-      } else if (message.includes('[ProxyServer')) {
-        dispatch(incrementProxyMessage());
       }
     });
 
@@ -57,8 +50,6 @@ const BrokerConsole = () => {
     messageCountsRef.current.consumer += totalProcessed.consumer;
     messageCountsRef.current.producer += totalProcessed.producer;
 
-    console.log('Total messages processed:', totalProcessed);
-    console.log('Accumulated message counts:', messageCountsRef.current);
     return totalProcessed;
   }, [dispatch]);
 
@@ -71,15 +62,16 @@ const BrokerConsole = () => {
       messageCountsRef.current.producer
     ];
 
-    console.log('New data point:', newDataPoint);
-
-    // Update chartDataRef
     chartDataRef.current = [...chartDataRef.current.slice(-59), newDataPoint];
 
-    // Update chart option
     setChartOption(prevOption => {
       const updatedOption = {
         ...prevOption,
+        xAxis: {
+          ...prevOption.xAxis,
+          min: chartDataRef.current[0][0],
+          max: now
+        },
         series: [
           {
             name: 'Broker',
@@ -96,32 +88,28 @@ const BrokerConsole = () => {
         ]
       };
 
-      // Force chart update
       if (chartRef.current) {
-        chartRef.current.getEchartsInstance().setOption(updatedOption);
+        chartRef.current.getEchartsInstance().setOption(updatedOption, {
+          notMerge: false,
+          lazyUpdate: false,
+          silent: true
+        });
       }
 
       return updatedOption;
     });
 
-    // Reset message counts for the next interval
     messageCountsRef.current = { broker: 0, consumer: 0, producer: 0 };
 
-    // Reset interval counts in Redux store
     dispatch(resetBrokerIntervalCounts());
     dispatch(resetConsumerIntervalCounts());
     dispatch(resetProducerIntervalCounts());
-    dispatch(resetProxyIntervalCounts());
   }, [dispatch]);
 
   useEffect(() => {
     const handleWebSocketMessage = (event, port) => {
-      console.log(`WebSocket message received on port ${port}:`, event.data);
-
       if (typeof event.data === 'string') {
         processBatchedMessages(event.data);
-      } else {
-        console.error('Unexpected WebSocket message format:', event.data);
       }
     };
 
@@ -137,7 +125,6 @@ const BrokerConsole = () => {
   }, [user, processBatchedMessages, updateChartData]);
 
   useEffect(() => {
-    // Initialize chart data and option
     const now = Date.now();
     chartDataRef.current = Array.from({ length: 60 }, (_, index) => [
       now - (59 - index) * 1000,
@@ -167,9 +154,18 @@ const BrokerConsole = () => {
       xAxis: {
         type: 'time',
         splitLine: { show: false },
-        axisLabel: { color: '#ffffff' },
+        axisLabel: {
+          color: '#ffffff',
+          formatter: (value) => {
+            const date = new Date(value);
+            return date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          }
+        },
         min: 'dataMin',
-        max: 'dataMax'
+        max: 'dataMax',
+        axisPointer: {
+          animation: false
+        }
       },
       yAxis: {
         type: 'value',
@@ -182,27 +178,32 @@ const BrokerConsole = () => {
           type: 'line',
           showSymbol: false,
           data: [],
-          smooth: 0.2
+          smooth: true,
+          animation: false
         },
         {
           name: 'Consumer',
           type: 'line',
           showSymbol: false,
           data: [],
-          smooth: 0.2
+          smooth: true,
+          animation: false
         },
         {
           name: 'Producer',
           type: 'line',
           showSymbol: false,
           data: [],
-          smooth: 0.2
+          smooth: true,
+          animation: false
         }
       ],
-      backgroundColor: 'transparent'
+      backgroundColor: 'transparent',
+      animation: false,
+      animationThreshold: 5000
     });
   }, []);
-  
+
   return (
     <div className="console-container">
       <h1 className="hollow-fluorescent-edge">Broker Console</h1>
@@ -246,7 +247,6 @@ const BrokerConsole = () => {
         <Logs logsTitle='Broker & Redis Logs' logsData={logs.brokerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
         <Logs logsTitle='Consumer Logs' logsData={logs.consumerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
         <Logs logsTitle='Producer Logs' logsData={logs.producerLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
-        <Logs logsTitle='Proxy Logs' logsData={logs.proxyLogs} style={{ backgroundColor: 'transparent', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.5)' }} />
       </div>
     </div>
   );

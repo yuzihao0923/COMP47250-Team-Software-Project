@@ -1,6 +1,5 @@
 import { createSelector } from 'reselect';
 
-const selectLogs = state => state.logs;
 const selectProducerMetrics = state => state.producerMetrics;
 const selectConsumerMetrics = state => state.consumerMetrics;
 const selectBrokerMetrics = state => state.brokerMetrics;
