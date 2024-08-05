@@ -56,7 +56,7 @@ func (db *MongoDB) InitializeMongoDB(ctx context.Context) error {
 
 func (db *MongoDB) createInitialUsers() error {
 	users := []interface{}{
-		bson.M{"username": "b1", "password": "123", "role": "broker"},
+		bson.M{"username": "admin", "password": "123", "role": "broker"},
 		bson.M{"username": "px1", "password": "123", "role": "proxy"},
 		bson.M{"username": "c1", "password": "123", "role": "consumer"},
 		bson.M{"username": "c2", "password": "123", "role": "consumer"},

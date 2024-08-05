@@ -1,6 +1,6 @@
-.PHONY: start stop proxy broker redis initdb web consumers
+.PHONY: start stop proxy broker redis initdb web #consumers
 
-start: redis initdb proxy broker web consumers
+start: redis initdb proxy broker web #consumers
 
 redis:
 	@echo "Starting Redis servers..."
@@ -60,21 +60,19 @@ web:
 
 broker: broker1 broker2 broker3 broker4
 
-consumers: consumer1 consumer2 consumer3
+# consumers: consumer1 consumer2 consumer3
 
-consumer1:
-	@echo "Starting consumer 1..."
-	@cd cmd/consumer && go run consumer.go -stream mystream1 -username c1 -password 123 &
+# consumer1:
+# 	@echo "Starting consumer 1..."
+# 	@cd cmd/consumer && go run consumer.go -stream mystream1 -username c1 -password 123 &
 
-consumer2:
-	@echo "Starting consumer 2..."
-	@cd cmd/consumer && go run consumer.go -stream mystream2 -username c2 -password 123 &
+# consumer2:
+# 	@echo "Starting consumer 2..."
+# 	@cd cmd/consumer && go run consumer.go -stream mystream2 -username c2 -password 123 &
 
-consumer3:
-	@echo "Starting consumer 3..."
-	@cd cmd/consumer && go run consumer.go -stream mystream3 -username c3 -password 123 &
-
-
+# consumer3:
+# 	@echo "Starting consumer 3..."
+# 	@cd cmd/consumer && go run consumer.go -stream mystream3 -username c3 -password 123 &
 
 kill-proxy:
 	@echo "Killing all proxy processes..."
@@ -88,9 +86,9 @@ kill-web:
 	@echo "Killing web process on port 3000..."
 	@lsof -i :3000 | awk 'NR>1 {print $$2}' | xargs kill
 
-kill-consumers:
-	@echo "Killing all consumer processes..."
-	@ps aux | grep 'exe/[c]onsumer' | awk '{print $$2}' | xargs kill
+# kill-consumers:
+# 	@echo "Killing all consumer processes..."
+# 	@ps aux | grep 'exe/[c]onsumer' | awk '{print $$2}' | xargs kill
 
 stop: 
 	@echo "Stopping all services..."
@@ -99,6 +97,4 @@ stop:
 	done
 	$(MAKE) kill-broker
 	$(MAKE) kill-proxy
-	$(MAKE) kill-consumers
-# &
 	$(MAKE) kill-web

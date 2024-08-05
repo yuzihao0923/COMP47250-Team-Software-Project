@@ -83,7 +83,7 @@ func main() {
 	for i := 0; i < 200; i++ {
 		payload := []byte(fmt.Sprintf("Hello %d", i))
 
-		err := SendMessage(brokerAddr, "mystream1", payload, token)
+		err := SendMessage(brokerAddr, "mystream", payload, token)
 		if err != nil {
 			// fmt.Println("[ERROR] [Producer] Failed to send message after retries:", err)
 
