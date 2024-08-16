@@ -21,7 +21,7 @@ import (
 	"github.com/rs/cors"
 )
 
-var proxyURL = "http://localhost:8888"
+var proxyURL = "http://172.16.238.131:8888"
 
 type Broker struct {
 	ID           string
@@ -248,14 +248,16 @@ func main() {
 		return
 	}
 
-	rsi := redis.NewRedisClusterClient([]string{
-		"localhost:6381",
-		"localhost:6382",
-		"localhost:6383",
-		"localhost:6384",
-		"localhost:6385",
-		"localhost:6386",
-	}, "", 0, api.BroadcastMessage)
+	rsi := redis.NewRedisClient("172.16.238.131:6379", "", 0)
+
+	// rsi := redis.NewRedisClusterClient([]string{
+	// 	"localhost:6381",
+	// 	"localhost:6382",
+	// 	"localhost:6383",
+	// 	"localhost:6384",
+	// 	"localhost:6385",
+	// 	"localhost:6386",
+	// }, "", 0, api.BroadcastMessage)
 
 	// rsi := redis.NewRedisClusterClient([]string{
 	// 	"localhost:6387",
