@@ -1,6 +1,6 @@
 .PHONY: start stop proxy broker redis initdb web kill-broker1#consumers
 
-start: redis initdb proxy broker web #consumers
+start: broker #redis initdb proxy broker web #consumers
 
 redis:
 	@echo "Starting Redis servers..."
