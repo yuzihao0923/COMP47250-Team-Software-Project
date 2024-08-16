@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	_, err := database.NewMongoDB("mongodb://localhost:27017", "comp47250", "users")
+	_, err := database.NewMongoDB("mongodb://root:****@dds-bp1ca790bb54aae43.mongodb.rds.aliyuncs.com:3717,dds-bp1ca790bb54aae41.mongodb.rds.aliyuncs.com:3717", "comp47250", "users")
 	if err != nil {
 		log.LogError("InitDB", err.Error())
 		return
