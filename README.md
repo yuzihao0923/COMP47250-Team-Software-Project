@@ -21,21 +21,7 @@
 
 <img width="640" alt="image" src="https://github.com/yuzihao0923/COMP47250-Team-Software-Project/assets/141666207/72510f33-cae5-4c24-a43d-105975da4988">
 
-## Structure
-
-
-  - Project Manager: Oversees project progress, ensures deadlines are met, and coordinates team activities.
-  
-  - bLead Developer: Responsible for the core implementation of the distributed queue system.
-  
-  - Quality Assurance Engineer: Ensures the system meets all quality standards through rigorous testing.
-  
-  - DevOps Engineer: Manages the cloud environment setup and deployment processes.
-  
-  - Documentation Specialist: Prepares detailed documentation for the system, including user guides and technical specifications.
-
-
-Building a Distributed Queue System Based on Redis
+## Code Stucture
 
 ```
 .
